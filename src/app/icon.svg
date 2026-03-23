@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Warm yarn-colored background -->
+  <rect width="32" height="32" rx="6" fill="#C86B3A"/>
+
+  <!-- Outer grid border -->
+  <rect x="4" y="4" width="24" height="24" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+
+  <!-- Inner grid lines (3x3) -->
+  <line x1="12" y1="4" x2="12" y2="28" stroke="white" stroke-width="1"/>
+  <line x1="20" y1="4" x2="20" y2="28" stroke="white" stroke-width="1"/>
+  <line x1="4" y1="12" x2="28" y2="12" stroke="white" stroke-width="1"/>
+  <line x1="4" y1="20" x2="28" y2="20" stroke="white" stroke-width="1"/>
+
+  <!-- Filled cells: diagonal X pattern representing knitting chart symbols -->
+  <rect x="5" y="5" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="21" y="5" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="13" y="13" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="5" y="21" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="21" y="21" width="6" height="6" rx="1" fill="white" opacity="0.9"/>
+</svg>
