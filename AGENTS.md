@@ -35,11 +35,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ```
 src/
-  app/              # Next.js App Router 페이지 및 레이아웃
-  components/       # UI 컴포넌트
-    ui/             # 버튼, 인풋 등 기본 UI 빌딩 블록
-    editor/         # Konva.js 캔버스 에디터 관련 컴포넌트
-    pdf/            # PDF 미리보기·출력 관련 컴포넌트
+  app/              # Next.js App Router 페이지 및 레이아웃 (Template / Page 계층)
+  components/       # UI 컴포넌트 (Atomic Design 계층 구조)
+    ui/
+      atoms/        # 최소 단위 UI — store 참조 금지 (Button, Input, Icon, Badge 등)
+      molecules/    # Atom 조합 단위 — store 참조 금지 (SymbolButton, GridSizeInput 등)
+    editor/         # Organism — 에디터 도메인 기능 블록 (ChartGrid, SymbolPicker, Toolbar 등)
+    pdf/            # Organism — PDF 도메인 기능 블록 (PdfPreview 등)
   hooks/            # 비즈니스 로직을 담은 커스텀 훅
   lib/
     api/            # 모든 API 호출 함수 (이 외에서 fetch 금지)
