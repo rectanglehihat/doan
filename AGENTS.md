@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **상태관리**: React Context + zustand (간단한 상태)
 - **PDF 생성**: jsPDF + html2canvas
 - **폼 관리**: React Hook Form + Zod (validation)
-- **TDD**:
+- **TDD**: Vitest + @testing-library/react + jsdom (→ @TDD.md 참조)
 
 ### Backend (MVP)
 
@@ -190,11 +190,14 @@ pnpm tsc --noEmit # 타입체크 (빌드 없이)
 
 ## 8. 테스트 & 검증
 
+TDD 전략 및 레이어별 테스트 작성 방법은 @TDD.md 참조.
+
 코드 변경 후 아래 순서로 검증:
 
-1. `pnpm tsc --noEmit` — 타입 에러 없음 확인
-2. `pnpm lint` — ESLint 통과 확인
-3. `pnpm build` — 빌드 성공 확인 (PR 전 필수)
+1. `pnpm test` — 단위·통합 테스트 전체 통과 확인
+2. `pnpm tsc --noEmit` — 타입 에러 없음 확인
+3. `pnpm lint` — ESLint 통과 확인
+4. `pnpm build` — 빌드 성공 확인 (PR 전 필수)
 
 - 변경된 파일과 직접 연관된 컴포넌트·훅만 수동 검증 (전체 앱 재검증 불필요)
 - 타입 에러를 `as`, `!` (non-null assertion)으로 우회 금지 — 근본 원인 수정
