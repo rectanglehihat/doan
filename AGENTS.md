@@ -96,12 +96,72 @@ src/
 
 ## 5. 컴포넌트 설계 원칙
 
+- 디자인 시스템은 Figma MCP 서버로 연결된 피그마 파일 기준
+- 컴포넌트 생성 전 반드시 Figma에서 스펙 확인
+- 변수명은 Figma 레이어명과 일치시킬 것
 - 컴포넌트 하나는 하나의 역할만 수행 (단일 책임)
 - Props 인터페이스는 컴포넌트 함수 위에 별도로 선언
 - JSX 내 인라인 함수 정의 금지 → `useCallback`으로 분리
 - 조건부 렌더링이 3개 이상이면 별도 컴포넌트로 추출
 - Konva.js 등 무거운 컴포넌트는 `dynamic()` + `ssr: false`로 lazy load
 - 컴포넌트 파일 길이 200줄 초과 시 분리 검토
+
+### Atomic Design + Compound Component 복합 패턴
+
+컴포넌트는 **Atomic Design**으로 계층을 분류하고, **Organism 이상**의 복잡한 컴포넌트에는 **Compound Component** 패턴을 적용한다.
+
+#### Atomic Design 계층
+
+| 계층 | 설명 | 위치 | 예시 |
+|------|------|------|------|
+| **Atom** | 더 이상 분해할 수 없는 최소 UI 단위. 자체 상태 없음 | `components/ui/` | `Button`, `Input`, `Icon`, `Badge` |
+| **Molecule** | Atom 2~3개를 조합한 단일 기능 단위 | `components/ui/` | `SymbolButton`, `GridSizeInput`, `ColorPicker` |
+| **Organism** | 독립적인 기능 블록. 비즈니스 로직을 포함할 수 있음 | `components/editor/`, `components/pdf/` | `ChartGrid`, `SymbolPicker`, `Toolbar`, `PdfPreview` |
+| **Template / Page** | 레이아웃 구조 정의. 실제 데이터는 없음 / 데이터와 연결 | `app/` | `layout.tsx`, `page.tsx` |
+
+- Atom·Molecule은 도메인을 모른다 — props로만 동작하고 store를 직접 참조하지 않는다.
+- Organism부터 hooks 또는 store에 접근할 수 있다.
+
+#### Compound Component 패턴
+
+**Organism 이상**의 컴포넌트가 내부 여러 서브컴포넌트 간 상태를 공유해야 할 때 Compound Component로 설계한다.
+
+- 부모 컴포넌트가 `Context`를 생성하고 상태·핸들러를 제공한다.
+- 자식 서브컴포넌트는 Context를 소비하며, 부모 없이는 단독으로 사용하지 않는다.
+- 서브컴포넌트는 부모 컴포넌트의 **정적 프로퍼티**로 노출한다.
+
+```tsx
+// Organism: ChartGrid (Compound Component)
+const ChartGridContext = createContext<ChartGridContextValue | null>(null);
+
+export function ChartGrid({ children }: ChartGridProps) {
+  const { cells, selectedSymbol, handleCellClick } = useChartEditor();
+  return (
+    <ChartGridContext.Provider value={{ cells, selectedSymbol, handleCellClick }}>
+      <div className="...">{children}</div>
+    </ChartGridContext.Provider>
+  );
+}
+
+// 서브컴포넌트 — Context를 소비
+ChartGrid.Canvas = function ChartGridCanvas() { ... };
+ChartGrid.Controls = function ChartGridControls() { ... };
+ChartGrid.Legend = function ChartGridLegend() { ... };
+
+// 사용 — Organism을 조합하는 곳(page/template)에서
+<ChartGrid>
+  <ChartGrid.Controls />
+  <ChartGrid.Canvas />
+  <ChartGrid.Legend />
+</ChartGrid>
+```
+
+#### 두 패턴의 결합 원칙
+
+1. **Atom·Molecule은 Compound Component로 만들지 않는다** — 단순 props로 충분하다.
+2. **Organism 내부 구조가 외부에 노출될 필요가 없으면 Compound Component를 쓰지 않는다** — 단일 컴포넌트로 유지한다.
+3. **서브컴포넌트 자체는 Atom·Molecule로 구성한다** — 계층을 건너뛰지 않는다.
+4. **Context는 해당 Compound Component 파일 내부에만 존재**해야 한다 — 전역 store와 혼용 금지.
 
 ## 6. 자주 사용하는 명령어
 
