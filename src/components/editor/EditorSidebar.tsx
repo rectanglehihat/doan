@@ -10,6 +10,7 @@ import {
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
+import { GridSizeInput } from '@/components/ui/molecules/GridSizeInput';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { useChartStore } from '@/store/useChartStore';
@@ -52,17 +53,15 @@ export function EditorSidebar() {
 	}, [handlePatternTypeChange]);
 
 	const handleColsChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const cols = Math.max(1, Math.min(200, Number(e.target.value)));
-			if (!Number.isNaN(cols)) setGridSize({ rows: gridSize.rows, cols });
+		(cols: number) => {
+			setGridSize({ rows: gridSize.rows, cols });
 		},
 		[gridSize.rows, setGridSize],
 	);
 
 	const handleRowsChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const rows = Math.max(1, Math.min(200, Number(e.target.value)));
-			if (!Number.isNaN(rows)) setGridSize({ rows, cols: gridSize.cols });
+		(rows: number) => {
+			setGridSize({ rows, cols: gridSize.cols });
 		},
 		[gridSize.cols, setGridSize],
 	);
@@ -122,30 +121,12 @@ export function EditorSidebar() {
 
 				<SidebarSection title="격자 설정">
 					<div className="flex flex-col gap-2">
-						<div className="flex items-center justify-between">
-							<label className="text-xs text-zinc-600">너비 (코)</label>
-							<Input
-								type="number"
-								value={gridSize.cols}
-								min={1}
-								max={200}
-								size="sm"
-								className="w-16 text-right"
-								onChange={handleColsChange}
-							/>
-						</div>
-						<div className="flex items-center justify-between">
-							<label className="text-xs text-zinc-600">높이 (단)</label>
-							<Input
-								type="number"
-								value={gridSize.rows}
-								min={1}
-								max={200}
-								size="sm"
-								className="w-16 text-right"
-								onChange={handleRowsChange}
-							/>
-						</div>
+						<GridSizeInput
+							rows={gridSize.rows}
+							cols={gridSize.cols}
+							onRowsChange={handleRowsChange}
+							onColsChange={handleColsChange}
+						/>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">칸 크기 (px)</label>
 							<Input
@@ -188,18 +169,10 @@ export function EditorSidebar() {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				<Button
-					variant="default"
-					size="sm"
-					className="w-full"
-				>
+				<Button variant="default" size="sm" className="w-full">
 					저장
 				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					className="w-full"
-				>
+				<Button variant="outline" size="sm" className="w-full">
 					PDF 내보내기
 				</Button>
 			</div>
