@@ -9,10 +9,9 @@ import {
 	SYMBOL_CATEGORY_LABELS,
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
+import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
-import { Option } from '@/components/ui/atoms/Option';
-import { Select } from '@/components/ui/molecules/Select';
 import { useChartStore } from '@/store/useChartStore';
 
 interface SidebarSectionProps {
@@ -32,6 +31,7 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
+	const [difficulty, setDifficulty] = useState<number>(0);
 	const { gridSize, setGridSize } = useChartStore();
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
@@ -168,11 +168,10 @@ export function EditorSidebar() {
 							size="sm"
 							className="w-full"
 						/>
-						<Select size="sm" placeholder="난이도 선택">
-							<Option value="beginner">초급</Option>
-							<Option value="intermediate">중급</Option>
-							<Option value="advanced">고급</Option>
-						</Select>
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-zinc-600">난이도</span>
+							<DifficultyStars value={difficulty} onChange={setDifficulty} />
+						</div>
 					</div>
 				</SidebarSection>
 
