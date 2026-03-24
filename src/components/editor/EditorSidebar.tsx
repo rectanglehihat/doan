@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
 import { knittingSymbols, crochetSymbols, SYMBOL_CATEGORY_ORDER, SYMBOL_CATEGORY_LABELS } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
+import { Button } from '@/components/ui/atoms/Button';
 
 interface SidebarSectionProps {
 	title: string;
@@ -32,6 +33,14 @@ export function EditorSidebar() {
 		setSelectedSymbol(null);
 	}, []);
 
+	const handleKnittingClick = useCallback(() => {
+		handlePatternTypeChange('knitting');
+	}, [handlePatternTypeChange]);
+
+	const handleCrochetClick = useCallback(() => {
+		handlePatternTypeChange('crochet');
+	}, [handlePatternTypeChange]);
+
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
 	return (
@@ -43,18 +52,22 @@ export function EditorSidebar() {
 			<div className="flex-1 overflow-y-auto">
 				<SidebarSection title="뜨개 종류">
 					<div className="flex gap-2">
-						<button
-							className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium ${patternType === 'knitting' ? 'border-zinc-800 bg-zinc-800 text-white' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
-							onClick={() => handlePatternTypeChange('knitting')}
+						<Button
+							variant={patternType === 'knitting' ? 'default' : 'outline'}
+							size="sm"
+							className="flex-1"
+							onClick={handleKnittingClick}
 						>
 							대바늘
-						</button>
-						<button
-							className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium ${patternType === 'crochet' ? 'border-zinc-800 bg-zinc-800 text-white' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
-							onClick={() => handlePatternTypeChange('crochet')}
+						</Button>
+						<Button
+							variant={patternType === 'crochet' ? 'default' : 'outline'}
+							size="sm"
+							className="flex-1"
+							onClick={handleCrochetClick}
 						>
 							코바늘
-						</button>
+						</Button>
 					</div>
 				</SidebarSection>
 
@@ -134,12 +147,12 @@ export function EditorSidebar() {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				<button className="w-full rounded-md bg-zinc-800 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-700">
+				<Button variant="default" size="sm" className="w-full">
 					저장
-				</button>
-				<button className="w-full rounded-md border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50">
+				</Button>
+				<Button variant="outline" size="sm" className="w-full">
 					PDF 내보내기
-				</button>
+				</Button>
 			</div>
 		</div>
 	);
