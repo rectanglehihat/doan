@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils/cn';
 
 type ButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -34,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={type}
-        className={`${base} ${variantClasses[variant]} ${sizeClass} ${className}`.trim()}
+        className={cn(base, variantClasses[variant], sizeClass, className)}
         {...props}
       >
         {children}
