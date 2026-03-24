@@ -2,9 +2,15 @@
 
 import { useCallback, useState } from 'react';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
-import { knittingSymbols, crochetSymbols, SYMBOL_CATEGORY_ORDER, SYMBOL_CATEGORY_LABELS } from '@/constants/knitting-symbols';
+import {
+	knittingSymbols,
+	crochetSymbols,
+	SYMBOL_CATEGORY_ORDER,
+	SYMBOL_CATEGORY_LABELS,
+} from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { Button } from '@/components/ui/atoms/Button';
+import { Input } from '@/components/ui/atoms/Input';
 
 interface SidebarSectionProps {
 	title: string;
@@ -98,32 +104,35 @@ export function EditorSidebar() {
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">너비 (코)</label>
-							<input
+							<Input
 								type="number"
 								defaultValue={50}
 								min={1}
 								max={200}
-								className="w-16 rounded-md border border-zinc-200 px-2 py-1 text-xs text-right text-zinc-800 focus:border-zinc-400 focus:outline-none"
+								size="sm"
+								className="w-16 text-right"
 							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">높이 (단)</label>
-							<input
+							<Input
 								type="number"
 								defaultValue={50}
 								min={1}
 								max={200}
-								className="w-16 rounded-md border border-zinc-200 px-2 py-1 text-xs text-right text-zinc-800 focus:border-zinc-400 focus:outline-none"
+								size="sm"
+								className="w-16 text-right"
 							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">칸 크기 (px)</label>
-							<input
+							<Input
 								type="number"
 								defaultValue={20}
 								min={10}
 								max={40}
-								className="w-16 rounded-md border border-zinc-200 px-2 py-1 text-xs text-right text-zinc-800 focus:border-zinc-400 focus:outline-none"
+								size="sm"
+								className="w-16 text-right"
 							/>
 						</div>
 					</div>
@@ -131,10 +140,11 @@ export function EditorSidebar() {
 
 				<SidebarSection title="도안 정보">
 					<div className="flex flex-col gap-2">
-						<input
+						<Input
 							type="text"
 							placeholder="도안 제목"
-							className="w-full rounded-md border border-zinc-200 px-3 py-1.5 text-xs text-zinc-800 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+							size="sm"
+							className="w-full"
 						/>
 						<select className="w-full rounded-md border border-zinc-200 px-3 py-1.5 text-xs text-zinc-800 focus:border-zinc-400 focus:outline-none">
 							<option value="">난이도 선택</option>
@@ -147,10 +157,18 @@ export function EditorSidebar() {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				<Button variant="default" size="sm" className="w-full">
+				<Button
+					variant="default"
+					size="sm"
+					className="w-full"
+				>
 					저장
 				</Button>
-				<Button variant="outline" size="sm" className="w-full">
+				<Button
+					variant="outline"
+					size="sm"
+					className="w-full"
+				>
 					PDF 내보내기
 				</Button>
 			</div>
