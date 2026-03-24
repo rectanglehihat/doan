@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 
-const KonvaGrid = dynamic(
-	() => import('./KonvaGrid').then((m) => ({ default: m.KonvaGrid })),
-	{ ssr: false, loading: () => <CanvasPlaceholder /> },
-);
+const KonvaGrid = dynamic(() => import('./KonvaGrid').then((m) => ({ default: m.KonvaGrid })), {
+	ssr: false,
+	loading: () => <CanvasPlaceholder />,
+});
 
 function CanvasPlaceholder() {
 	return (
@@ -38,13 +38,10 @@ export function ChartCanvas() {
 
 	return (
 		<div className="flex flex-col w-full h-full">
-			<div className="flex items-center justify-between px-4 py-3 bg-white border-b border-zinc-200 shrink-0">
-				<span className="text-sm font-medium text-zinc-700">도안 캔버스</span>
-				<span className="text-xs text-zinc-400">
-					{gridSize.cols} × {gridSize.rows}
-				</span>
-			</div>
-			<div ref={containerRef} className="flex-1 bg-zinc-100 overflow-hidden">
+			<div
+				ref={containerRef}
+				className="flex-1 bg-zinc-100 overflow-hidden"
+			>
 				<KonvaGrid
 					cells={cells}
 					gridSize={gridSize}
