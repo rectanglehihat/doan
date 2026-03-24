@@ -26,6 +26,8 @@
 - [x] `EditorSidebar` 컴포넌트 — 기호 팔레트, 그리드 설정 UI (`src/components/editor/EditorSidebar.tsx`)
 - [x] `ChartCanvas` 컴포넌트 — placeholder (`src/components/editor/ChartCanvas.tsx`)
 - [x] `Input` 컴포넌트 (`src/components/ui/atoms/Input.tsx`) — EditorSidebar의 raw input 대체
+- [x] `Option` 컴포넌트 (`src/components/ui/atoms/Option.tsx`) — 선택 상태·disabled 지원, 체크 아이콘
+- [x] `Select` 컴포넌트 (`src/components/ui/molecules/Select.tsx`) — shadcn/ui Command 기반, 검색·키보드 지원, EditorSidebar 난이도 선택에 적용
 - [ ] `GridSizeInput` 컴포넌트 (`src/components/ui/molecules/GridSizeInput.tsx`)
 - [ ] `Toolbar` 컴포넌트 (`src/components/editor/Toolbar.tsx`) — 저장, Undo/Redo, PDF 버튼
 - [x] `EditorSidebar` 리팩터링 — inline input/button을 Atom 컴포넌트로 교체
@@ -115,7 +117,8 @@
 | 컴포넌트 | 상태 | 테스트 |
 |----------|------|--------|
 | `Button` | 완료 | 27개 |
-| `Input` | 미구현 | - |
+| `Input` | 완료 | 15개 |
+| `Option` | 완료 | 10개 |
 | `Icon` | 미구현 | - |
 | `Badge` | 미구현 | - |
 
@@ -124,6 +127,7 @@
 | 컴포넌트 | 상태 | 테스트 |
 |----------|------|--------|
 | `SymbolButton` | 완료 | 미작성 |
+| `Select` | 완료 | 18개 |
 | `GridSizeInput` | 미구현 | - |
 | `ColorPicker` | 미구현 | - |
 
@@ -132,7 +136,7 @@
 | 컴포넌트 | 상태 | 테스트 |
 |----------|------|--------|
 | `ChartCanvas` | placeholder | 미작성 |
-| `EditorSidebar` | 완료 (리팩터링 필요) | 미작성 |
+| `EditorSidebar` | 완료 | 미작성 |
 | `Toolbar` | 미구현 | - |
 | `SaveDialog` | 미구현 | - |
 | `LoadDialog` | 미구현 | - |
@@ -150,6 +154,9 @@
 | 레이어 | 파일 | 목표 커버리지 | 현재 |
 |--------|------|--------------|------|
 | Atom — `Button` | `Button.test.tsx` | 90% | 27개 작성 |
+| Atom — `Input` | `Input.test.tsx` | 90% | 15개 작성 |
+| Atom — `Option` | `Option.test.tsx` | 90% | 10개 작성 |
+| Molecule — `Select` | `Select.test.tsx` | 80% | 18개 작성 |
 | Molecule — `SymbolButton` | `SymbolButton.test.tsx` | 80% | 미작성 |
 | Organism — `EditorSidebar` | `EditorSidebar.test.tsx` | 60% | 미작성 |
 | Organism — `ChartCanvas` | `ChartCanvas.test.tsx` | 60% | 미작성 |

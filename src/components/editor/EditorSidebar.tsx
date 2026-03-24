@@ -11,6 +11,8 @@ import {
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
+import { Option } from '@/components/ui/atoms/Option';
+import { Select } from '@/components/ui/molecules/Select';
 
 interface SidebarSectionProps {
 	title: string;
@@ -146,12 +148,11 @@ export function EditorSidebar() {
 							size="sm"
 							className="w-full"
 						/>
-						<select className="w-full rounded-md border border-zinc-200 px-3 py-1.5 text-xs text-zinc-800 focus:border-zinc-400 focus:outline-none">
-							<option value="">난이도 선택</option>
-							<option value="beginner">초급</option>
-							<option value="intermediate">중급</option>
-							<option value="advanced">고급</option>
-						</select>
+						<Select size="sm" placeholder="난이도 선택">
+							<Option value="beginner">초급</Option>
+							<Option value="intermediate">중급</Option>
+							<Option value="advanced">고급</Option>
+						</Select>
 					</div>
 				</SidebarSection>
 			</div>
