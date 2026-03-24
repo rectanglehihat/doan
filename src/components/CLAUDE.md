@@ -182,12 +182,17 @@ function useChartGridContext() {
 
 컴포넌트를 새로 만들기 전 확인:
 
+**구현 전 (Red 단계)**
 - [ ] Figma에서 스펙을 확인했는가?
 - [ ] 기존 컴포넌트(Atom·Molecule)를 재사용할 수 없는가?
 - [ ] 올바른 계층(Atom/Molecule/Organism)에 배치하는가?
+- [ ] **테스트 파일(`*.test.tsx`)을 먼저 작성했는가?** — 구현 없이 실패하는 테스트를 먼저 작성한다
+
+**구현 후 (Green → Refactor 단계)**
 - [ ] Props 인터페이스를 함수 위에 선언했는가?
 - [ ] named export를 사용하는가?
 - [ ] 이벤트 핸들러를 `useCallback`으로 분리했는가?
 - [ ] `any` 타입이 없는가?
 - [ ] Atom·Molecule인 경우 store를 직접 참조하지 않는가?
 - [ ] Konva 등 SSR 비호환 라이브러리는 `dynamic()` + `ssr: false`로 처리했는가?
+- [ ] `pnpm test` 전체 통과 확인했는가?
