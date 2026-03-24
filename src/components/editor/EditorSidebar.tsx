@@ -9,10 +9,10 @@ import {
 	SYMBOL_CATEGORY_LABELS,
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
+import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
-import { Option } from '@/components/ui/atoms/Option';
-import { Select } from '@/components/ui/molecules/Select';
+import { useChartStore } from '@/store/useChartStore';
 
 interface SidebarSectionProps {
 	title: string;
@@ -31,6 +31,8 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
+	const [difficulty, setDifficulty] = useState<number>(0);
+	const { gridSize, setGridSize } = useChartStore();
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
 		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
@@ -48,6 +50,22 @@ export function EditorSidebar() {
 	const handleCrochetClick = useCallback(() => {
 		handlePatternTypeChange('crochet');
 	}, [handlePatternTypeChange]);
+
+	const handleColsChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const cols = Math.max(1, Math.min(200, Number(e.target.value)));
+			if (!Number.isNaN(cols)) setGridSize({ rows: gridSize.rows, cols });
+		},
+		[gridSize.rows, setGridSize],
+	);
+
+	const handleRowsChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const rows = Math.max(1, Math.min(200, Number(e.target.value)));
+			if (!Number.isNaN(rows)) setGridSize({ rows, cols: gridSize.cols });
+		},
+		[gridSize.cols, setGridSize],
+	);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -108,22 +126,24 @@ export function EditorSidebar() {
 							<label className="text-xs text-zinc-600">너비 (코)</label>
 							<Input
 								type="number"
-								defaultValue={50}
+								value={gridSize.cols}
 								min={1}
 								max={200}
 								size="sm"
 								className="w-16 text-right"
+								onChange={handleColsChange}
 							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">높이 (단)</label>
 							<Input
 								type="number"
-								defaultValue={50}
+								value={gridSize.rows}
 								min={1}
 								max={200}
 								size="sm"
 								className="w-16 text-right"
+								onChange={handleRowsChange}
 							/>
 						</div>
 						<div className="flex items-center justify-between">
@@ -141,18 +161,28 @@ export function EditorSidebar() {
 				</SidebarSection>
 
 				<SidebarSection title="도안 정보">
-					<div className="flex flex-col gap-2">
-						<Input
-							type="text"
-							placeholder="도안 제목"
-							size="sm"
-							className="w-full"
-						/>
-						<Select size="sm" placeholder="난이도 선택">
-							<Option value="beginner">초급</Option>
-							<Option value="intermediate">중급</Option>
-							<Option value="advanced">고급</Option>
-						</Select>
+					<div className="flex flex-col gap-3">
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">도안명</label>
+							<Input
+								type="text"
+								placeholder="도안 제목을 입력하세요"
+								size="sm"
+								className="w-full"
+							/>
+						</div>
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">난이도</label>
+							<DifficultyStars value={difficulty} onChange={setDifficulty} />
+						</div>
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">준비물</label>
+							<textarea
+								placeholder="사용할 실, 바늘, 부자재 등을 적어주세요"
+								rows={4}
+								className="w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+							/>
+						</div>
 					</div>
 				</SidebarSection>
 			</div>
