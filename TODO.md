@@ -25,10 +25,10 @@
 - [x] `SymbolButton` 컴포넌트 (`src/components/ui/molecules/SymbolButton.tsx`)
 - [x] `EditorSidebar` 컴포넌트 — 기호 팔레트, 그리드 설정 UI (`src/components/editor/EditorSidebar.tsx`)
 - [x] `ChartCanvas` 컴포넌트 — placeholder (`src/components/editor/ChartCanvas.tsx`)
-- [ ] `Input` 컴포넌트 (`src/components/ui/atoms/Input.tsx`) — EditorSidebar의 raw input 대체
+- [x] `Input` 컴포넌트 (`src/components/ui/atoms/Input.tsx`) — EditorSidebar의 raw input 대체
 - [ ] `GridSizeInput` 컴포넌트 (`src/components/ui/molecules/GridSizeInput.tsx`)
 - [ ] `Toolbar` 컴포넌트 (`src/components/editor/Toolbar.tsx`) — 저장, Undo/Redo, PDF 버튼
-- [ ] `EditorSidebar` 리팩터링 — inline input/button을 Atom 컴포넌트로 교체
+- [x] `EditorSidebar` 리팩터링 — inline input/button을 Atom 컴포넌트로 교체
 
 ### 1-3. 상태 관리 (Zustand)
 
