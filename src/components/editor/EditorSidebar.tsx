@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Option } from '@/components/ui/atoms/Option';
 import { Select } from '@/components/ui/molecules/Select';
+import { useChartStore } from '@/store/useChartStore';
 
 interface SidebarSectionProps {
 	title: string;
@@ -31,6 +32,7 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
+	const { gridSize, setGridSize } = useChartStore();
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
 		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
@@ -48,6 +50,22 @@ export function EditorSidebar() {
 	const handleCrochetClick = useCallback(() => {
 		handlePatternTypeChange('crochet');
 	}, [handlePatternTypeChange]);
+
+	const handleColsChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const cols = Math.max(1, Math.min(200, Number(e.target.value)));
+			if (!Number.isNaN(cols)) setGridSize({ rows: gridSize.rows, cols });
+		},
+		[gridSize.rows, setGridSize],
+	);
+
+	const handleRowsChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const rows = Math.max(1, Math.min(200, Number(e.target.value)));
+			if (!Number.isNaN(rows)) setGridSize({ rows, cols: gridSize.cols });
+		},
+		[gridSize.cols, setGridSize],
+	);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -108,22 +126,24 @@ export function EditorSidebar() {
 							<label className="text-xs text-zinc-600">너비 (코)</label>
 							<Input
 								type="number"
-								defaultValue={50}
+								value={gridSize.cols}
 								min={1}
 								max={200}
 								size="sm"
 								className="w-16 text-right"
+								onChange={handleColsChange}
 							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">높이 (단)</label>
 							<Input
 								type="number"
-								defaultValue={50}
+								value={gridSize.rows}
 								min={1}
 								max={200}
 								size="sm"
 								className="w-16 text-right"
+								onChange={handleRowsChange}
 							/>
 						</div>
 						<div className="flex items-center justify-between">
@@ -154,6 +174,14 @@ export function EditorSidebar() {
 							<Option value="advanced">고급</Option>
 						</Select>
 					</div>
+				</SidebarSection>
+
+				<SidebarSection title="준비물">
+					<textarea
+						placeholder="사용할 실, 바늘, 부자재 등을 적어주세요"
+						rows={4}
+						className="w-full resize-none rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+					/>
 				</SidebarSection>
 			</div>
 
