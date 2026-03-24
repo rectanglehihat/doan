@@ -16,7 +16,7 @@
 - [x] 대바늘 기호 상수 18개 정의 (`src/constants/knitting-symbols.ts`)
 - [x] `cn()` 유틸리티 (`src/lib/utils/cn.ts`)
 - [x] 코바늘 기호 상수 추가 (`src/constants/knitting-symbols.ts`)
-- [ ] `ChartCell`, `ChartPattern`, `PatternMetadata` 타입 정의
+- [x] `ChartCell`, `ChartPattern`, `PatternMetadata` 타입 정의
 
 ### 1-2. 기본 UI 레이아웃
 
@@ -28,8 +28,8 @@
 - [x] `Input` 컴포넌트 (`src/components/ui/atoms/Input.tsx`) — EditorSidebar의 raw input 대체
 - [x] `Option` 컴포넌트 (`src/components/ui/atoms/Option.tsx`) — 선택 상태·disabled 지원, 체크 아이콘
 - [x] `Select` 컴포넌트 (`src/components/ui/molecules/Select.tsx`) — shadcn/ui Command 기반, 검색·키보드 지원, EditorSidebar 난이도 선택에 적용
-- [ ] `GridSizeInput` 컴포넌트 (`src/components/ui/molecules/GridSizeInput.tsx`)
-- [ ] `Toolbar` 컴포넌트 (`src/components/editor/Toolbar.tsx`) — 저장, Undo/Redo, PDF 버튼
+- [x] `GridSizeInput` 컴포넌트 (`src/components/ui/molecules/GridSizeInput.tsx`)
+- [x] `Toolbar` 컴포넌트 (`src/components/editor/Toolbar.tsx`) — Undo/Redo (저장·PDF는 사이드바에 배치)
 - [x] `EditorSidebar` 리팩터링 — inline input/button을 Atom 컴포넌트로 교체
 
 ### 1-3. 상태 관리 (Zustand)
@@ -128,7 +128,7 @@
 |----------|------|--------|
 | `SymbolButton` | 완료 | 미작성 |
 | `Select` | 완료 | 15개 |
-| `GridSizeInput` | 미구현 | - |
+| `GridSizeInput` | 완료 | 작성 |
 | `ColorPicker` | 미구현 | - |
 
 ### Organisms (`src/components/editor/`)
@@ -137,7 +137,7 @@
 |----------|------|--------|
 | `ChartCanvas` | placeholder | 미작성 |
 | `EditorSidebar` | 완료 | 미작성 |
-| `Toolbar` | 미구현 | - |
+| `Toolbar` | 완료 | 작성 |
 | `SaveDialog` | 미구현 | - |
 | `LoadDialog` | 미구현 | - |
 
