@@ -161,26 +161,29 @@ export function EditorSidebar() {
 				</SidebarSection>
 
 				<SidebarSection title="도안 정보">
-					<div className="flex flex-col gap-2">
-						<Input
-							type="text"
-							placeholder="도안 제목"
-							size="sm"
-							className="w-full"
-						/>
-						<div className="flex items-center justify-between">
-							<span className="text-xs text-zinc-600">난이도</span>
+					<div className="flex flex-col gap-3">
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">도안명</label>
+							<Input
+								type="text"
+								placeholder="도안 제목을 입력하세요"
+								size="sm"
+								className="w-full"
+							/>
+						</div>
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">난이도</label>
 							<DifficultyStars value={difficulty} onChange={setDifficulty} />
 						</div>
+						<div className="flex flex-col gap-1">
+							<label className="text-xs text-zinc-600">준비물</label>
+							<textarea
+								placeholder="사용할 실, 바늘, 부자재 등을 적어주세요"
+								rows={4}
+								className="w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+							/>
+						</div>
 					</div>
-				</SidebarSection>
-
-				<SidebarSection title="준비물">
-					<textarea
-						placeholder="사용할 실, 바늘, 부자재 등을 적어주세요"
-						rows={4}
-						className="w-full resize-none rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
-					/>
 				</SidebarSection>
 			</div>
 
