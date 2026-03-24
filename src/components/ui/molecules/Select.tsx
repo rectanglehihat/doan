@@ -41,9 +41,7 @@ export function Select({
   children,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
 
   const handleTriggerClick = useCallback(() => {
     if (!disabled) setIsOpen((prev) => !prev);
@@ -53,22 +51,9 @@ export function Select({
     (selectedValue: string) => {
       onChange?.(selectedValue);
       setIsOpen(false);
-      setSearchValue('');
     },
     [onChange],
   );
-
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      searchRef.current?.focus();
-    } else {
-      setSearchValue('');
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -97,19 +82,13 @@ export function Select({
     return label;
   })();
 
-  const filteredChildren = Children.map(children, (child) => {
+  const mappedChildren = Children.map(children, (child) => {
     if (!isValidElement<OptionProps>(child)) return null;
-    const childLabel = String(child.props.children ?? '');
-    if (searchValue && !childLabel.toLowerCase().includes(searchValue.toLowerCase())) {
-      return null;
-    }
     return cloneElement(child, {
       isSelected: child.props.value === value,
       onSelect: handleOptionSelect,
     });
   });
-
-  const hasResults = filteredChildren?.some((c) => c !== null);
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -144,22 +123,8 @@ export function Select({
           role="listbox"
           className="absolute z-50 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-md"
         >
-          <div className="border-b border-slate-100 px-2 py-1.5">
-            <input
-              ref={searchRef}
-              type="text"
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder="검색..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-            />
-          </div>
           <div className="max-h-48 overflow-y-auto p-1">
-            {hasResults ? (
-              filteredChildren
-            ) : (
-              <p className="py-2 text-center text-sm text-slate-400">결과 없음</p>
-            )}
+            {mappedChildren}
           </div>
         </div>
       )}
