@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { KnittingSymbol } from '@/types/knitting';
-import { knittingSymbols, SYMBOL_CATEGORY_ORDER, SYMBOL_CATEGORY_LABELS } from '@/constants/knitting-symbols';
+import { KnittingSymbol, PatternType } from '@/types/knitting';
+import { knittingSymbols, crochetSymbols, SYMBOL_CATEGORY_ORDER, SYMBOL_CATEGORY_LABELS } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 
 interface SidebarSectionProps {
@@ -21,10 +21,18 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 
 export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
+	const [patternType, setPatternType] = useState<PatternType>('knitting');
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
 		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
 	}, []);
+
+	const handlePatternTypeChange = useCallback((type: PatternType) => {
+		setPatternType(type);
+		setSelectedSymbol(null);
+	}, []);
+
+	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
 	return (
 		<div className="flex flex-col h-full">
@@ -35,10 +43,16 @@ export function EditorSidebar() {
 			<div className="flex-1 overflow-y-auto">
 				<SidebarSection title="뜨개 종류">
 					<div className="flex gap-2">
-						<button className="flex-1 rounded-md border border-zinc-800 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white">
+						<button
+							className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium ${patternType === 'knitting' ? 'border-zinc-800 bg-zinc-800 text-white' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
+							onClick={() => handlePatternTypeChange('knitting')}
+						>
 							대바늘
 						</button>
-						<button className="flex-1 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50">
+						<button
+							className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium ${patternType === 'crochet' ? 'border-zinc-800 bg-zinc-800 text-white' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
+							onClick={() => handlePatternTypeChange('crochet')}
+						>
 							코바늘
 						</button>
 					</div>
@@ -47,12 +61,12 @@ export function EditorSidebar() {
 				<SidebarSection title="기호 팔레트">
 					<div className="flex flex-col gap-3">
 						{SYMBOL_CATEGORY_ORDER.map((category) => {
-							const symbols = knittingSymbols.filter((s) => s.category === category);
+							const categorySymbols = symbols.filter((s) => s.category === category);
 							return (
 								<div key={category}>
 									<p className="mb-1.5 text-[10px] font-medium text-zinc-400">{SYMBOL_CATEGORY_LABELS[category]}</p>
 									<div className="grid grid-cols-3 gap-1.5">
-										{symbols.map((symbol) => (
+										{categorySymbols.map((symbol) => (
 											<SymbolButton
 												key={symbol.id}
 												symbol={symbol}
