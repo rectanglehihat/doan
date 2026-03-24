@@ -10,3 +10,32 @@ export interface KnittingSymbol {
 	patternType: PatternType;
 	icon?: string;
 }
+
+export interface ChartCell {
+	symbolId: string | null;
+}
+
+export interface GridSize {
+	rows: number;
+	cols: number;
+}
+
+export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+
+export interface PatternMetadata {
+	title: string;
+	difficulty: Difficulty;
+	yarnType: string;
+	needleSize: string;
+	notes: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ChartPattern {
+	id: string;
+	metadata: PatternMetadata;
+	patternType: PatternType;
+	gridSize: GridSize;
+	cells: ChartCell[][];
+}
