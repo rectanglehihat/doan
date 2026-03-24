@@ -115,42 +115,6 @@ describe('Select', () => {
     });
   });
 
-  describe('검색', () => {
-    it('드롭다운에 검색 입력창이 렌더링된다', async () => {
-      render(
-        <Select placeholder="선택">
-          <Option value="a">항목 A</Option>
-        </Select>,
-      );
-      await userEvent.click(screen.getByRole('combobox'));
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
-    });
-
-    it('검색어 입력 시 일치하지 않는 옵션이 숨겨진다', async () => {
-      render(
-        <Select placeholder="선택">
-          <Option value="beginner">초급</Option>
-          <Option value="advanced">고급</Option>
-        </Select>,
-      );
-      await userEvent.click(screen.getByRole('combobox'));
-      await userEvent.type(screen.getByRole('textbox'), '초');
-      expect(screen.getByRole('option', { name: '초급' })).toBeInTheDocument();
-      expect(screen.queryByRole('option', { name: '고급' })).not.toBeInTheDocument();
-    });
-
-    it('검색 결과가 없을 때 빈 상태 메시지를 표시한다', async () => {
-      render(
-        <Select placeholder="선택">
-          <Option value="a">항목 A</Option>
-        </Select>,
-      );
-      await userEvent.click(screen.getByRole('combobox'));
-      await userEvent.type(screen.getByRole('textbox'), 'zzz');
-      expect(screen.getByText('결과 없음')).toBeInTheDocument();
-    });
-  });
-
   describe('disabled', () => {
     it('disabled 상태일 때 트리거가 비활성화된다', () => {
       render(

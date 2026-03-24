@@ -127,7 +127,7 @@
 | 컴포넌트 | 상태 | 테스트 |
 |----------|------|--------|
 | `SymbolButton` | 완료 | 미작성 |
-| `Select` | 완료 | 18개 |
+| `Select` | 완료 | 15개 |
 | `GridSizeInput` | 미구현 | - |
 | `ColorPicker` | 미구현 | - |
 
@@ -156,7 +156,7 @@
 | Atom — `Button` | `Button.test.tsx` | 90% | 27개 작성 |
 | Atom — `Input` | `Input.test.tsx` | 90% | 15개 작성 |
 | Atom — `Option` | `Option.test.tsx` | 90% | 10개 작성 |
-| Molecule — `Select` | `Select.test.tsx` | 80% | 18개 작성 |
+| Molecule — `Select` | `Select.test.tsx` | 80% | 15개 작성 |
 | Molecule — `SymbolButton` | `SymbolButton.test.tsx` | 80% | 미작성 |
 | Organism — `EditorSidebar` | `EditorSidebar.test.tsx` | 60% | 미작성 |
 | Organism — `ChartCanvas` | `ChartCanvas.test.tsx` | 60% | 미작성 |
