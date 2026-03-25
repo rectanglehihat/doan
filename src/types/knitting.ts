@@ -1,5 +1,7 @@
 export type SymbolCategory = 'basic-structure' | 'basic-stitch' | 'increase' | 'decrease' | 'special';
 
+export type SymmetryMode = 'none' | 'horizontal' | 'vertical' | 'both';
+
 export type PatternType = 'knitting' | 'crochet';
 
 export interface KnittingSymbol {

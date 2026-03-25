@@ -21,6 +21,7 @@ interface ChartState {
 	patternType: PatternType;
 	patternTitle: string;
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
+	setCells: (cells: ChartCell[][]) => void;
 	setGridSize: (gridSize: GridSize) => void;
 	setCellSize: (cellSize: number) => void;
 	setPatternType: (patternType: PatternType) => void;
@@ -46,6 +47,8 @@ export const useChartStore = create<ChartState>((set) => ({
 			);
 			return { cells };
 		}),
+
+	setCells: (cells) => set({ cells }),
 
 	setGridSize: (gridSize) =>
 		set((state) => ({

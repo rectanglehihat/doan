@@ -14,6 +14,7 @@ import { GridSizeInput } from '@/components/ui/molecules/GridSizeInput';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { useChartStore } from '@/store/useChartStore';
+import { useUIStore } from '@/store/useUIStore';
 
 interface SidebarSectionProps {
 	title: string;
@@ -30,19 +31,25 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 }
 
 export function EditorSidebar() {
-	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
-	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
+	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle, patternType, setPatternType } =
+		useChartStore();
+	const { selectedSymbol, setSelectedSymbol, openResetDialog } = useUIStore();
 
-	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
-		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
-	}, []);
+	const handleSymbolSelect = useCallback(
+		(symbol: KnittingSymbol) => {
+			setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
+		},
+		[selectedSymbol, setSelectedSymbol],
+	);
 
-	const handlePatternTypeChange = useCallback((type: PatternType) => {
-		setPatternType(type);
-		setSelectedSymbol(null);
-	}, []);
+	const handlePatternTypeChange = useCallback(
+		(type: PatternType) => {
+			setPatternType(type);
+			setSelectedSymbol(null);
+		},
+		[setPatternType, setSelectedSymbol],
+	);
 
 	const handleKnittingClick = useCallback(() => {
 		handlePatternTypeChange('knitting');
@@ -80,6 +87,10 @@ export function EditorSidebar() {
 		},
 		[setCellSize],
 	);
+
+	const handleResetClick = useCallback(() => {
+		openResetDialog();
+	}, [openResetDialog]);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -203,6 +214,14 @@ export function EditorSidebar() {
 					className="w-full"
 				>
 					PDF 내보내기
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					className="w-full text-red-600 hover:text-red-700"
+					onClick={handleResetClick}
+				>
+					도안 초기화
 				</Button>
 			</div>
 		</div>
