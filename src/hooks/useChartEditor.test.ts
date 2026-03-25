@@ -63,6 +63,51 @@ describe('useChartEditor', () => {
 		});
 	});
 
+	describe('대칭 모드 (handleCellPaint)', () => {
+		it('horizontal 모드에서 좌우 대칭 셀에도 기호가 적용된다', () => {
+			act(() => useUIStore.getState().setSelectedSymbol(kSymbol));
+			act(() => useUIStore.getState().setSymmetryMode('horizontal'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBe('k');
+			expect(cells[0][19].symbolId).toBe('k'); // col 19 = 20-1-0
+		});
+
+		it('vertical 모드에서 상하 대칭 셀에도 기호가 적용된다', () => {
+			act(() => useUIStore.getState().setSelectedSymbol(kSymbol));
+			act(() => useUIStore.getState().setSymmetryMode('vertical'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBe('k');
+			expect(cells[19][0].symbolId).toBe('k'); // row 19 = 20-1-0
+		});
+
+		it('both 모드에서 4방향 대칭 셀에 모두 기호가 적용된다', () => {
+			act(() => useUIStore.getState().setSelectedSymbol(kSymbol));
+			act(() => useUIStore.getState().setSymmetryMode('both'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBe('k');
+			expect(cells[0][19].symbolId).toBe('k');
+			expect(cells[19][0].symbolId).toBe('k');
+			expect(cells[19][19].symbolId).toBe('k');
+		});
+
+		it('none 모드에서는 해당 셀만 변경된다', () => {
+			act(() => useUIStore.getState().setSelectedSymbol(kSymbol));
+			act(() => useUIStore.getState().setSymmetryMode('none'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBe('k');
+			expect(cells[0][19].symbolId).toBeNull();
+			expect(cells[19][0].symbolId).toBeNull();
+		});
+	});
+
 	describe('symbolsMap', () => {
 		it('knitting 모드에서 기호 id를 abbr로 매핑한다', () => {
 			const { result } = renderHook(() => useChartEditor());

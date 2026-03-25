@@ -2,52 +2,76 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Toolbar } from './Toolbar';
 
+const defaultProps = {
+	canUndo: false,
+	canRedo: false,
+	onUndo: vi.fn(),
+	onRedo: vi.fn(),
+	onReset: vi.fn(),
+	symmetryMode: 'none' as const,
+	onSymmetryChange: vi.fn(),
+};
+
 describe('Toolbar', () => {
 	describe('렌더링', () => {
 		it('실행 취소 버튼을 렌더링한다', () => {
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByRole('button', { name: /실행 취소/ })).toBeInTheDocument();
 		});
 
 		it('다시 실행 버튼을 렌더링한다', () => {
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByRole('button', { name: /다시 실행/ })).toBeInTheDocument();
 		});
 
 		it('patternTitle이 전달되면 오른쪽 영역에 도안명을 표시한다', () => {
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} patternTitle="여름 조끼" />);
+			render(<Toolbar {...defaultProps} patternTitle="여름 조끼" />);
 			expect(screen.getByText('여름 조끼')).toBeInTheDocument();
 		});
 
 		it('patternTitle이 빈 문자열이면 기본 placeholder를 표시한다', () => {
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} patternTitle="" />);
+			render(<Toolbar {...defaultProps} patternTitle="" />);
 			expect(screen.getByText('제목 없는 도안')).toBeInTheDocument();
 		});
 
 		it('patternTitle prop이 없으면 기본 placeholder를 표시한다', () => {
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByText('제목 없는 도안')).toBeInTheDocument();
+		});
+
+		it('대칭 모드 버튼 4개를 렌더링한다', () => {
+			render(<Toolbar {...defaultProps} />);
+			expect(screen.getByRole('button', { name: '대칭 없음' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: '대칭 좌우' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: '대칭 상하' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: '대칭 양방향' })).toBeInTheDocument();
+		});
+
+		it('현재 symmetryMode 버튼이 선택(aria-pressed) 상태이다', () => {
+			render(<Toolbar {...defaultProps} symmetryMode="horizontal" />);
+			expect(screen.getByRole('button', { name: '대칭 좌우' })).toHaveAttribute('aria-pressed', 'true');
+			expect(screen.getByRole('button', { name: '대칭 없음' })).toHaveAttribute('aria-pressed', 'false');
 		});
 	});
 
 	describe('disabled 상태', () => {
 		it('canUndo=false이면 실행 취소 버튼이 비활성화된다', () => {
-			render(<Toolbar canUndo={false} canRedo={true} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={false} canRedo={true} />);
 			expect(screen.getByRole('button', { name: /실행 취소/ })).toBeDisabled();
 		});
 
 		it('canUndo=true이면 실행 취소 버튼이 활성화된다', () => {
-			render(<Toolbar canUndo={true} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={true} canRedo={false} />);
 			expect(screen.getByRole('button', { name: /실행 취소/ })).not.toBeDisabled();
 		});
 
 		it('canRedo=false이면 다시 실행 버튼이 비활성화된다', () => {
-			render(<Toolbar canUndo={true} canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={true} canRedo={false} />);
 			expect(screen.getByRole('button', { name: /다시 실행/ })).toBeDisabled();
 		});
 
 		it('canRedo=true이면 다시 실행 버튼이 활성화된다', () => {
-			render(<Toolbar canUndo={false} canRedo={true} onUndo={vi.fn()} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={false} canRedo={true} />);
 			expect(screen.getByRole('button', { name: /다시 실행/ })).not.toBeDisabled();
 		});
 	});
@@ -55,30 +79,44 @@ describe('Toolbar', () => {
 	describe('이벤트', () => {
 		it('실행 취소 버튼 클릭 시 onUndo를 호출한다', async () => {
 			const handleUndo = vi.fn();
-			render(<Toolbar canUndo={true} canRedo={false} onUndo={handleUndo} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={true} onUndo={handleUndo} />);
 			await userEvent.click(screen.getByRole('button', { name: /실행 취소/ }));
 			expect(handleUndo).toHaveBeenCalledTimes(1);
 		});
 
 		it('다시 실행 버튼 클릭 시 onRedo를 호출한다', async () => {
 			const handleRedo = vi.fn();
-			render(<Toolbar canUndo={false} canRedo={true} onUndo={vi.fn()} onRedo={handleRedo} />);
+			render(<Toolbar {...defaultProps} canRedo={true} onRedo={handleRedo} />);
 			await userEvent.click(screen.getByRole('button', { name: /다시 실행/ }));
 			expect(handleRedo).toHaveBeenCalledTimes(1);
 		});
 
 		it('비활성화된 실행 취소 버튼 클릭 시 onUndo를 호출하지 않는다', async () => {
 			const handleUndo = vi.fn();
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={handleUndo} onRedo={vi.fn()} />);
+			render(<Toolbar {...defaultProps} canUndo={false} onUndo={handleUndo} />);
 			await userEvent.click(screen.getByRole('button', { name: /실행 취소/ }));
 			expect(handleUndo).not.toHaveBeenCalled();
 		});
 
 		it('비활성화된 다시 실행 버튼 클릭 시 onRedo를 호출하지 않는다', async () => {
 			const handleRedo = vi.fn();
-			render(<Toolbar canUndo={false} canRedo={false} onUndo={vi.fn()} onRedo={handleRedo} />);
+			render(<Toolbar {...defaultProps} canRedo={false} onRedo={handleRedo} />);
 			await userEvent.click(screen.getByRole('button', { name: /다시 실행/ }));
 			expect(handleRedo).not.toHaveBeenCalled();
+		});
+
+		it('대칭 모드 버튼 클릭 시 onSymmetryChange를 해당 모드로 호출한다', async () => {
+			const handleSymmetryChange = vi.fn();
+			render(<Toolbar {...defaultProps} onSymmetryChange={handleSymmetryChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '대칭 좌우' }));
+			expect(handleSymmetryChange).toHaveBeenCalledWith('horizontal');
+		});
+
+		it('초기화 버튼 클릭 시 onReset을 호출한다', async () => {
+			const handleReset = vi.fn();
+			render(<Toolbar {...defaultProps} onReset={handleReset} />);
+			await userEvent.click(screen.getByRole('button', { name: '도안 초기화' }));
+			expect(handleReset).toHaveBeenCalledTimes(1);
 		});
 	});
 });

@@ -61,16 +61,16 @@
 
 ### 1-5. 편집 기능
 
-- [ ] `useHistory` 훅 — Undo/Redo (`src/hooks/useHistory.ts`)
-  - [ ] 히스토리 스택 관리
-  - [ ] `undo`, `redo`, `canUndo`, `canRedo`
-- [ ] 키보드 단축키 (`useEffect` 기반)
-  - [ ] `Ctrl+Z`: Undo
-  - [ ] `Ctrl+Shift+Z` / `Ctrl+Y`: Redo
-  - [ ] `Ctrl+S`: 저장
+- [x] `useHistory` 훅 — Undo/Redo (`src/hooks/useHistory.ts`)
+  - [x] 히스토리 스택 관리
+  - [x] `undo`, `redo`, `canUndo`, `canRedo`
+- [x] 키보드 단축키 (`useEffect` 기반, `src/app/page.tsx`)
+  - [x] `Ctrl+Z`: Undo
+  - [x] `Ctrl+Shift+Z` / `Ctrl+Y`: Redo
+  - [x] `Ctrl+S`: 저장
 - [x] 그리드 크기 변경 시 기존 셀 데이터 유지 로직 (`useChartStore.setGridSize` 내 처리)
-- [ ] 도안 초기화 기능 (확인 모달 포함)
-- [ ] 대칭 모드 (가로/세로 대칭 자동 적용)
+- [x] 도안 초기화 기능 (`ConfirmDialog` 컴포넌트 + `useUIStore.isResetDialogOpen`)
+- [x] 대칭 모드 (가로/세로 대칭 자동 적용, `useUIStore.symmetryMode`)
 
 ### 1-6. 저장 및 불러오기
 
@@ -133,6 +133,7 @@
 | `GridSizeInput` | 완료 | 8개 |
 | `DifficultyStars` | 완료 | 4개 |
 | `ColorPicker` | 미구현 | - |
+| `ConfirmDialog` | 완료 | 7개 |
 
 ### Organisms (`src/components/editor/`)
 
@@ -168,7 +169,7 @@
 | Organism — `Toolbar` | `Toolbar.test.tsx` | 60% | 7개 작성 |
 | Organism — `ChartCanvas` | `ChartCanvas.test.tsx` | 60% | 미작성 |
 | Hook — `useChartEditor` | `useChartEditor.test.ts` | 85% | 7개 작성 |
-| Hook — `useHistory` | `useHistory.test.ts` | 85% | 미작성 |
+| Hook — `useHistory` | `useHistory.test.ts` | 85% | 11개 작성 |
 | Hook — `usePatterns` | `usePatterns.test.ts` | 85% | 미작성 |
 | Store — `useChartStore` | `useChartStore.test.ts` | 80% | 10개 작성 |
 | Store — `useUIStore` | `useUIStore.test.ts` | 80% | 8개 작성 |
