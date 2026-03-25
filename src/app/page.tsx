@@ -13,7 +13,18 @@ import { SymmetryMode } from '@/types/knitting';
 export default function EditorPage() {
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
 	const reset = useChartStore((state) => state.reset);
-	const { isResetDialogOpen, openResetDialog, closeResetDialog, openSaveDialog, symmetryMode, setSymmetryMode } = useUIStore();
+	const {
+		isResetDialogOpen,
+		openResetDialog,
+		closeResetDialog,
+		openSaveDialog,
+		symmetryMode,
+		setSymmetryMode,
+		shapeGuide,
+		isShapeGuideDrawMode,
+		setShapeGuide,
+		setShapeGuideDrawMode,
+	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
 		undo();
@@ -38,6 +49,18 @@ export default function EditorPage() {
 		},
 		[setSymmetryMode],
 	);
+
+	const handleShapeGuideDrawModeChange = useCallback(
+		(active: boolean) => {
+			setShapeGuideDrawMode(active);
+		},
+		[setShapeGuideDrawMode],
+	);
+
+	const handleShapeGuideClear = useCallback(() => {
+		setShapeGuide(null);
+		setShapeGuideDrawMode(false);
+	}, [setShapeGuide, setShapeGuideDrawMode]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -71,6 +94,10 @@ export default function EditorPage() {
 					onReset={openResetDialog}
 					symmetryMode={symmetryMode}
 					onSymmetryChange={handleSymmetryChange}
+					isShapeGuideDrawMode={isShapeGuideDrawMode}
+					onShapeGuideDrawModeChange={handleShapeGuideDrawModeChange}
+					hasShapeGuide={(shapeGuide?.strokes.length ?? 0) > 0}
+					onShapeGuideClear={handleShapeGuideClear}
 				/>
 				<div className="flex-1 overflow-auto p-8">
 					<ChartCanvas onPaintStart={beginBatch} onPaintEnd={endBatch} />

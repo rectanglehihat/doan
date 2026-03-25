@@ -41,3 +41,12 @@ export interface ChartPattern {
 	gridSize: GridSize;
 	cells: ChartCell[][];
 }
+
+/**
+ * 사용자가 직접 그린 형태선.
+ * 각 stroke는 grid 좌표계 기준의 점 배열: [col0, row0, col1, row1, ...] (float)
+ * 렌더링 시 cellSize를 곱해 픽셀 좌표로 변환한다.
+ */
+export interface ShapeGuide {
+	strokes: number[][];
+}

@@ -19,9 +19,25 @@ interface ToolbarProps {
 	onReset: () => void;
 	symmetryMode: SymmetryMode;
 	onSymmetryChange: (mode: SymmetryMode) => void;
+	isShapeGuideDrawMode: boolean;
+	onShapeGuideDrawModeChange: (active: boolean) => void;
+	hasShapeGuide: boolean;
+	onShapeGuideClear: () => void;
 }
 
-export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, symmetryMode, onSymmetryChange }: ToolbarProps) {
+export function Toolbar({
+	canUndo,
+	canRedo,
+	onUndo,
+	onRedo,
+	onReset,
+	symmetryMode,
+	onSymmetryChange,
+	isShapeGuideDrawMode,
+	onShapeGuideDrawModeChange,
+	hasShapeGuide,
+	onShapeGuideClear,
+}: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
 	}, [onUndo]);
@@ -34,6 +50,14 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, symmetryMod
 		onReset();
 	}, [onReset]);
 
+	const handleShapeGuideDrawToggle = useCallback(() => {
+		onShapeGuideDrawModeChange(!isShapeGuideDrawMode);
+	}, [onShapeGuideDrawModeChange, isShapeGuideDrawMode]);
+
+	const handleShapeGuideClear = useCallback(() => {
+		onShapeGuideClear();
+	}, [onShapeGuideClear]);
+
 	const symmetryHandlers = useMemo<Record<SymmetryMode, () => void>>(
 		() => ({
 			none: () => onSymmetryChange('none'),
@@ -45,29 +69,22 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, symmetryMod
 	);
 
 	return (
-		<div className="flex items-center gap-3 border-b border-zinc-200 bg-white px-3 py-2.5">
+		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
+			{/* 실행 취소 / 다시 실행 */}
 			<div className="flex items-center gap-1">
-				<Button
-					variant="ghost"
-					size="sm"
-					disabled={!canUndo}
-					onClick={handleUndo}
-					aria-label="실행 취소"
-				>
+				<Button variant="ghost" size="sm" disabled={!canUndo} onClick={handleUndo} aria-label="실행 취소">
 					↩ 실행 취소
 				</Button>
-				<Button
-					variant="ghost"
-					size="sm"
-					disabled={!canRedo}
-					onClick={handleRedo}
-					aria-label="다시 실행"
-				>
+				<Button variant="ghost" size="sm" disabled={!canRedo} onClick={handleRedo} aria-label="다시 실행">
 					↪ 다시 실행
 				</Button>
 			</div>
-			<div className="flex items-center gap-1 border-l border-zinc-200 pl-3">
-				<span className="text-xs text-zinc-400 mr-1">대칭</span>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 대칭 */}
+			<div className="flex items-center gap-1">
+				<span className="text-xs text-zinc-400 mr-0.5">대칭</span>
 				{SYMMETRY_OPTIONS.map(({ value, label }) => (
 					<Button
 						key={value}
@@ -81,6 +98,33 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, symmetryMod
 					</Button>
 				))}
 			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 형태선 */}
+			<div className="flex items-center gap-1">
+				<Button
+					variant={isShapeGuideDrawMode ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleShapeGuideDrawToggle}
+					aria-label="형태선 그리기"
+					aria-pressed={isShapeGuideDrawMode}
+				>
+					형태선 그리기
+				</Button>
+				{hasShapeGuide && (
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={handleShapeGuideClear}
+						aria-label="형태선 지우기"
+					>
+						지우기
+					</Button>
+				)}
+			</div>
+
+			{/* 초기화 */}
 			<div className="ml-auto">
 				<Button variant="ghost" size="sm" onClick={handleReset} aria-label="도안 초기화">
 					초기화

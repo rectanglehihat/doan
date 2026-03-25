@@ -10,6 +10,10 @@ const defaultProps = {
 	onReset: vi.fn(),
 	symmetryMode: 'none' as const,
 	onSymmetryChange: vi.fn(),
+	isShapeGuideDrawMode: false,
+	onShapeGuideDrawModeChange: vi.fn(),
+	hasShapeGuide: false,
+	onShapeGuideClear: vi.fn(),
 };
 
 describe('Toolbar', () => {
@@ -102,6 +106,40 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} onReset={handleReset} />);
 			await userEvent.click(screen.getByRole('button', { name: '도안 초기화' }));
 			expect(handleReset).toHaveBeenCalledTimes(1);
+		});
+
+		it('형태선 그리기 버튼을 렌더링한다', () => {
+			render(<Toolbar {...defaultProps} />);
+			expect(screen.getByRole('button', { name: '형태선 그리기' })).toBeInTheDocument();
+		});
+
+		it('isShapeGuideDrawMode=false이면 지우기 버튼이 없다', () => {
+			render(<Toolbar {...defaultProps} hasShapeGuide={false} />);
+			expect(screen.queryByRole('button', { name: '형태선 지우기' })).not.toBeInTheDocument();
+		});
+
+		it('hasShapeGuide=true이면 지우기 버튼이 표시된다', () => {
+			render(<Toolbar {...defaultProps} hasShapeGuide={true} />);
+			expect(screen.getByRole('button', { name: '형태선 지우기' })).toBeInTheDocument();
+		});
+
+		it('형태선 그리기 버튼 클릭 시 onShapeGuideDrawModeChange를 호출한다', async () => {
+			const handleDrawModeChange = vi.fn();
+			render(<Toolbar {...defaultProps} isShapeGuideDrawMode={false} onShapeGuideDrawModeChange={handleDrawModeChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '형태선 그리기' }));
+			expect(handleDrawModeChange).toHaveBeenCalledWith(true);
+		});
+
+		it('isShapeGuideDrawMode=true이면 버튼이 활성(aria-pressed) 상태이다', () => {
+			render(<Toolbar {...defaultProps} isShapeGuideDrawMode={true} />);
+			expect(screen.getByRole('button', { name: '형태선 그리기' })).toHaveAttribute('aria-pressed', 'true');
+		});
+
+		it('지우기 버튼 클릭 시 onShapeGuideClear를 호출한다', async () => {
+			const handleClear = vi.fn();
+			render(<Toolbar {...defaultProps} hasShapeGuide={true} onShapeGuideClear={handleClear} />);
+			await userEvent.click(screen.getByRole('button', { name: '형태선 지우기' }));
+			expect(handleClear).toHaveBeenCalledTimes(1);
 		});
 	});
 });

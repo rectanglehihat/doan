@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
+import { useUIStore } from '@/store/useUIStore';
 
 const KonvaGrid = dynamic(() => import('./KonvaGrid').then((m) => ({ default: m.KonvaGrid })), {
 	ssr: false,
@@ -24,6 +25,10 @@ interface ChartCanvasProps {
 
 export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint } = useChartEditor();
+	const shapeGuide = useUIStore((state) => state.shapeGuide);
+	const isShapeGuideDrawMode = useUIStore((state) => state.isShapeGuideDrawMode);
+	const addShapeGuideStroke = useUIStore((state) => state.addShapeGuideStroke);
+	const removeShapeGuideStroke = useUIStore((state) => state.removeShapeGuideStroke);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
@@ -43,10 +48,7 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 
 	return (
 		<div className="flex flex-col w-full h-full">
-			<div
-				ref={containerRef}
-				className="flex-1 bg-zinc-100 overflow-hidden"
-			>
+			<div ref={containerRef} className="flex-1 bg-zinc-100 overflow-hidden">
 				<KonvaGrid
 					cells={cells}
 					gridSize={gridSize}
@@ -58,6 +60,10 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 					onPaintEnd={onPaintEnd}
 					stageWidth={stageSize.width}
 					stageHeight={stageSize.height}
+					shapeGuide={shapeGuide}
+					isShapeGuideDrawMode={isShapeGuideDrawMode}
+					onShapeGuideStrokeAdd={addShapeGuideStroke}
+					onShapeGuideStrokeRemove={removeShapeGuideStroke}
 				/>
 			</div>
 		</div>

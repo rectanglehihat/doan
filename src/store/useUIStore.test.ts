@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useUIStore } from './useUIStore';
-import { KnittingSymbol } from '@/types/knitting';
+import { KnittingSymbol, ShapeGuide } from '@/types/knitting';
+
+const mockShapeGuide: ShapeGuide = {
+	strokes: [[0, 0, 10, 5, 20, 10]],
+};
 
 const mockSymbol: KnittingSymbol = {
 	id: 'k',
@@ -77,17 +81,69 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('shapeGuide', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('setShapeGuide 호출 시 shapeGuide가 설정된다', () => {
+			useUIStore.getState().setShapeGuide(mockShapeGuide);
+			expect(useUIStore.getState().shapeGuide).toEqual(mockShapeGuide);
+		});
+
+		it('setShapeGuide(null) 호출 시 shapeGuide가 null이 된다', () => {
+			useUIStore.getState().setShapeGuide(mockShapeGuide);
+			useUIStore.getState().setShapeGuide(null);
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('addShapeGuideStroke 호출 시 stroke가 추가된다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 5, 5]);
+			useUIStore.getState().addShapeGuideStroke([10, 10, 20, 20]);
+			expect(useUIStore.getState().shapeGuide?.strokes).toHaveLength(2);
+		});
+
+		it('removeShapeGuideStroke 호출 시 해당 인덱스 stroke가 제거된다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 5, 5]);
+			useUIStore.getState().addShapeGuideStroke([10, 10, 20, 20]);
+			useUIStore.getState().removeShapeGuideStroke(0);
+			expect(useUIStore.getState().shapeGuide?.strokes).toHaveLength(1);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([10, 10, 20, 20]);
+		});
+
+		it('removeShapeGuideStroke 호출 후 shapeGuide가 null이면 그대로 null이다', () => {
+			useUIStore.getState().removeShapeGuideStroke(0);
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+	});
+
+	describe('isShapeGuideDrawMode', () => {
+		it('초기값은 false이다', () => {
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
+		});
+
+		it('setShapeGuideDrawMode(true) 호출 시 true가 된다', () => {
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(true);
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);
 			useUIStore.getState().openSaveDialog();
 			useUIStore.getState().openLoadDialog();
+			useUIStore.getState().setShapeGuide(mockShapeGuide);
+			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen } = useUIStore.getState();
+			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode } =
+				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isSaveDialogOpen).toBe(false);
 			expect(isLoadDialogOpen).toBe(false);
+			expect(shapeGuide).toBeNull();
+			expect(isShapeGuideDrawMode).toBe(false);
 		});
 	});
 });
