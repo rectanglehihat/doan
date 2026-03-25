@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { KnittingSymbol, ShapeGuide, SymmetryMode } from '@/types/knitting';
+import { KnittingSymbol, ShapeGuide, SymmetryMode, CellSelection, ChartCell } from '@/types/knitting';
 
 interface UIState {
 	selectedSymbol: KnittingSymbol | null;
@@ -24,6 +24,12 @@ interface UIState {
 	replaceShapeGuideStroke: (index: number, newStrokes: number[][]) => void;
 	setShapeGuideDrawMode: (active: boolean) => void;
 	setShapeGuideEraseMode: (active: boolean) => void;
+	cellSelection: CellSelection | null;
+	clipboard: ChartCell[][] | null;
+	isSelectionMode: boolean;
+	setCellSelection: (sel: CellSelection | null) => void;
+	setClipboard: (cells: ChartCell[][] | null) => void;
+	setSelectionMode: (active: boolean) => void;
 	reset: () => void;
 }
 
@@ -36,6 +42,9 @@ export const useUIStore = create<UIState>((set) => ({
 	shapeGuide: null,
 	isShapeGuideDrawMode: false,
 	isShapeGuideEraseMode: false,
+	cellSelection: null,
+	clipboard: null,
+	isSelectionMode: false,
 
 	setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
@@ -67,6 +76,9 @@ export const useUIStore = create<UIState>((set) => ({
 		}),
 	setShapeGuideDrawMode: (active) => set({ isShapeGuideDrawMode: active }),
 	setShapeGuideEraseMode: (active) => set({ isShapeGuideEraseMode: active }),
+	setCellSelection: (sel) => set({ cellSelection: sel }),
+	setClipboard: (cells) => set({ clipboard: cells }),
+	setSelectionMode: (active) => set({ isSelectionMode: active }),
 
 	reset: () =>
 		set({
@@ -78,5 +90,8 @@ export const useUIStore = create<UIState>((set) => ({
 			shapeGuide: null,
 			isShapeGuideDrawMode: false,
 			isShapeGuideEraseMode: false,
+			cellSelection: null,
+			clipboard: null,
+			isSelectionMode: false,
 		}),
 }));

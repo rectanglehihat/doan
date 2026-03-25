@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useUIStore } from './useUIStore';
-import { KnittingSymbol, ShapeGuide } from '@/types/knitting';
+import { KnittingSymbol, ShapeGuide, CellSelection } from '@/types/knitting';
 
 const mockShapeGuide: ShapeGuide = {
 	strokes: [[0, 0, 10, 5, 20, 10]],
@@ -172,6 +172,59 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('cellSelection', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().cellSelection).toBeNull();
+		});
+
+		it('setCellSelection 호출 시 cellSelection이 설정된다', () => {
+			const sel: CellSelection = { startRow: 0, startCol: 0, endRow: 2, endCol: 3 };
+			useUIStore.getState().setCellSelection(sel);
+			expect(useUIStore.getState().cellSelection).toEqual(sel);
+		});
+
+		it('setCellSelection(null) 호출 시 null이 된다', () => {
+			useUIStore.getState().setCellSelection({ startRow: 0, startCol: 0, endRow: 2, endCol: 3 });
+			useUIStore.getState().setCellSelection(null);
+			expect(useUIStore.getState().cellSelection).toBeNull();
+		});
+	});
+
+	describe('clipboard', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().clipboard).toBeNull();
+		});
+
+		it('setClipboard 호출 시 clipboard가 설정된다', () => {
+			const cells = [[{ symbolId: 'k' }, { symbolId: null }]];
+			useUIStore.getState().setClipboard(cells);
+			expect(useUIStore.getState().clipboard).toEqual(cells);
+		});
+
+		it('setClipboard(null) 호출 시 null이 된다', () => {
+			useUIStore.getState().setClipboard([[{ symbolId: 'k' }]]);
+			useUIStore.getState().setClipboard(null);
+			expect(useUIStore.getState().clipboard).toBeNull();
+		});
+	});
+
+	describe('isSelectionMode', () => {
+		it('초기값은 false이다', () => {
+			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+
+		it('setSelectionMode(true) 호출 시 true가 된다', () => {
+			useUIStore.getState().setSelectionMode(true);
+			expect(useUIStore.getState().isSelectionMode).toBe(true);
+		});
+
+		it('setSelectionMode(false) 호출 시 false가 된다', () => {
+			useUIStore.getState().setSelectionMode(true);
+			useUIStore.getState().setSelectionMode(false);
+			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);
@@ -180,9 +233,12 @@ describe('useUIStore', () => {
 			useUIStore.getState().setShapeGuide(mockShapeGuide);
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().setShapeGuideEraseMode(true);
+			useUIStore.getState().setCellSelection({ startRow: 1, startCol: 1, endRow: 3, endCol: 3 });
+			useUIStore.getState().setClipboard([[{ symbolId: 'k' }]]);
+			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode } =
+			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode } =
 				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isSaveDialogOpen).toBe(false);
@@ -190,6 +246,9 @@ describe('useUIStore', () => {
 			expect(shapeGuide).toBeNull();
 			expect(isShapeGuideDrawMode).toBe(false);
 			expect(isShapeGuideEraseMode).toBe(false);
+			expect(cellSelection).toBeNull();
+			expect(clipboard).toBeNull();
+			expect(isSelectionMode).toBe(false);
 		});
 	});
 });

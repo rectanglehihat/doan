@@ -25,6 +25,8 @@ interface ToolbarProps {
 	onShapeGuideEraseModeChange: (active: boolean) => void;
 	hasShapeGuide: boolean;
 	onShapeGuideClear: () => void;
+	isSelectionMode: boolean;
+	onSelectionModeChange: (active: boolean) => void;
 }
 
 export function Toolbar({
@@ -41,6 +43,8 @@ export function Toolbar({
 	onShapeGuideEraseModeChange,
 	hasShapeGuide,
 	onShapeGuideClear,
+	isSelectionMode,
+	onSelectionModeChange,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -65,6 +69,10 @@ export function Toolbar({
 	const handleShapeGuideClear = useCallback(() => {
 		onShapeGuideClear();
 	}, [onShapeGuideClear]);
+
+	const handleSelectionModeToggle = useCallback(() => {
+		onSelectionModeChange(!isSelectionMode);
+	}, [onSelectionModeChange, isSelectionMode]);
 
 	const symmetryHandlers = useMemo<Record<SymmetryMode, () => void>>(
 		() => ({
@@ -117,6 +125,21 @@ export function Toolbar({
 						{label}
 					</Button>
 				))}
+			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 영역 선택 */}
+			<div className="flex items-center gap-1">
+				<Button
+					variant={isSelectionMode ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleSelectionModeToggle}
+					aria-label="영역 선택"
+					aria-pressed={isSelectionMode}
+				>
+					영역 선택
+				</Button>
 			</div>
 
 			<div className="h-5 w-px bg-zinc-200" />

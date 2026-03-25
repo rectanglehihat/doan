@@ -26,6 +26,9 @@ export default function EditorPage() {
 		setShapeGuide,
 		setShapeGuideDrawMode,
 		setShapeGuideEraseMode,
+		isSelectionMode,
+		setSelectionMode,
+		setCellSelection,
 	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
@@ -55,17 +58,25 @@ export default function EditorPage() {
 	const handleShapeGuideDrawModeChange = useCallback(
 		(active: boolean) => {
 			setShapeGuideDrawMode(active);
-			if (active) setShapeGuideEraseMode(false);
+			if (active) {
+				setShapeGuideEraseMode(false);
+				setSelectionMode(false);
+				setCellSelection(null);
+			}
 		},
-		[setShapeGuideDrawMode, setShapeGuideEraseMode],
+		[setShapeGuideDrawMode, setShapeGuideEraseMode, setSelectionMode, setCellSelection],
 	);
 
 	const handleShapeGuideEraseModeChange = useCallback(
 		(active: boolean) => {
 			setShapeGuideEraseMode(active);
-			if (active) setShapeGuideDrawMode(false);
+			if (active) {
+				setShapeGuideDrawMode(false);
+				setSelectionMode(false);
+				setCellSelection(null);
+			}
 		},
-		[setShapeGuideEraseMode, setShapeGuideDrawMode],
+		[setShapeGuideEraseMode, setShapeGuideDrawMode, setSelectionMode, setCellSelection],
 	);
 
 	const handleShapeGuideClear = useCallback(() => {
@@ -73,6 +84,19 @@ export default function EditorPage() {
 		setShapeGuideDrawMode(false);
 		setShapeGuideEraseMode(false);
 	}, [setShapeGuide, setShapeGuideDrawMode, setShapeGuideEraseMode]);
+
+	const handleSelectionModeChange = useCallback(
+		(active: boolean) => {
+			setSelectionMode(active);
+			if (active) {
+				setShapeGuideDrawMode(false);
+				setShapeGuideEraseMode(false);
+			} else {
+				setCellSelection(null);
+			}
+		},
+		[setSelectionMode, setShapeGuideDrawMode, setShapeGuideEraseMode, setCellSelection],
+	);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -112,6 +136,8 @@ export default function EditorPage() {
 					onShapeGuideEraseModeChange={handleShapeGuideEraseModeChange}
 					hasShapeGuide={(shapeGuide?.strokes.length ?? 0) > 0}
 					onShapeGuideClear={handleShapeGuideClear}
+					isSelectionMode={isSelectionMode}
+					onSelectionModeChange={handleSelectionModeChange}
 				/>
 				<div className="flex-1 overflow-auto p-8">
 					<ChartCanvas onPaintStart={beginBatch} onPaintEnd={endBatch} />
