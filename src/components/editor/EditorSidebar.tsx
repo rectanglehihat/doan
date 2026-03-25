@@ -33,7 +33,7 @@ export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize, patternTitle, setPatternTitle } = useChartStore();
+	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
 		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
@@ -71,6 +71,14 @@ export function EditorSidebar() {
 			setGridSize({ rows, cols: gridSize.cols });
 		},
 		[gridSize.cols, setGridSize],
+	);
+
+	const handleCellSizeChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = Number(e.target.value);
+			if (value >= 10 && value <= 60) setCellSize(value);
+		},
+		[setCellSize],
 	);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
@@ -138,11 +146,12 @@ export function EditorSidebar() {
 							<label className="text-xs text-zinc-600">칸 크기 (px)</label>
 							<Input
 								type="number"
-								defaultValue={20}
+								value={cellSize}
 								min={10}
-								max={40}
+								max={60}
 								size="sm"
 								className="w-16 text-right"
+								onChange={handleCellSizeChange}
 							/>
 						</div>
 					</div>

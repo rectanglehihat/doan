@@ -7,7 +7,7 @@ import { knittingSymbols, crochetSymbols } from '@/constants/knitting-symbols';
 import { GridSize } from '@/types/knitting';
 
 export function useChartEditor() {
-	const { cells, gridSize, patternType, setCellSymbol, setGridSize, setPatternType, reset } =
+	const { cells, gridSize, cellSize, patternType, setCellSymbol, setGridSize, setCellSize, setPatternType, reset } =
 		useChartStore();
 	const { selectedSymbol } = useUIStore();
 
@@ -40,12 +40,14 @@ export function useChartEditor() {
 	return {
 		cells,
 		gridSize,
+		cellSize,
 		patternType,
 		selectedSymbol,
 		symbolsMap,
 		handleCellPaint,
 		clearCell,
 		resizeGrid,
+		setCellSize,
 		reset,
 		setPatternType,
 	};
