@@ -42,6 +42,13 @@ export interface ChartPattern {
 	cells: ChartCell[][];
 }
 
+export interface CellSelection {
+	startRow: number;
+	startCol: number;
+	endRow: number;
+	endCol: number;
+}
+
 /**
  * 사용자가 직접 그린 형태선.
  * 각 stroke는 grid 좌표계 기준의 점 배열: [col0, row0, col1, row1, ...] (float)

@@ -16,6 +16,8 @@ const defaultProps = {
 	onShapeGuideEraseModeChange: vi.fn(),
 	hasShapeGuide: false,
 	onShapeGuideClear: vi.fn(),
+	isSelectionMode: false,
+	onSelectionModeChange: vi.fn(),
 };
 
 describe('Toolbar', () => {
@@ -160,6 +162,35 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} hasShapeGuide={true} onShapeGuideClear={handleClear} />);
 			await userEvent.click(screen.getByRole('button', { name: '형태선 전체 지우기' }));
 			expect(handleClear).toHaveBeenCalledTimes(1);
+		});
+
+		it('선택 버튼을 렌더링한다', () => {
+			render(<Toolbar {...defaultProps} />);
+			expect(screen.getByRole('button', { name: '영역 선택' })).toBeInTheDocument();
+		});
+
+		it('isSelectionMode=false이면 선택 버튼이 비활성(aria-pressed=false) 상태이다', () => {
+			render(<Toolbar {...defaultProps} isSelectionMode={false} />);
+			expect(screen.getByRole('button', { name: '영역 선택' })).toHaveAttribute('aria-pressed', 'false');
+		});
+
+		it('isSelectionMode=true이면 선택 버튼이 활성(aria-pressed=true) 상태이다', () => {
+			render(<Toolbar {...defaultProps} isSelectionMode={true} />);
+			expect(screen.getByRole('button', { name: '영역 선택' })).toHaveAttribute('aria-pressed', 'true');
+		});
+
+		it('선택 버튼 클릭 시 onSelectionModeChange를 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} isSelectionMode={false} onSelectionModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '영역 선택' }));
+			expect(handleChange).toHaveBeenCalledWith(true);
+		});
+
+		it('isSelectionMode=true일 때 선택 버튼 클릭 시 false로 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} isSelectionMode={true} onSelectionModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '영역 선택' }));
+			expect(handleChange).toHaveBeenCalledWith(false);
 		});
 	});
 });
