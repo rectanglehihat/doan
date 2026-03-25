@@ -17,12 +17,11 @@ interface ToolbarProps {
 	onUndo: () => void;
 	onRedo: () => void;
 	onReset: () => void;
-	patternTitle?: string;
 	symmetryMode: SymmetryMode;
 	onSymmetryChange: (mode: SymmetryMode) => void;
 }
 
-export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, patternTitle, symmetryMode, onSymmetryChange }: ToolbarProps) {
+export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, symmetryMode, onSymmetryChange }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
 	}, [onUndo]);
@@ -82,15 +81,10 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, onReset, patternTitl
 					</Button>
 				))}
 			</div>
-			<div className="ml-auto flex items-center gap-2">
+			<div className="ml-auto">
 				<Button variant="ghost" size="sm" onClick={handleReset} aria-label="도안 초기화">
 					초기화
 				</Button>
-				{patternTitle ? (
-					<span className="text-sm font-medium text-zinc-700">{patternTitle}</span>
-				) : (
-					<span className="text-sm font-medium text-zinc-400 print:hidden">제목 없는 도안</span>
-				)}
 			</div>
 		</div>
 	);

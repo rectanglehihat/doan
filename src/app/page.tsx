@@ -12,7 +12,6 @@ import { SymmetryMode } from '@/types/knitting';
 
 export default function EditorPage() {
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
-	const patternTitle = useChartStore((state) => state.patternTitle);
 	const reset = useChartStore((state) => state.reset);
 	const { isResetDialogOpen, openResetDialog, closeResetDialog, openSaveDialog, symmetryMode, setSymmetryMode } = useUIStore();
 
@@ -70,7 +69,6 @@ export default function EditorPage() {
 					onUndo={handleUndo}
 					onRedo={handleRedo}
 					onReset={openResetDialog}
-					patternTitle={patternTitle}
 					symmetryMode={symmetryMode}
 					onSymmetryChange={handleSymmetryChange}
 				/>
