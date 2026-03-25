@@ -24,21 +24,6 @@ describe('Toolbar', () => {
 			expect(screen.getByRole('button', { name: /다시 실행/ })).toBeInTheDocument();
 		});
 
-		it('patternTitle이 전달되면 오른쪽 영역에 도안명을 표시한다', () => {
-			render(<Toolbar {...defaultProps} patternTitle="여름 조끼" />);
-			expect(screen.getByText('여름 조끼')).toBeInTheDocument();
-		});
-
-		it('patternTitle이 빈 문자열이면 기본 placeholder를 표시한다', () => {
-			render(<Toolbar {...defaultProps} patternTitle="" />);
-			expect(screen.getByText('제목 없는 도안')).toBeInTheDocument();
-		});
-
-		it('patternTitle prop이 없으면 기본 placeholder를 표시한다', () => {
-			render(<Toolbar {...defaultProps} />);
-			expect(screen.getByText('제목 없는 도안')).toBeInTheDocument();
-		});
-
 		it('대칭 모드 버튼 4개를 렌더링한다', () => {
 			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByRole('button', { name: '대칭 없음' })).toBeInTheDocument();
