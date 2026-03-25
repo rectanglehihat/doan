@@ -21,7 +21,7 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, patternTitle }: Tool
 	}, [onRedo]);
 
 	return (
-		<div className="flex items-center border-b border-zinc-200 bg-white px-3 py-2">
+		<div className="flex items-center border-b border-zinc-200 bg-white px-3 py-2.5">
 			<div className="flex items-center gap-1">
 				<Button
 					variant="ghost"
