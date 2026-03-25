@@ -18,7 +18,7 @@ function CanvasPlaceholder() {
 }
 
 export function ChartCanvas() {
-	const { cells, gridSize, selectedSymbol, symbolsMap, handleCellPaint } = useChartEditor();
+	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint } = useChartEditor();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
@@ -45,6 +45,7 @@ export function ChartCanvas() {
 				<KonvaGrid
 					cells={cells}
 					gridSize={gridSize}
+					cellSize={cellSize}
 					symbolsMap={symbolsMap}
 					selectedSymbolAbbr={selectedSymbol?.abbr ?? null}
 					onCellPaint={handleCellPaint}

@@ -2,11 +2,10 @@ import { create } from 'zustand';
 import { ChartCell, GridSize, PatternType } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
+const DEFAULT_CELL_SIZE = 15;
 
 function createEmptyGrid(rows: number, cols: number): ChartCell[][] {
-	return Array.from({ length: rows }, () =>
-		Array.from({ length: cols }, () => ({ symbolId: null })),
-	);
+	return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ symbolId: null })));
 }
 
 function resizeGrid(prevCells: ChartCell[][], rows: number, cols: number): ChartCell[][] {
@@ -18,10 +17,12 @@ function resizeGrid(prevCells: ChartCell[][], rows: number, cols: number): Chart
 interface ChartState {
 	cells: ChartCell[][];
 	gridSize: GridSize;
+	cellSize: number;
 	patternType: PatternType;
 	patternTitle: string;
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
 	setGridSize: (gridSize: GridSize) => void;
+	setCellSize: (cellSize: number) => void;
 	setPatternType: (patternType: PatternType) => void;
 	setPatternTitle: (patternTitle: string) => void;
 	reset: () => void;
@@ -30,6 +31,7 @@ interface ChartState {
 const initialState = {
 	cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
 	gridSize: DEFAULT_GRID_SIZE,
+	cellSize: DEFAULT_CELL_SIZE,
 	patternType: 'knitting' as PatternType,
 	patternTitle: '',
 };
@@ -51,6 +53,8 @@ export const useChartStore = create<ChartState>((set) => ({
 			cells: resizeGrid(state.cells, gridSize.rows, gridSize.cols),
 		})),
 
+	setCellSize: (cellSize) => set({ cellSize }),
+
 	setPatternType: (patternType) => set({ patternType }),
 
 	setPatternTitle: (patternTitle) => set({ patternTitle }),
@@ -59,6 +63,7 @@ export const useChartStore = create<ChartState>((set) => ({
 		set({
 			cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
 			gridSize: DEFAULT_GRID_SIZE,
+			cellSize: DEFAULT_CELL_SIZE,
 			patternType: 'knitting',
 			patternTitle: '',
 		}),

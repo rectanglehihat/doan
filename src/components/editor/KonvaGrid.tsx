@@ -6,12 +6,10 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
 import { ChartCell, GridSize } from '@/types/knitting';
 
-export const CELL_WIDTH = 28;
-export const CELL_HEIGHT = 35;
-
 interface KonvaGridProps {
 	cells: ChartCell[][];
 	gridSize: GridSize;
+	cellSize: number;
 	symbolsMap: Record<string, string>;
 	selectedSymbolAbbr: string | null;
 	onCellPaint: (row: number, col: number) => void;
@@ -28,6 +26,7 @@ interface Transform {
 export const KonvaGrid = memo(function KonvaGrid({
 	cells,
 	gridSize,
+	cellSize,
 	symbolsMap,
 	selectedSymbolAbbr,
 	onCellPaint,
@@ -42,19 +41,19 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const isPanning = useRef(false);
 	const lastPanPos = useRef({ x: 0, y: 0 });
 
-	const totalWidth = gridSize.cols * CELL_WIDTH;
-	const totalHeight = gridSize.rows * CELL_HEIGHT;
+	const totalWidth = gridSize.cols * cellSize;
+	const totalHeight = gridSize.rows * cellSize;
 
 	const gridLines = useMemo(() => {
 		const lines: { key: string; points: number[] }[] = [];
 		for (let i = 0; i <= gridSize.cols; i++) {
-			lines.push({ key: `v${i}`, points: [i * CELL_WIDTH, 0, i * CELL_WIDTH, totalHeight] });
+			lines.push({ key: `v${i}`, points: [i * cellSize, 0, i * cellSize, totalHeight] });
 		}
 		for (let i = 0; i <= gridSize.rows; i++) {
-			lines.push({ key: `h${i}`, points: [0, i * CELL_HEIGHT, totalWidth, i * CELL_HEIGHT] });
+			lines.push({ key: `h${i}`, points: [0, i * cellSize, totalWidth, i * cellSize] });
 		}
 		return lines;
-	}, [gridSize, totalWidth, totalHeight]);
+	}, [gridSize, cellSize, totalWidth, totalHeight]);
 
 	const nonEmptyCells = useMemo(
 		() =>
@@ -71,13 +70,13 @@ export const KonvaGrid = memo(function KonvaGrid({
 		if (!layer) return null;
 		const pos = layer.getRelativePointerPosition();
 		if (!pos) return null;
-		const col = Math.floor(pos.x / CELL_WIDTH);
-		const row = Math.floor(pos.y / CELL_HEIGHT);
+		const col = Math.floor(pos.x / cellSize);
+		const row = Math.floor(pos.y / cellSize);
 		if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
 			return { row, col };
 		}
 		return null;
-	}, [gridSize]);
+	}, [gridSize, cellSize]);
 
 	const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
 		e.evt.preventDefault();
@@ -173,24 +172,24 @@ export const KonvaGrid = memo(function KonvaGrid({
 				{nonEmptyCells.map(({ cell, rowIdx, colIdx }) => (
 					<Text
 						key={`${rowIdx}-${colIdx}`}
-						x={colIdx * CELL_WIDTH}
-						y={rowIdx * CELL_HEIGHT}
-						width={CELL_WIDTH}
-						height={CELL_HEIGHT}
+						x={colIdx * cellSize}
+						y={rowIdx * cellSize}
+						width={cellSize}
+						height={cellSize}
 						text={symbolsMap[cell.symbolId!] ?? cell.symbolId!}
 						align="center"
 						verticalAlign="middle"
-						fontSize={11}
+						fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
 						fill="#1a1a1a"
 					/>
 				))}
 
 				{hoverCell && (
 					<Rect
-						x={hoverCell.col * CELL_WIDTH}
-						y={hoverCell.row * CELL_HEIGHT}
-						width={CELL_WIDTH}
-						height={CELL_HEIGHT}
+						x={hoverCell.col * cellSize}
+						y={hoverCell.row * cellSize}
+						width={cellSize}
+						height={cellSize}
 						fill={selectedSymbolAbbr ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.08)'}
 						listening={false}
 					/>
