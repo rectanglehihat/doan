@@ -31,9 +31,9 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 }
 
 export function EditorSidebar() {
+	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle, patternType, setPatternType } =
-		useChartStore();
+	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
 	const { selectedSymbol, setSelectedSymbol } = useUIStore();
 
 	const handleSymbolSelect = useCallback(
@@ -48,16 +48,11 @@ export function EditorSidebar() {
 			setPatternType(type);
 			setSelectedSymbol(null);
 		},
-		[setPatternType, setSelectedSymbol],
+		[setSelectedSymbol],
 	);
 
-	const handleKnittingClick = useCallback(() => {
-		handlePatternTypeChange('knitting');
-	}, [handlePatternTypeChange]);
-
-	const handleCrochetClick = useCallback(() => {
-		handlePatternTypeChange('crochet');
-	}, [handlePatternTypeChange]);
+	const handleKnittingClick = useCallback(() => handlePatternTypeChange('knitting'), [handlePatternTypeChange]);
+	const handleCrochetClick = useCallback(() => handlePatternTypeChange('crochet'), [handlePatternTypeChange]);
 
 	const handlePatternTitleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {

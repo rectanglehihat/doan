@@ -70,7 +70,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 			cells.flatMap((row, rowIdx) =>
 				row
 					.map((cell, colIdx) => ({ cell, rowIdx, colIdx }))
-					.filter(({ cell }) => cell.symbolId !== null),
+					.filter(
+						(x): x is { cell: ChartCell & { symbolId: string }; rowIdx: number; colIdx: number } =>
+							x.cell.symbolId !== null,
+					),
 			),
 		[cells],
 	);
@@ -172,7 +175,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 						y={rowIdx * cellSize}
 						width={cellSize}
 						height={cellSize}
-						text={symbolsMap[cell.symbolId!] ?? cell.symbolId!}
+						text={symbolsMap[cell.symbolId] ?? cell.symbolId}
 						align="center"
 						verticalAlign="middle"
 						fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
