@@ -5,6 +5,7 @@ import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
 import { ChartCell, GridSize } from '@/types/knitting';
+import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 
 interface KonvaGridProps {
 	cells: ChartCell[][];
@@ -17,12 +18,6 @@ interface KonvaGridProps {
 	stageHeight: number;
 }
 
-interface Transform {
-	scale: number;
-	x: number;
-	y: number;
-}
-
 export const KonvaGrid = memo(function KonvaGrid({
 	cells,
 	gridSize,
@@ -33,13 +28,24 @@ export const KonvaGrid = memo(function KonvaGrid({
 	stageWidth,
 	stageHeight,
 }: KonvaGridProps) {
-	const [transform, setTransform] = useState<Transform>({ scale: 1, x: 0, y: 0 });
-	const [hoverCell, setHoverCell] = useState<{ row: number; col: number } | null>(null);
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
 	const isPainting = useRef(false);
-	const isPanning = useRef(false);
-	const lastPanPos = useRef({ x: 0, y: 0 });
+
+	const {
+		transform,
+		isSpacePanning,
+		isInSpacePanMode,
+		handleWheel,
+		handleTouchStart,
+		handleTouchMove,
+		handleTouchEnd,
+		startMousePan,
+		updateMousePan,
+		endMousePan,
+	} = useCanvasNavigation(stageRef);
+
+	const [hoverCell, setHoverCell] = useState<{ row: number; col: number } | null>(null);
 
 	const totalWidth = gridSize.cols * cellSize;
 	const totalHeight = gridSize.rows * cellSize;
@@ -78,32 +84,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 		return null;
 	}, [gridSize, cellSize]);
 
-	const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
-		e.evt.preventDefault();
-		const stage = stageRef.current;
-		if (!stage) return;
-		const pointer = stage.getPointerPosition();
-		if (!pointer) return;
-		const SCALE_BY = 1.1;
-		setTransform((prev) => {
-			const newScale =
-				e.evt.deltaY < 0
-					? Math.min(5, prev.scale * SCALE_BY)
-					: Math.max(0.2, prev.scale / SCALE_BY);
-			return {
-				scale: newScale,
-				x: pointer.x - (pointer.x - prev.x) * (newScale / prev.scale),
-				y: pointer.y - (pointer.y - prev.y) * (newScale / prev.scale),
-			};
-		});
-	}, []);
-
 	const handleMouseDown = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
-			if (e.evt.button === 1) {
+			// 중간 버튼 또는 Space + 좌클릭 → pan
+			if (e.evt.button === 1 || (e.evt.button === 0 && isInSpacePanMode())) {
 				e.evt.preventDefault();
-				isPanning.current = true;
-				lastPanPos.current = { x: e.evt.clientX, y: e.evt.clientY };
+				startMousePan(e.evt.clientX, e.evt.clientY);
 				return;
 			}
 			if (e.evt.button === 0) {
@@ -112,37 +98,33 @@ export const KonvaGrid = memo(function KonvaGrid({
 				if (cell) onCellPaint(cell.row, cell.col);
 			}
 		},
-		[getCellFromPointer, onCellPaint],
+		[getCellFromPointer, onCellPaint, startMousePan, isInSpacePanMode],
 	);
 
 	const handleMouseMove = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
+			if (updateMousePan(e.evt.clientX, e.evt.clientY)) return;
 			const cell = getCellFromPointer();
 			setHoverCell(cell);
-			if (isPanning.current) {
-				const dx = e.evt.clientX - lastPanPos.current.x;
-				const dy = e.evt.clientY - lastPanPos.current.y;
-				lastPanPos.current = { x: e.evt.clientX, y: e.evt.clientY };
-				setTransform((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
-				return;
-			}
 			if (isPainting.current && cell) {
 				onCellPaint(cell.row, cell.col);
 			}
 		},
-		[getCellFromPointer, onCellPaint],
+		[getCellFromPointer, onCellPaint, updateMousePan],
 	);
 
 	const handleMouseUp = useCallback(() => {
 		isPainting.current = false;
-		isPanning.current = false;
-	}, []);
+		endMousePan();
+	}, [endMousePan]);
 
 	const handleMouseLeave = useCallback(() => {
 		setHoverCell(null);
 		isPainting.current = false;
-		isPanning.current = false;
-	}, []);
+		endMousePan();
+	}, [endMousePan]);
+
+	const cursor = isSpacePanning ? 'grab' : 'crosshair';
 
 	return (
 		<Stage
@@ -154,7 +136,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 			onMouseMove={handleMouseMove}
 			onMouseUp={handleMouseUp}
 			onMouseLeave={handleMouseLeave}
-			style={{ cursor: 'crosshair' }}
+			onTouchStart={handleTouchStart}
+			onTouchMove={handleTouchMove}
+			onTouchEnd={handleTouchEnd}
+			style={{ cursor }}
 		>
 			<Layer
 				ref={layerRef}
