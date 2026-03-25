@@ -17,7 +17,12 @@ function CanvasPlaceholder() {
 	);
 }
 
-export function ChartCanvas() {
+interface ChartCanvasProps {
+	onPaintStart?: () => void;
+	onPaintEnd?: () => void;
+}
+
+export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint } = useChartEditor();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
@@ -49,6 +54,8 @@ export function ChartCanvas() {
 					symbolsMap={symbolsMap}
 					selectedSymbolAbbr={selectedSymbol?.abbr ?? null}
 					onCellPaint={handleCellPaint}
+					onPaintStart={onPaintStart}
+					onPaintEnd={onPaintEnd}
 					stageWidth={stageSize.width}
 					stageHeight={stageSize.height}
 				/>

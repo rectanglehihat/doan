@@ -11,6 +11,8 @@ export function useHistory() {
 	const futureRef = useRef<ChartCell[][][]>([]);
 	const isApplyingRef = useRef(false);
 	const prevCellsRef = useRef<ChartCell[][]>(useChartStore.getState().cells);
+	const isBatchingRef = useRef(false);
+	const batchStartCellsRef = useRef<ChartCell[][] | null>(null);
 
 	const [canUndo, setCanUndo] = useState(false);
 	const [canRedo, setCanRedo] = useState(false);
@@ -30,6 +32,12 @@ export function useHistory() {
 			}
 
 			if (cells === prevCellsRef.current) return;
+
+			// 배치 중에는 prevCells만 추적하고 히스토리는 쌓지 않음
+			if (isBatchingRef.current) {
+				prevCellsRef.current = cells;
+				return;
+			}
 
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), prevCellsRef.current];
 			futureRef.current = [];
@@ -64,5 +72,24 @@ export function useHistory() {
 		setCanRedo(futureRef.current.length > 0);
 	}, [setCells]);
 
-	return { undo, redo, canUndo, canRedo };
+	const beginBatch = useCallback(() => {
+		isBatchingRef.current = true;
+		batchStartCellsRef.current = prevCellsRef.current;
+	}, []);
+
+	const endBatch = useCallback(() => {
+		if (!isBatchingRef.current) return;
+		isBatchingRef.current = false;
+		const batchStart = batchStartCellsRef.current;
+		batchStartCellsRef.current = null;
+		const current = prevCellsRef.current;
+		if (batchStart !== null && batchStart !== current) {
+			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), batchStart];
+			futureRef.current = [];
+			setCanUndo(true);
+			setCanRedo(false);
+		}
+	}, []);
+
+	return { undo, redo, canUndo, canRedo, beginBatch, endBatch };
 }

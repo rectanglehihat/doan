@@ -14,6 +14,8 @@ interface KonvaGridProps {
 	symbolsMap: Record<string, string>;
 	selectedSymbolAbbr: string | null;
 	onCellPaint: (row: number, col: number) => void;
+	onPaintStart?: () => void;
+	onPaintEnd?: () => void;
 	stageWidth: number;
 	stageHeight: number;
 }
@@ -25,6 +27,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 	symbolsMap,
 	selectedSymbolAbbr,
 	onCellPaint,
+	onPaintStart,
+	onPaintEnd,
 	stageWidth,
 	stageHeight,
 }: KonvaGridProps) {
@@ -94,11 +98,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 			}
 			if (e.evt.button === 0) {
 				isPainting.current = true;
+				onPaintStart?.();
 				const cell = getCellFromPointer();
 				if (cell) onCellPaint(cell.row, cell.col);
 			}
 		},
-		[getCellFromPointer, onCellPaint, startMousePan, isInSpacePanMode],
+		[getCellFromPointer, onCellPaint, onPaintStart, startMousePan, isInSpacePanMode],
 	);
 
 	const handleMouseMove = useCallback(
@@ -114,15 +119,21 @@ export const KonvaGrid = memo(function KonvaGrid({
 	);
 
 	const handleMouseUp = useCallback(() => {
+		if (isPainting.current) {
+			onPaintEnd?.();
+		}
 		isPainting.current = false;
 		endMousePan();
-	}, [endMousePan]);
+	}, [endMousePan, onPaintEnd]);
 
 	const handleMouseLeave = useCallback(() => {
 		setHoverCell(null);
+		if (isPainting.current) {
+			onPaintEnd?.();
+		}
 		isPainting.current = false;
 		endMousePan();
-	}, [endMousePan]);
+	}, [endMousePan, onPaintEnd]);
 
 	const cursor = isSpacePanning ? 'grab' : 'crosshair';
 

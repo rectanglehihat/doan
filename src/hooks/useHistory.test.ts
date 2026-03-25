@@ -81,6 +81,51 @@ describe('useHistory', () => {
 		});
 	});
 
+	describe('batch', () => {
+		it('beginBatch/endBatch 사이의 여러 변경이 하나의 히스토리 항목으로 기록된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+				useChartStore.getState().setCellSymbol(0, 1, 'k');
+				useChartStore.getState().setCellSymbol(0, 2, 'k');
+				result.current.endBatch();
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			// undo 한 번으로 3개 셀 모두 취소
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+			expect(useChartStore.getState().cells[0][1].symbolId).toBeNull();
+			expect(useChartStore.getState().cells[0][2].symbolId).toBeNull();
+		});
+
+		it('endBatch 후 상태가 변경되지 않으면 히스토리에 기록되지 않는다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				result.current.endBatch();
+			});
+			// 아무 변경 없으므로 canUndo는 false여야 함
+			expect(result.current.canUndo).toBe(false);
+		});
+
+		it('배치 중 canUndo/canRedo 상태가 변경되지 않는다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			// 배치 중이므로 아직 canUndo가 true여서는 안 됨
+			expect(result.current.canUndo).toBe(false);
+			act(() => {
+				result.current.endBatch();
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+		});
+	});
+
 	describe('redo', () => {
 		it('undo 후 redo 호출 시 원래 상태로 복원된다', async () => {
 			const { result } = renderHook(() => useHistory());

@@ -11,7 +11,7 @@ import { useHistory } from '@/hooks/useHistory';
 import { SymmetryMode } from '@/types/knitting';
 
 export default function EditorPage() {
-	const { undo, redo, canUndo, canRedo } = useHistory();
+	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
 	const patternTitle = useChartStore((state) => state.patternTitle);
 	const reset = useChartStore((state) => state.reset);
 	const { isResetDialogOpen, openResetDialog, closeResetDialog, openSaveDialog, symmetryMode, setSymmetryMode } = useUIStore();
@@ -75,7 +75,7 @@ export default function EditorPage() {
 					onSymmetryChange={handleSymmetryChange}
 				/>
 				<div className="flex-1 overflow-auto p-8">
-					<ChartCanvas />
+					<ChartCanvas onPaintStart={beginBatch} onPaintEnd={endBatch} />
 				</div>
 			</main>
 			<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">
