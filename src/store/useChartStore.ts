@@ -19,9 +19,11 @@ interface ChartState {
 	cells: ChartCell[][];
 	gridSize: GridSize;
 	patternType: PatternType;
+	patternTitle: string;
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
 	setGridSize: (gridSize: GridSize) => void;
 	setPatternType: (patternType: PatternType) => void;
+	setPatternTitle: (patternTitle: string) => void;
 	reset: () => void;
 }
 
@@ -29,6 +31,7 @@ const initialState = {
 	cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
 	gridSize: DEFAULT_GRID_SIZE,
 	patternType: 'knitting' as PatternType,
+	patternTitle: '',
 };
 
 export const useChartStore = create<ChartState>((set) => ({
@@ -50,10 +53,13 @@ export const useChartStore = create<ChartState>((set) => ({
 
 	setPatternType: (patternType) => set({ patternType }),
 
+	setPatternTitle: (patternTitle) => set({ patternTitle }),
+
 	reset: () =>
 		set({
 			cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
 			gridSize: DEFAULT_GRID_SIZE,
 			patternType: 'knitting',
+			patternTitle: '',
 		}),
 }));

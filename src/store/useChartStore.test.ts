@@ -17,6 +17,11 @@ describe('useChartStore', () => {
 			expect(patternType).toBe('knitting');
 		});
 
+		it('기본 patternTitle은 빈 문자열이다', () => {
+			const { patternTitle } = useChartStore.getState();
+			expect(patternTitle).toBe('');
+		});
+
 		it('cells는 20x20 2D 배열이고 모든 셀의 symbolId는 null이다', () => {
 			const { cells, gridSize } = useChartStore.getState();
 			expect(cells).toHaveLength(gridSize.rows);
@@ -93,16 +98,31 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('setPatternTitle', () => {
+		it('patternTitle을 변경한다', () => {
+			useChartStore.getState().setPatternTitle('여름 조끼');
+			expect(useChartStore.getState().patternTitle).toBe('여름 조끼');
+		});
+
+		it('빈 문자열로 변경할 수 있다', () => {
+			useChartStore.getState().setPatternTitle('여름 조끼');
+			useChartStore.getState().setPatternTitle('');
+			expect(useChartStore.getState().patternTitle).toBe('');
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useChartStore.getState().setCellSymbol(0, 0, 'k');
 			useChartStore.getState().setGridSize({ rows: 5, cols: 5 });
 			useChartStore.getState().setPatternType('crochet');
+			useChartStore.getState().setPatternTitle('테스트 도안');
 			useChartStore.getState().reset();
 
-			const { cells, gridSize, patternType } = useChartStore.getState();
+			const { cells, gridSize, patternType, patternTitle } = useChartStore.getState();
 			expect(gridSize).toEqual({ rows: 20, cols: 20 });
 			expect(patternType).toBe('knitting');
+			expect(patternTitle).toBe('');
 			expect(cells).toHaveLength(20);
 			cells.forEach((row) => {
 				row.forEach((cell) => {

@@ -33,7 +33,7 @@ export function EditorSidebar() {
 	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize } = useChartStore();
+	const { gridSize, setGridSize, patternTitle, setPatternTitle } = useChartStore();
 
 	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
 		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
@@ -51,6 +51,13 @@ export function EditorSidebar() {
 	const handleCrochetClick = useCallback(() => {
 		handlePatternTypeChange('crochet');
 	}, [handlePatternTypeChange]);
+
+	const handlePatternTitleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setPatternTitle(e.target.value);
+		},
+		[setPatternTitle],
+	);
 
 	const handleColsChange = useCallback(
 		(cols: number) => {
@@ -150,11 +157,16 @@ export function EditorSidebar() {
 								placeholder="도안 제목을 입력하세요"
 								size="sm"
 								className="w-full"
+								value={patternTitle}
+								onChange={handlePatternTitleChange}
 							/>
 						</div>
 						<div className="flex flex-col gap-1">
 							<label className="text-xs text-zinc-600">난이도</label>
-							<DifficultyStars value={difficulty} onChange={setDifficulty} />
+							<DifficultyStars
+								value={difficulty}
+								onChange={setDifficulty}
+							/>
 						</div>
 						<div className="flex flex-col gap-1">
 							<label className="text-xs text-zinc-600">준비물</label>
@@ -169,10 +181,18 @@ export function EditorSidebar() {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				<Button variant="default" size="sm" className="w-full">
+				<Button
+					variant="default"
+					size="sm"
+					className="w-full"
+				>
 					저장
 				</Button>
-				<Button variant="outline" size="sm" className="w-full">
+				<Button
+					variant="outline"
+					size="sm"
+					className="w-full"
+				>
 					PDF 내보내기
 				</Button>
 			</div>
