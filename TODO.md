@@ -71,6 +71,11 @@
 - [x] 그리드 크기 변경 시 기존 셀 데이터 유지 로직 (`useChartStore.setGridSize` 내 처리)
 - [x] 도안 초기화 기능 (`ConfirmDialog` 컴포넌트 + `useUIStore.isResetDialogOpen`)
 - [x] 대칭 모드 (가로/세로 대칭 자동 적용, `useUIStore.symmetryMode`)
+- [ ] 점대칭(회전 대칭) 모드 (`SymmetryMode`에 `'rotational'` 추가, `useUIStore` 확장)
+- [ ] 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
+- [ ] 패턴 타일 반복 — 선택 영역을 가로/세로 N회 자동 타일링 (`useChartEditor` 확장)
+- [ ] 단 반복 블록 마커 — 행 범위 + "N회 반복" 레이블 (`ChartPattern` 타입 확장, PDF 연동)
+- [ ] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
 
 ### 1-6. 저장 및 불러오기
 
