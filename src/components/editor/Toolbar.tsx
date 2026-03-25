@@ -21,6 +21,8 @@ interface ToolbarProps {
 	onSymmetryChange: (mode: SymmetryMode) => void;
 	isShapeGuideDrawMode: boolean;
 	onShapeGuideDrawModeChange: (active: boolean) => void;
+	isShapeGuideEraseMode: boolean;
+	onShapeGuideEraseModeChange: (active: boolean) => void;
 	hasShapeGuide: boolean;
 	onShapeGuideClear: () => void;
 }
@@ -35,6 +37,8 @@ export function Toolbar({
 	onSymmetryChange,
 	isShapeGuideDrawMode,
 	onShapeGuideDrawModeChange,
+	isShapeGuideEraseMode,
+	onShapeGuideEraseModeChange,
 	hasShapeGuide,
 	onShapeGuideClear,
 }: ToolbarProps) {
@@ -54,6 +58,10 @@ export function Toolbar({
 		onShapeGuideDrawModeChange(!isShapeGuideDrawMode);
 	}, [onShapeGuideDrawModeChange, isShapeGuideDrawMode]);
 
+	const handleShapeGuideEraseToggle = useCallback(() => {
+		onShapeGuideEraseModeChange(!isShapeGuideEraseMode);
+	}, [onShapeGuideEraseModeChange, isShapeGuideEraseMode]);
+
 	const handleShapeGuideClear = useCallback(() => {
 		onShapeGuideClear();
 	}, [onShapeGuideClear]);
@@ -72,11 +80,23 @@ export function Toolbar({
 		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
 			{/* 실행 취소 / 다시 실행 */}
 			<div className="flex items-center gap-1">
-				<Button variant="ghost" size="sm" disabled={!canUndo} onClick={handleUndo} aria-label="실행 취소">
-					↩ 실행 취소
+				<Button
+					variant="ghost"
+					size="sm"
+					disabled={!canUndo}
+					onClick={handleUndo}
+					aria-label="실행 취소"
+				>
+					실행 취소
 				</Button>
-				<Button variant="ghost" size="sm" disabled={!canRedo} onClick={handleRedo} aria-label="다시 실행">
-					↪ 다시 실행
+				<Button
+					variant="ghost"
+					size="sm"
+					disabled={!canRedo}
+					onClick={handleRedo}
+					aria-label="다시 실행"
+				>
+					다시 실행
 				</Button>
 			</div>
 
@@ -113,20 +133,36 @@ export function Toolbar({
 					형태선 그리기
 				</Button>
 				{hasShapeGuide && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleShapeGuideClear}
-						aria-label="형태선 지우기"
-					>
-						지우기
-					</Button>
+					<>
+						<Button
+							variant={isShapeGuideEraseMode ? 'default' : 'ghost'}
+							size="sm"
+							onClick={handleShapeGuideEraseToggle}
+							aria-label="형태선 지우개"
+							aria-pressed={isShapeGuideEraseMode}
+						>
+							지우개
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={handleShapeGuideClear}
+							aria-label="형태선 전체 지우기"
+						>
+							전체 지우기
+						</Button>
+					</>
 				)}
 			</div>
 
 			{/* 초기화 */}
 			<div className="ml-auto">
-				<Button variant="ghost" size="sm" onClick={handleReset} aria-label="도안 초기화">
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={handleReset}
+					aria-label="도안 초기화"
+				>
 					초기화
 				</Button>
 			</div>

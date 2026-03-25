@@ -68,4 +68,43 @@ describe('ShapeGuideLayer', () => {
 		);
 		expect(queryAllByTestId('konva-line')).toHaveLength(0);
 	});
+
+	it('eraseStroke가 4점 이상이면 추가 Line을 렌더링한다', () => {
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={mockShapeGuide}
+				currentStroke={[]}
+				eraseStroke={[0, 0, 5, 5, 10, 10]}
+				cellSize={15}
+				transform={{ x: 0, y: 0, scale: 1 }}
+			/>,
+		);
+		// strokes 2개 + eraseStroke 1개
+		expect(getAllByTestId('konva-line')).toHaveLength(3);
+	});
+
+	it('eraseStroke가 2점 미만이면 추가 Line을 렌더링하지 않는다', () => {
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={mockShapeGuide}
+				currentStroke={[]}
+				eraseStroke={[0, 0]}
+				cellSize={15}
+				transform={{ x: 0, y: 0, scale: 1 }}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(2);
+	});
+
+	it('eraseStroke가 없으면 추가 Line을 렌더링하지 않는다', () => {
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={mockShapeGuide}
+				currentStroke={[]}
+				cellSize={15}
+				transform={{ x: 0, y: 0, scale: 1 }}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(2);
+	});
 });

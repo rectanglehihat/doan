@@ -75,7 +75,12 @@
 - [ ] 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
 - [ ] 패턴 타일 반복 — 선택 영역을 가로/세로 N회 자동 타일링 (`useChartEditor` 확장)
 - [ ] 단 반복 블록 마커 — 행 범위 + "N회 반복" 레이블 (`ChartPattern` 타입 확장, PDF 연동)
-- [ ] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
+- [x] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
+- [x] 형태선 드래그 그리기 — 마우스 드래그로 형태선 stroke 추가 (`ShapeGuideLayer`, `isShapeGuideDrawMode`)
+- [x] 형태선 드래그 지우기 — 지우기 모드에서 드래그 경로와 교차하는 stroke 세그먼트 단위 실시간 삭제
+  - `replaceShapeGuideStroke` 액션으로 스트로크 분할 교체
+  - `splitStrokeByErasePath` / `splitStrokeByPoint` 헬퍼 함수로 세그먼트 분리
+  - `currentEraseStrokeRef`로 stale closure 없이 최신 erase 경로 참조
 
 ### 1-6. 저장 및 불러오기
 
@@ -147,7 +152,8 @@
 | `ChartCanvas` | 완료 | 미작성 |
 | `KonvaGrid` | 완료 | 미작성 |
 | `EditorSidebar` | 완료 | 2개 |
-| `Toolbar` | 완료 | 7개 |
+| `ShapeGuideLayer` | 완료 | 7개 |
+| `Toolbar` | 완료 | 23개 |
 | `SaveDialog` | 미구현 | - |
 | `LoadDialog` | 미구현 | - |
 
@@ -171,13 +177,14 @@
 | Molecule — `DifficultyStars` | `DifficultyStars.test.tsx` | 80% | 4개 작성 |
 | Molecule — `SymbolButton` | `SymbolButton.test.tsx` | 80% | 미작성 |
 | Organism — `EditorSidebar` | `EditorSidebar.test.tsx` | 60% | 2개 작성 |
-| Organism — `Toolbar` | `Toolbar.test.tsx` | 60% | 7개 작성 |
+| Organism — `ShapeGuideLayer` | `ShapeGuideLayer.test.tsx` | 60% | 7개 작성 |
+| Organism — `Toolbar` | `Toolbar.test.tsx` | 60% | 23개 작성 |
 | Organism — `ChartCanvas` | `ChartCanvas.test.tsx` | 60% | 미작성 |
 | Hook — `useChartEditor` | `useChartEditor.test.ts` | 85% | 7개 작성 |
 | Hook — `useHistory` | `useHistory.test.ts` | 85% | 11개 작성 |
 | Hook — `usePatterns` | `usePatterns.test.ts` | 85% | 미작성 |
 | Store — `useChartStore` | `useChartStore.test.ts` | 80% | 10개 작성 |
-| Store — `useUIStore` | `useUIStore.test.ts` | 80% | 8개 작성 |
+| Store — `useUIStore` | `useUIStore.test.ts` | 80% | 26개 작성 |
 | Util — `local-storage-service` | `local-storage-service.test.ts` | 95% | 미작성 |
 | Util — `export-pdf` | `export-pdf.test.ts` | 70% | 미작성 |
 

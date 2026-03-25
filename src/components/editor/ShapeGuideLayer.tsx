@@ -13,6 +13,7 @@ interface Transform {
 interface ShapeGuideLayerProps {
 	shapeGuide: ShapeGuide;
 	currentStroke: number[];
+	eraseStroke?: number[];
 	cellSize: number;
 	transform: Transform;
 	selectedStrokeIndex?: number | null;
@@ -23,6 +24,7 @@ interface ShapeGuideLayerProps {
 export function ShapeGuideLayer({
 	shapeGuide,
 	currentStroke,
+	eraseStroke,
 	cellSize,
 	transform,
 	selectedStrokeIndex = null,
@@ -66,6 +68,16 @@ export function ShapeGuideLayer({
 					lineCap="round"
 					lineJoin="round"
 					dash={[4, 3]}
+					listening={false}
+				/>
+			)}
+			{eraseStroke && eraseStroke.length >= 4 && (
+				<Line
+					points={toPixels(eraseStroke)}
+					stroke="rgba(251,191,36,0.7)"
+					strokeWidth={12}
+					lineCap="round"
+					lineJoin="round"
 					listening={false}
 				/>
 			)}

@@ -22,8 +22,10 @@ export default function EditorPage() {
 		setSymmetryMode,
 		shapeGuide,
 		isShapeGuideDrawMode,
+		isShapeGuideEraseMode,
 		setShapeGuide,
 		setShapeGuideDrawMode,
+		setShapeGuideEraseMode,
 	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
@@ -53,14 +55,24 @@ export default function EditorPage() {
 	const handleShapeGuideDrawModeChange = useCallback(
 		(active: boolean) => {
 			setShapeGuideDrawMode(active);
+			if (active) setShapeGuideEraseMode(false);
 		},
-		[setShapeGuideDrawMode],
+		[setShapeGuideDrawMode, setShapeGuideEraseMode],
+	);
+
+	const handleShapeGuideEraseModeChange = useCallback(
+		(active: boolean) => {
+			setShapeGuideEraseMode(active);
+			if (active) setShapeGuideDrawMode(false);
+		},
+		[setShapeGuideEraseMode, setShapeGuideDrawMode],
 	);
 
 	const handleShapeGuideClear = useCallback(() => {
 		setShapeGuide(null);
 		setShapeGuideDrawMode(false);
-	}, [setShapeGuide, setShapeGuideDrawMode]);
+		setShapeGuideEraseMode(false);
+	}, [setShapeGuide, setShapeGuideDrawMode, setShapeGuideEraseMode]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,6 +108,8 @@ export default function EditorPage() {
 					onSymmetryChange={handleSymmetryChange}
 					isShapeGuideDrawMode={isShapeGuideDrawMode}
 					onShapeGuideDrawModeChange={handleShapeGuideDrawModeChange}
+					isShapeGuideEraseMode={isShapeGuideEraseMode}
+					onShapeGuideEraseModeChange={handleShapeGuideEraseModeChange}
 					hasShapeGuide={(shapeGuide?.strokes.length ?? 0) > 0}
 					onShapeGuideClear={handleShapeGuideClear}
 				/>
