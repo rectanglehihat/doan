@@ -27,8 +27,10 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint } = useChartEditor();
 	const shapeGuide = useUIStore((state) => state.shapeGuide);
 	const isShapeGuideDrawMode = useUIStore((state) => state.isShapeGuideDrawMode);
+	const isShapeGuideEraseMode = useUIStore((state) => state.isShapeGuideEraseMode);
 	const addShapeGuideStroke = useUIStore((state) => state.addShapeGuideStroke);
 	const removeShapeGuideStroke = useUIStore((state) => state.removeShapeGuideStroke);
+	const replaceShapeGuideStroke = useUIStore((state) => state.replaceShapeGuideStroke);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
@@ -62,8 +64,10 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 					stageHeight={stageSize.height}
 					shapeGuide={shapeGuide}
 					isShapeGuideDrawMode={isShapeGuideDrawMode}
+					isShapeGuideEraseMode={isShapeGuideEraseMode}
 					onShapeGuideStrokeAdd={addShapeGuideStroke}
 					onShapeGuideStrokeRemove={removeShapeGuideStroke}
+					onShapeGuideStrokeReplace={replaceShapeGuideStroke}
 				/>
 			</div>
 		</div>

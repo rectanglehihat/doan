@@ -115,6 +115,33 @@ describe('useUIStore', () => {
 			useUIStore.getState().removeShapeGuideStroke(0);
 			expect(useUIStore.getState().shapeGuide).toBeNull();
 		});
+
+		it('replaceShapeGuideStroke 호출 시 지정 인덱스 스트로크를 여러 스트로크로 교체한다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 10, 10]);
+			useUIStore.getState().replaceShapeGuideStroke(0, [[0, 0, 4, 4], [6, 6, 10, 10]]);
+			expect(useUIStore.getState().shapeGuide?.strokes).toHaveLength(2);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([0, 0, 4, 4]);
+			expect(useUIStore.getState().shapeGuide?.strokes[1]).toEqual([6, 6, 10, 10]);
+		});
+
+		it('replaceShapeGuideStroke에 빈 배열 전달 시 해당 스트로크가 삭제된다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 5, 5]);
+			useUIStore.getState().addShapeGuideStroke([10, 10, 20, 20]);
+			useUIStore.getState().replaceShapeGuideStroke(0, []);
+			expect(useUIStore.getState().shapeGuide?.strokes).toHaveLength(1);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([10, 10, 20, 20]);
+		});
+
+		it('replaceShapeGuideStroke에 단일 배열 전달 시 해당 스트로크를 교체한다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 5, 5]);
+			useUIStore.getState().replaceShapeGuideStroke(0, [[1, 1, 4, 4]]);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([1, 1, 4, 4]);
+		});
+
+		it('replaceShapeGuideStroke 호출 시 shapeGuide가 null이면 아무것도 하지 않는다', () => {
+			useUIStore.getState().replaceShapeGuideStroke(0, [[0, 0, 5, 5]]);
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
 	});
 
 	describe('isShapeGuideDrawMode', () => {
@@ -128,6 +155,23 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('isShapeGuideEraseMode', () => {
+		it('초기값은 false이다', () => {
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+
+		it('setShapeGuideEraseMode(true) 호출 시 true가 된다', () => {
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(true);
+		});
+
+		it('setShapeGuideEraseMode(false) 호출 시 false가 된다', () => {
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			useUIStore.getState().setShapeGuideEraseMode(false);
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);
@@ -135,15 +179,17 @@ describe('useUIStore', () => {
 			useUIStore.getState().openLoadDialog();
 			useUIStore.getState().setShapeGuide(mockShapeGuide);
 			useUIStore.getState().setShapeGuideDrawMode(true);
+			useUIStore.getState().setShapeGuideEraseMode(true);
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode } =
+			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode } =
 				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isSaveDialogOpen).toBe(false);
 			expect(isLoadDialogOpen).toBe(false);
 			expect(shapeGuide).toBeNull();
 			expect(isShapeGuideDrawMode).toBe(false);
+			expect(isShapeGuideEraseMode).toBe(false);
 		});
 	});
 });
