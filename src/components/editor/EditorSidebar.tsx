@@ -14,6 +14,7 @@ import { GridSizeInput } from '@/components/ui/molecules/GridSizeInput';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { useChartStore } from '@/store/useChartStore';
+import { useUIStore } from '@/store/useUIStore';
 
 interface SidebarSectionProps {
 	title: string;
@@ -30,27 +31,28 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 }
 
 export function EditorSidebar() {
-	const [selectedSymbol, setSelectedSymbol] = useState<KnittingSymbol | null>(null);
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
 	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
+	const { selectedSymbol, setSelectedSymbol } = useUIStore();
 
-	const handleSymbolSelect = useCallback((symbol: KnittingSymbol) => {
-		setSelectedSymbol((prev) => (prev?.id === symbol.id ? null : symbol));
-	}, []);
+	const handleSymbolSelect = useCallback(
+		(symbol: KnittingSymbol) => {
+			setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
+		},
+		[selectedSymbol, setSelectedSymbol],
+	);
 
-	const handlePatternTypeChange = useCallback((type: PatternType) => {
-		setPatternType(type);
-		setSelectedSymbol(null);
-	}, []);
+	const handlePatternTypeChange = useCallback(
+		(type: PatternType) => {
+			setPatternType(type);
+			setSelectedSymbol(null);
+		},
+		[setSelectedSymbol],
+	);
 
-	const handleKnittingClick = useCallback(() => {
-		handlePatternTypeChange('knitting');
-	}, [handlePatternTypeChange]);
-
-	const handleCrochetClick = useCallback(() => {
-		handlePatternTypeChange('crochet');
-	}, [handlePatternTypeChange]);
+	const handleKnittingClick = useCallback(() => handlePatternTypeChange('knitting'), [handlePatternTypeChange]);
+	const handleCrochetClick = useCallback(() => handlePatternTypeChange('crochet'), [handlePatternTypeChange]);
 
 	const handlePatternTitleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
