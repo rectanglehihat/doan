@@ -34,7 +34,7 @@ export function EditorSidebar() {
 	const [difficulty, setDifficulty] = useState<number>(0);
 	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle, patternType, setPatternType } =
 		useChartStore();
-	const { selectedSymbol, setSelectedSymbol, openResetDialog } = useUIStore();
+	const { selectedSymbol, setSelectedSymbol } = useUIStore();
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -87,10 +87,6 @@ export function EditorSidebar() {
 		},
 		[setCellSize],
 	);
-
-	const handleResetClick = useCallback(() => {
-		openResetDialog();
-	}, [openResetDialog]);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -214,14 +210,6 @@ export function EditorSidebar() {
 					className="w-full"
 				>
 					PDF 내보내기
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					className="w-full text-red-600 hover:text-red-700"
-					onClick={handleResetClick}
-				>
-					도안 초기화
 				</Button>
 			</div>
 		</div>

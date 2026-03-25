@@ -7,6 +7,7 @@ const defaultProps = {
 	canRedo: false,
 	onUndo: vi.fn(),
 	onRedo: vi.fn(),
+	onReset: vi.fn(),
 	symmetryMode: 'none' as const,
 	onSymmetryChange: vi.fn(),
 };
@@ -109,6 +110,13 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} onSymmetryChange={handleSymmetryChange} />);
 			await userEvent.click(screen.getByRole('button', { name: '대칭 좌우' }));
 			expect(handleSymmetryChange).toHaveBeenCalledWith('horizontal');
+		});
+
+		it('초기화 버튼 클릭 시 onReset을 호출한다', async () => {
+			const handleReset = vi.fn();
+			render(<Toolbar {...defaultProps} onReset={handleReset} />);
+			await userEvent.click(screen.getByRole('button', { name: '도안 초기화' }));
+			expect(handleReset).toHaveBeenCalledTimes(1);
 		});
 	});
 });

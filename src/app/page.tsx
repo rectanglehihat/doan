@@ -14,7 +14,7 @@ export default function EditorPage() {
 	const { undo, redo, canUndo, canRedo } = useHistory();
 	const patternTitle = useChartStore((state) => state.patternTitle);
 	const reset = useChartStore((state) => state.reset);
-	const { isResetDialogOpen, closeResetDialog, openSaveDialog, symmetryMode, setSymmetryMode } = useUIStore();
+	const { isResetDialogOpen, openResetDialog, closeResetDialog, openSaveDialog, symmetryMode, setSymmetryMode } = useUIStore();
 
 	const handleUndo = useCallback(() => {
 		undo();
@@ -69,6 +69,7 @@ export default function EditorPage() {
 					canRedo={canRedo}
 					onUndo={handleUndo}
 					onRedo={handleRedo}
+					onReset={openResetDialog}
 					patternTitle={patternTitle}
 					symmetryMode={symmetryMode}
 					onSymmetryChange={handleSymmetryChange}
