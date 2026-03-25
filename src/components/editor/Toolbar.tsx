@@ -43,9 +43,11 @@ export function Toolbar({ canUndo, canRedo, onUndo, onRedo, patternTitle }: Tool
 				</Button>
 			</div>
 			<div className="ml-auto">
-				<span className="text-sm font-medium text-zinc-700">
-					{patternTitle || '제목 없는 도안'}
-				</span>
+				{patternTitle ? (
+					<span className="text-sm font-medium text-zinc-700">{patternTitle}</span>
+				) : (
+					<span className="text-sm font-medium text-zinc-400 print:hidden">제목 없는 도안</span>
+				)}
 			</div>
 		</div>
 	);
