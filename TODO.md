@@ -75,7 +75,14 @@
 - [ ] 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
 - [ ] 패턴 타일 반복 — 선택 영역을 가로/세로 N회 자동 타일링 (`useChartEditor` 확장)
 - [ ] 단 반복 블록 마커 — 행 범위 + "N회 반복" 레이블 (`ChartPattern` 타입 확장, PDF 연동)
-- [ ] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
+- [x] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
+- [x] 형태선 드래그 그리기 — 마우스 드래그로 형태선 stroke 추가 (`ShapeGuideLayer`, `isShapeGuideDrawMode`)
+- [ ] 형태선 드래그 지우기 — 지우기 모드에서 드래그 경로와 교차하는 stroke 실시간 삭제
+  - `useUIStore`: `isShapeGuideEraseMode`, `setShapeGuideEraseMode` 추가
+  - `KonvaGrid.tsx`: 지우기 드래그 핸들러 (교차 stroke 감지 → `removeShapeGuideStroke`)
+  - `ShapeGuideLayer.tsx`: 지우기 경로(eraseStroke) 반투명 빨간 라인으로 표시
+  - `Toolbar.tsx`: "형태선 지우기" 모드 버튼 추가 (그리기 버튼과 동일한 토글 방식)
+  - 각 파일 테스트 업데이트
 
 ### 1-6. 저장 및 불러오기
 
