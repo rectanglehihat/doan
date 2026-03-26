@@ -71,7 +71,11 @@
 - [x] 그리드 크기 변경 시 기존 셀 데이터 유지 로직 (`useChartStore.setGridSize` 내 처리)
 - [x] 도안 초기화 기능 (`ConfirmDialog` 컴포넌트 + `useUIStore.isResetDialogOpen`)
 - [x] 대칭 모드 (가로/세로 대칭 자동 적용, `useUIStore.symmetryMode`)
-- [ ] 점대칭(회전 대칭) 모드 (`SymmetryMode`에 `'rotational'` 추가, `useUIStore` 확장)
+- [ ] 점대칭(회전 대칭) 모드
+  - `SymmetryMode`에 `'rotational'` 추가, `useUIStore` 확장
+  - 캔버스를 절반으로 분할 — 편집 가능 영역(절반) + 수정 불가 미리보기 영역(나머지 절반)
+  - 미리보기 영역: 편집 영역을 중심점 기준 180° 회전한 결과를 반투명 오버레이로 실시간 표시
+  - 의류(스웨터, 카디건 등) 좌우 대칭 편물 작업 시 반복 입력 작업 제거
 - [x] 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
 - [ ] 단 반복 블록 마커 — 행 범위 + "N회 반복" 레이블 (`ChartPattern` 타입 확장, PDF 연동)
 - [x] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
