@@ -17,6 +17,7 @@ export default function EditorPage() {
 		isResetDialogOpen,
 		openResetDialog,
 		closeResetDialog,
+		reset: resetUI,
 		openSaveDialog,
 		shapeGuide,
 		isShapeGuideDrawMode,
@@ -42,8 +43,8 @@ export default function EditorPage() {
 
 	const handleResetConfirm = useCallback(() => {
 		reset();
-		closeResetDialog();
-	}, [reset, closeResetDialog]);
+		resetUI();
+	}, [reset, resetUI]);
 
 	const handleResetCancel = useCallback(() => {
 		closeResetDialog();

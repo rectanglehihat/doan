@@ -296,9 +296,10 @@ describe('useUIStore', () => {
 			useUIStore.getState().setClipboard([[{ symbolId: 'k' }]]);
 			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().setRotationalMode('both');
+			useUIStore.getState().setSymmetryMode('horizontal');
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode, rotationalMode } =
+			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode, rotationalMode, symmetryMode } =
 				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isSaveDialogOpen).toBe(false);
@@ -310,6 +311,7 @@ describe('useUIStore', () => {
 			expect(clipboard).toBeNull();
 			expect(isSelectionMode).toBe(false);
 			expect(rotationalMode).toBe('none');
+			expect(symmetryMode).toBe('none');
 		});
 	});
 });
