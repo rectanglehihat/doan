@@ -78,7 +78,6 @@ pnpm test → pnpm tsc --noEmit → pnpm lint → pnpm build
 ### Phase 1 미완성 항목 (MVP)
 - 점 대칭 회전 (rotational symmetry)
 - 선택·복사·붙여넣기 (Ctrl+C/V)
-- 패턴 타일 반복
 - 반복 블록 마커
 - localStorage 저장/불러오기 (SaveDialog, LoadDialog)
 - PDF 내보내기 (jsPDF + html2canvas)

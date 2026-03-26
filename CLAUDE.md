@@ -175,6 +175,8 @@ pnpm test         # 단위·통합 테스트 실행
 |------|--------|------|
 | `/tdd-component` | "새 컴포넌트 만들어" | architect → test-writer → implementer → reviewer 전체 워크플로우 |
 | `/tdd-hook` | "새 훅/스토어 만들어" | architect → test-writer → store-hook-implementer → reviewer |
+| `/modify-component` | "컴포넌트 수정해", "버그 고쳐줘", "리팩터해줘" | 기존 컴포넌트 영향 분석 → 테스트 업데이트 → 수정 → 검증 |
+| `/modify-store` | "스토어 수정해", "훅에 기능 추가해" | 기존 스토어/훅 분석 → 테스트 업데이트 → 수정 → 검증 |
 | `/verify` | "검증해", "테스트 돌려" | test → tsc → lint → build 순차 실행 |
 | `/new-feature` | "기능 구현해", "TODO 항목 구현" | 설계부터 검증까지 전체 사이클 |
 | `/auto-commit` | "커밋해" | 변경사항 분석 후 한국어 커밋 메시지 생성 |

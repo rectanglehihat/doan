@@ -87,7 +87,7 @@ export function EditorSidebar() {
 
 	return (
 		<div className="flex flex-col h-full">
-			<div className="px-4 py-4 border-b border-zinc-200">
+			<div className="px-4 py-3.5 border-b border-zinc-200">
 				<h2 className="text-sm font-semibold text-zinc-800">편집 도구</h2>
 			</div>
 

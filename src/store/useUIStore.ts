@@ -46,7 +46,12 @@ export const useUIStore = create<UIState>((set) => ({
 	clipboard: null,
 	isSelectionMode: false,
 
-	setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
+	setSelectedSymbol: (symbol) =>
+		set(
+			symbol !== null
+				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null }
+				: { selectedSymbol: null },
+		),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
 	openSaveDialog: () => set({ isSaveDialogOpen: true }),
 	closeSaveDialog: () => set({ isSaveDialogOpen: false }),
