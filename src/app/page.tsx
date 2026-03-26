@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useHistory } from '@/hooks/useHistory';
-import { SymmetryMode, RotationalMode } from '@/types/knitting';
+import { RotationalMode } from '@/types/knitting';
 
 export default function EditorPage() {
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
@@ -18,8 +18,6 @@ export default function EditorPage() {
 		openResetDialog,
 		closeResetDialog,
 		openSaveDialog,
-		symmetryMode,
-		setSymmetryMode,
 		shapeGuide,
 		isShapeGuideDrawMode,
 		isShapeGuideEraseMode,
@@ -50,13 +48,6 @@ export default function EditorPage() {
 	const handleResetCancel = useCallback(() => {
 		closeResetDialog();
 	}, [closeResetDialog]);
-
-	const handleSymmetryChange = useCallback(
-		(mode: SymmetryMode) => {
-			setSymmetryMode(mode);
-		},
-		[setSymmetryMode],
-	);
 
 	const handleShapeGuideDrawModeChange = useCallback(
 		(active: boolean) => {
@@ -141,8 +132,6 @@ export default function EditorPage() {
 					onUndo={handleUndo}
 					onRedo={handleRedo}
 					onReset={openResetDialog}
-					symmetryMode={symmetryMode}
-					onSymmetryChange={handleSymmetryChange}
 					isShapeGuideDrawMode={isShapeGuideDrawMode}
 					onShapeGuideDrawModeChange={handleShapeGuideDrawModeChange}
 					isShapeGuideEraseMode={isShapeGuideEraseMode}

@@ -8,8 +8,6 @@ const defaultProps = {
 	onUndo: vi.fn(),
 	onRedo: vi.fn(),
 	onReset: vi.fn(),
-	symmetryMode: 'none' as const,
-	onSymmetryChange: vi.fn(),
 	isShapeGuideDrawMode: false,
 	onShapeGuideDrawModeChange: vi.fn(),
 	isShapeGuideEraseMode: false,
@@ -34,19 +32,6 @@ describe('Toolbar', () => {
 			expect(screen.getByRole('button', { name: /다시 실행/ })).toBeInTheDocument();
 		});
 
-		it('대칭 모드 버튼 4개를 렌더링한다', () => {
-			render(<Toolbar {...defaultProps} />);
-			expect(screen.getByRole('button', { name: '대칭 없음' })).toBeInTheDocument();
-			expect(screen.getByRole('button', { name: '대칭 좌우' })).toBeInTheDocument();
-			expect(screen.getByRole('button', { name: '대칭 상하' })).toBeInTheDocument();
-			expect(screen.getByRole('button', { name: '대칭 양방향' })).toBeInTheDocument();
-		});
-
-		it('현재 symmetryMode 버튼이 선택(aria-pressed) 상태이다', () => {
-			render(<Toolbar {...defaultProps} symmetryMode="horizontal" />);
-			expect(screen.getByRole('button', { name: '대칭 좌우' })).toHaveAttribute('aria-pressed', 'true');
-			expect(screen.getByRole('button', { name: '대칭 없음' })).toHaveAttribute('aria-pressed', 'false');
-		});
 	});
 
 	describe('disabled 상태', () => {
@@ -98,13 +83,6 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} canRedo={false} onRedo={handleRedo} />);
 			await userEvent.click(screen.getByRole('button', { name: /다시 실행/ }));
 			expect(handleRedo).not.toHaveBeenCalled();
-		});
-
-		it('대칭 모드 버튼 클릭 시 onSymmetryChange를 해당 모드로 호출한다', async () => {
-			const handleSymmetryChange = vi.fn();
-			render(<Toolbar {...defaultProps} onSymmetryChange={handleSymmetryChange} />);
-			await userEvent.click(screen.getByRole('button', { name: '대칭 좌우' }));
-			expect(handleSymmetryChange).toHaveBeenCalledWith('horizontal');
 		});
 
 		it('초기화 버튼 클릭 시 onReset을 호출한다', async () => {

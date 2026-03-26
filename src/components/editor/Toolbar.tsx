@@ -1,15 +1,8 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/atoms/Button';
-import { SymmetryMode, RotationalMode } from '@/types/knitting';
-
-const SYMMETRY_OPTIONS: { value: SymmetryMode; label: string }[] = [
-	{ value: 'none', label: '없음' },
-	{ value: 'horizontal', label: '좌우' },
-	{ value: 'vertical', label: '상하' },
-	{ value: 'both', label: '양방향' },
-];
+import { RotationalMode } from '@/types/knitting';
 
 interface ToolbarProps {
 	canUndo: boolean;
@@ -17,8 +10,6 @@ interface ToolbarProps {
 	onUndo: () => void;
 	onRedo: () => void;
 	onReset: () => void;
-	symmetryMode: SymmetryMode;
-	onSymmetryChange: (mode: SymmetryMode) => void;
 	isShapeGuideDrawMode: boolean;
 	onShapeGuideDrawModeChange: (active: boolean) => void;
 	isShapeGuideEraseMode: boolean;
@@ -37,8 +28,6 @@ export function Toolbar({
 	onUndo,
 	onRedo,
 	onReset,
-	symmetryMode,
-	onSymmetryChange,
 	isShapeGuideDrawMode,
 	onShapeGuideDrawModeChange,
 	isShapeGuideEraseMode,
@@ -90,16 +79,6 @@ export function Toolbar({
 		onRotationalModeChange(rotationalMode === 'both' ? 'none' : 'both');
 	}, [onRotationalModeChange, rotationalMode]);
 
-	const symmetryHandlers = useMemo<Record<SymmetryMode, () => void>>(
-		() => ({
-			none: () => onSymmetryChange('none'),
-			horizontal: () => onSymmetryChange('horizontal'),
-			vertical: () => onSymmetryChange('vertical'),
-			both: () => onSymmetryChange('both'),
-		}),
-		[onSymmetryChange],
-	);
-
 	return (
 		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
 			{/* 실행 취소 / 다시 실행 */}
@@ -122,25 +101,6 @@ export function Toolbar({
 				>
 					다시 실행
 				</Button>
-			</div>
-
-			<div className="h-5 w-px bg-zinc-200" />
-
-			{/* 대칭 */}
-			<div className="flex items-center gap-1">
-				<span className="text-xs text-zinc-400 mr-0.5">대칭</span>
-				{SYMMETRY_OPTIONS.map(({ value, label }) => (
-					<Button
-						key={value}
-						variant={symmetryMode === value ? 'default' : 'ghost'}
-						size="sm"
-						onClick={symmetryHandlers[value]}
-						aria-label={`대칭 ${label}`}
-						aria-pressed={symmetryMode === value}
-					>
-						{label}
-					</Button>
-				))}
 			</div>
 
 			<div className="h-5 w-px bg-zinc-200" />
