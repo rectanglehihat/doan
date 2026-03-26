@@ -33,8 +33,7 @@
 
 - **User Story**: "사용자로서 나는 생성된 도안의 크기, 간격, 배경색을 조정하고 싶다"
 - **Acceptance Criteria**:
-  - 대칭 모드: 가로 또는 세로 대칭 버튼을 활성화하면 한쪽만 그려도 반대편 자동 그리기
-  - 점대칭(회전 대칭) 모드: 의류처럼 대칭이 필요한 편물의 반복 작업을 줄이는 기능
+  - 대칭 모드: 의류처럼 대칭이 필요한 편물의 반복 작업을 줄이는 기능
     - 캔버스를 절반으로 분할하여 한쪽(편집 영역)만 작업하면 나머지 절반은 중심점 기준 180° 회전한 결과를 수정 불가 미리보기로 실시간 표시
     - 활용 예: 스웨터 앞판, 카디건, 숄 칼라, 레이스, 원형 요크 등
   - 영역 선택 & 복사/붙여넣기: 직사각형 영역을 드래그로 선택하고 Ctrl+C / Ctrl+V로 복사·붙여넣기
@@ -256,7 +255,7 @@
 - Zustand 상태관리 설정 (pattern state)
 - Undo/Redo 구현 (custom hook)
 - Grid size editor 컴포넌트
-- 점대칭 모드 (`SymmetryMode` 타입에 `'rotational'` 추가, `useUIStore` 확장)
+- 대칭 모드
 - 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
 - 단 반복 블록 마커 (`ChartPattern` 타입에 `repeatBlocks` 필드 추가, PDF 연동)
 - 형태선 오버레이 (`KonvaGrid`에 별도 Konva Layer 추가)
