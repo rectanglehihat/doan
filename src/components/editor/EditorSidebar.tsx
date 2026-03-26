@@ -34,7 +34,7 @@ export function EditorSidebar() {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
-	const { selectedSymbol, setSelectedSymbol, rotationalMode } = useUIStore();
+	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide } = useUIStore();
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -74,28 +74,32 @@ export function EditorSidebar() {
 			if (isColSymmetric) {
 				// 짝수로 스냅: min=2,step=2 정렬을 보장
 				const snapped = Math.max(2, Math.round(cols / 2) * 2);
+				const colOffset = Math.trunc((snapped - gridSize.cols) / 2);
 				setGridSizeSymmetric({ rows: gridSize.rows, cols: snapped }, rotationalMode);
+				shiftShapeGuide(colOffset, 0);
 			} else if (rotationalMode !== 'none') {
 				setGridSizeSymmetric({ rows: gridSize.rows, cols }, rotationalMode);
 			} else {
 				setGridSize({ rows: gridSize.rows, cols });
 			}
 		},
-		[gridSize.rows, isColSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric],
+		[gridSize.rows, gridSize.cols, isColSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric, shiftShapeGuide],
 	);
 
 	const handleRowsChange = useCallback(
 		(rows: number) => {
 			if (isRowSymmetric) {
 				const snapped = Math.max(2, Math.round(rows / 2) * 2);
+				const rowOffset = Math.trunc((snapped - gridSize.rows) / 2);
 				setGridSizeSymmetric({ rows: snapped, cols: gridSize.cols }, rotationalMode);
+				shiftShapeGuide(0, rowOffset);
 			} else if (rotationalMode !== 'none') {
 				setGridSizeSymmetric({ rows, cols: gridSize.cols }, rotationalMode);
 			} else {
 				setGridSize({ rows, cols: gridSize.cols });
 			}
 		},
-		[gridSize.cols, isRowSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric],
+		[gridSize.cols, gridSize.rows, isRowSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric, shiftShapeGuide],
 	);
 
 	const handleCellSizeChange = useCallback(

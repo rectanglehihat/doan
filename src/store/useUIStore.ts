@@ -24,6 +24,7 @@ interface UIState {
 	addShapeGuideStroke: (stroke: number[]) => void;
 	removeShapeGuideStroke: (index: number) => void;
 	replaceShapeGuideStroke: (index: number, newStrokes: number[][]) => void;
+	shiftShapeGuide: (colOffset: number, rowOffset: number) => void;
 	setShapeGuideDrawMode: (active: boolean) => void;
 	setShapeGuideEraseMode: (active: boolean) => void;
 	cellSelection: CellSelection | null;
@@ -81,6 +82,17 @@ export const useUIStore = create<UIState>((set) => ({
 			const strokes = [...state.shapeGuide.strokes];
 			strokes.splice(index, 1, ...newStrokes);
 			return { shapeGuide: { strokes } };
+		}),
+	shiftShapeGuide: (colOffset, rowOffset) =>
+		set((state) => {
+			if (!state.shapeGuide) return state;
+			return {
+				shapeGuide: {
+					strokes: state.shapeGuide.strokes.map((stroke) =>
+						stroke.map((v, i) => v + (i % 2 === 0 ? colOffset : rowOffset)),
+					),
+				},
+			};
 		}),
 	setShapeGuideDrawMode: (active) => set({ isShapeGuideDrawMode: active }),
 	setShapeGuideEraseMode: (active) => set({ isShapeGuideEraseMode: active }),

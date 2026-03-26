@@ -144,6 +144,39 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('shiftShapeGuide', () => {
+		it('shapeGuide가 null이면 아무것도 하지 않는다', () => {
+			useUIStore.getState().shiftShapeGuide(1, 0);
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('colOffset=1, rowOffset=0이면 각 stroke의 col 좌표(짝수 인덱스)가 1씩 증가한다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 10, 5, 20, 10]);
+			useUIStore.getState().shiftShapeGuide(1, 0);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([1, 0, 11, 5, 21, 10]);
+		});
+
+		it('colOffset=0, rowOffset=1이면 각 stroke의 row 좌표(홀수 인덱스)가 1씩 증가한다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 10, 5, 20, 10]);
+			useUIStore.getState().shiftShapeGuide(0, 1);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([0, 1, 10, 6, 20, 11]);
+		});
+
+		it('음수 offset도 올바르게 동작한다 (감소)', () => {
+			useUIStore.getState().addShapeGuideStroke([4, 6, 8, 10]);
+			useUIStore.getState().shiftShapeGuide(-2, -3);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([2, 3, 6, 7]);
+		});
+
+		it('여러 stroke가 있을 때 모두 이동된다', () => {
+			useUIStore.getState().addShapeGuideStroke([0, 0, 2, 2]);
+			useUIStore.getState().addShapeGuideStroke([10, 10, 12, 12]);
+			useUIStore.getState().shiftShapeGuide(1, 1);
+			expect(useUIStore.getState().shapeGuide?.strokes[0]).toEqual([1, 1, 3, 3]);
+			expect(useUIStore.getState().shapeGuide?.strokes[1]).toEqual([11, 11, 13, 13]);
+		});
+	});
+
 	describe('isShapeGuideDrawMode', () => {
 		it('초기값은 false이다', () => {
 			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
