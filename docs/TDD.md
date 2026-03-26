@@ -289,9 +289,10 @@ pnpm test:coverage
 
 ## 7. 검증 순서 (코드 변경 후)
 
+구현 완료 후 pnpm 명령어를 직접 실행하지 않는다. 반드시 `/verify` 스킬을 호출해 통합 검증한다.
+
 ```
-1. pnpm test          — 단위·통합 테스트 전체 통과 확인
-2. pnpm tsc --noEmit  — 타입 에러 없음 확인
-3. pnpm lint          — ESLint 통과 확인
-4. pnpm build         — 빌드 성공 확인 (PR 전 필수)
+/verify  →  test → tsc → lint → build 순차 실행
 ```
+
+각 단계의 개별 명령어는 `/verify` 스킬 내부에서 관리한다.

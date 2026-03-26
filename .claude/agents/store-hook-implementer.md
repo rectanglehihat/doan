@@ -97,8 +97,6 @@ export function useDomainFeature() {
 - `src/hooks/useChartEditor.ts` — 복합 훅 패턴
 - `src/hooks/useHistory.ts` — 히스토리 훅 패턴
 
-## 검증 순서
+## 검증
 
-1. `pnpm test` — 테스트 통과 (각 테스트 전 reset 확인)
-2. `pnpm tsc --noEmit` — 타입 에러 없음
-3. `pnpm lint` — ESLint 통과
+구현 완료 후 pnpm 명령어를 직접 실행하지 않는다. 검증은 상위 워크플로우에서 `/verify` 스킬을 통해 통합 실행한다.

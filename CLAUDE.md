@@ -82,12 +82,12 @@ pnpm test         # 단위·통합 테스트 실행
 
 ### 코드 변경 후 검증 순서
 
-1. `pnpm test` — 단위·통합 테스트 전체 통과 확인
-2. `pnpm tsc --noEmit` — 타입 에러 없음 확인
-3. `pnpm lint` — ESLint 통과 확인
-4. `pnpm build` — 빌드 성공 확인 (PR 전 필수)
+구현 완료 후 pnpm 명령어를 직접 실행하지 않는다. 반드시 `/verify` 스킬을 호출해 통합 검증한다.
 
-- 변경된 파일과 직접 연관된 컴포넌트·훅만 수동 검증 (전체 앱 재검증 불필요)
+```
+/verify  →  test → tsc → lint → build 순차 실행
+```
+
 - TDD 전략 및 레이어별 테스트 작성 방법 → @docs/TDD.md
 
 ---
