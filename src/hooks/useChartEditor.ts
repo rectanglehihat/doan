@@ -9,7 +9,7 @@ import { GridSize, CellSelection } from '@/types/knitting';
 export function useChartEditor() {
 	const { cells, gridSize, cellSize, patternType, setCellSymbol, setCells, setGridSize, setCellSize, setPatternType, reset } =
 		useChartStore();
-	const { selectedSymbol, symmetryMode, setSymmetryMode, clipboard, setClipboard } = useUIStore();
+	const { selectedSymbol, rotationalMode, clipboard, setClipboard } = useUIStore();
 
 	const symbolsMap = useMemo<Record<string, string>>(() => {
 		const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
@@ -20,7 +20,7 @@ export function useChartEditor() {
 		(row: number, col: number) => {
 			const symbolId = selectedSymbol?.id ?? null;
 
-			if (symmetryMode === 'none') {
+			if (rotationalMode === 'none') {
 				setCellSymbol(row, col, symbolId);
 				return;
 			}
@@ -28,13 +28,13 @@ export function useChartEditor() {
 			const mirrorCol = gridSize.cols - 1 - col;
 			const mirrorRow = gridSize.rows - 1 - row;
 			const paintSet = new Set([`${row},${col}`]);
-			if (symmetryMode === 'horizontal' || symmetryMode === 'both') {
+			if (rotationalMode === 'horizontal' || rotationalMode === 'both') {
 				paintSet.add(`${row},${mirrorCol}`);
 			}
-			if (symmetryMode === 'vertical' || symmetryMode === 'both') {
+			if (rotationalMode === 'vertical' || rotationalMode === 'both') {
 				paintSet.add(`${mirrorRow},${col}`);
 			}
-			if (symmetryMode === 'both') {
+			if (rotationalMode === 'both') {
 				paintSet.add(`${mirrorRow},${mirrorCol}`);
 			}
 
@@ -43,7 +43,7 @@ export function useChartEditor() {
 			);
 			setCells(newCells);
 		},
-		[setCellSymbol, setCells, cells, selectedSymbol, symmetryMode, gridSize],
+		[setCellSymbol, setCells, cells, selectedSymbol, rotationalMode, gridSize],
 	);
 
 	const clearCell = useCallback(
@@ -97,12 +97,10 @@ export function useChartEditor() {
 		patternType,
 		selectedSymbol,
 		symbolsMap,
-		symmetryMode,
 		handleCellPaint,
 		clearCell,
 		resizeGrid,
 		setCellSize,
-		setSymmetryMode,
 		reset,
 		setPatternType,
 		copySelection,

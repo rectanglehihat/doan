@@ -4,6 +4,40 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 import { useUIStore } from '@/store/useUIStore';
+import { RotationalMode } from '@/types/knitting';
+
+function mirrorStrokeHorizontal(stroke: number[], cols: number): number[] {
+	const result: number[] = [];
+	for (let i = 0; i < stroke.length; i += 2) {
+		result.push(cols - stroke[i], stroke[i + 1]);
+	}
+	return result;
+}
+
+function mirrorStrokeVertical(stroke: number[], rows: number): number[] {
+	const result: number[] = [];
+	for (let i = 0; i < stroke.length; i += 2) {
+		result.push(stroke[i], rows - stroke[i + 1]);
+	}
+	return result;
+}
+
+function buildSymmetricStrokes(stroke: number[], rotationalMode: RotationalMode, cols: number, rows: number): number[][] {
+	if (rotationalMode === 'none') return [stroke];
+	const results: number[][] = [stroke];
+	const hMirror = mirrorStrokeHorizontal(stroke, cols);
+	const vMirror = mirrorStrokeVertical(stroke, rows);
+	if (rotationalMode === 'horizontal' || rotationalMode === 'both') {
+		results.push(hMirror);
+	}
+	if (rotationalMode === 'vertical' || rotationalMode === 'both') {
+		results.push(vMirror);
+	}
+	if (rotationalMode === 'both') {
+		results.push(mirrorStrokeHorizontal(vMirror, cols));
+	}
+	return results;
+}
 
 const KonvaGrid = dynamic(() => import('./KonvaGrid').then((m) => ({ default: m.KonvaGrid })), {
 	ssr: false,
@@ -36,6 +70,14 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 	const cellSelection = useUIStore((state) => state.cellSelection);
 	const clipboard = useUIStore((state) => state.clipboard);
 	const setCellSelection = useUIStore((state) => state.setCellSelection);
+
+	const handleShapeGuideStrokeAdd = useCallback(
+		(stroke: number[]) => {
+			const strokes = buildSymmetricStrokes(stroke, rotationalMode, gridSize.cols, gridSize.rows);
+			strokes.forEach((s) => addShapeGuideStroke(s));
+		},
+		[addShapeGuideStroke, rotationalMode, gridSize],
+	);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
@@ -70,7 +112,7 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 					shapeGuide={shapeGuide}
 					isShapeGuideDrawMode={isShapeGuideDrawMode}
 					isShapeGuideEraseMode={isShapeGuideEraseMode}
-					onShapeGuideStrokeAdd={addShapeGuideStroke}
+					onShapeGuideStrokeAdd={handleShapeGuideStrokeAdd}
 					onShapeGuideStrokeRemove={removeShapeGuideStroke}
 					onShapeGuideStrokeReplace={replaceShapeGuideStroke}
 					isSelectionMode={isSelectionMode}

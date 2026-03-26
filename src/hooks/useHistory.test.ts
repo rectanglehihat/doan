@@ -2,9 +2,11 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useHistory } from './useHistory';
 import { useChartStore } from '@/store/useChartStore';
+import { useUIStore } from '@/store/useUIStore';
 
 beforeEach(() => {
 	useChartStore.getState().reset();
+	useUIStore.getState().reset();
 });
 
 describe('useHistory', () => {
@@ -123,6 +125,80 @@ describe('useHistory', () => {
 				result.current.endBatch();
 			});
 			await waitFor(() => expect(result.current.canUndo).toBe(true));
+		});
+	});
+
+	describe('shapeGuide undo/redo', () => {
+		it('형태선 추가 후 canUndo가 true가 된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			await waitFor(() => {
+				expect(result.current.canUndo).toBe(true);
+			});
+		});
+
+		it('형태선 추가 후 undo 호출 시 형태선이 제거된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('형태선 undo 후 redo 호출 시 형태선이 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			act(() => {
+				result.current.redo();
+			});
+			expect(useUIStore.getState().shapeGuide?.strokes).toHaveLength(1);
+		});
+
+		it('셀 변경과 형태선 변경이 각각 독립적인 히스토리 항목으로 기록된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			// 형태선 undo
+			act(() => {
+				result.current.undo();
+			});
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+			// 셀 undo
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+		});
+
+		it('undo/redo 적용 시 형태선 변경이 새 히스토리에 기록되지 않는다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			// undo 후 past 스택이 비어있어야 함
+			expect(result.current.canUndo).toBe(false);
 		});
 	});
 
