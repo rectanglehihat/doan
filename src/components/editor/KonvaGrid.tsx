@@ -4,7 +4,7 @@ import React, { memo, useState, useCallback, useRef, useMemo, useEffect } from '
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
-import { ChartCell, GridSize, ShapeGuide } from '@/types/knitting';
+import { ChartCell, GridSize, ShapeGuide, CellSelection } from '@/types/knitting';
 import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
 
@@ -119,6 +119,12 @@ interface KonvaGridProps {
 	onShapeGuideStrokeAdd?: (stroke: number[]) => void;
 	onShapeGuideStrokeRemove?: (index: number) => void;
 	onShapeGuideStrokeReplace?: (index: number, newStrokes: number[][]) => void;
+	isSelectionMode?: boolean;
+	cellSelection?: CellSelection | null;
+	clipboard?: ChartCell[][] | null;
+	onSelectionChange?: (sel: CellSelection | null) => void;
+	onCopySelection?: (sel: CellSelection) => void;
+	onPasteClipboard?: (row: number, col: number) => void;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -138,6 +144,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onShapeGuideStrokeAdd,
 	onShapeGuideStrokeRemove,
 	onShapeGuideStrokeReplace,
+	isSelectionMode = false,
+	cellSelection = null,
+	clipboard = null,
+	onSelectionChange,
+	onCopySelection,
+	onPasteClipboard,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -171,6 +183,14 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const [hoverCell, setHoverCell] = useState<{ row: number; col: number } | null>(null);
 	const [selectedStrokeIndex, setSelectedStrokeIndex] = useState<number | null>(null);
 
+	// 영역 선택 관련
+	const isSelectingRef = useRef(false);
+	const selectionAnchorRef = useRef<{ row: number; col: number } | null>(null);
+	const hoverCellRef = useRef<{ row: number; col: number } | null>(null);
+	useEffect(() => {
+		hoverCellRef.current = hoverCell;
+	}, [hoverCell]);
+
 	const handleStrokeClick = useCallback(
 		(index: number) => {
 			setSelectedStrokeIndex((prev) => (prev === index ? null : index));
@@ -196,6 +216,25 @@ export const KonvaGrid = memo(function KonvaGrid({
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [isShapeGuideDrawMode, onShapeGuideStrokeRemove]);
+
+	useEffect(() => {
+		if (!isSelectionMode) return;
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+			if (e.key === 'Escape') {
+				onSelectionChange?.(null);
+			} else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+				e.preventDefault();
+				if (cellSelection) onCopySelection?.(cellSelection);
+			} else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+				e.preventDefault();
+				const hover = hoverCellRef.current;
+				if (hover) onPasteClipboard?.(hover.row, hover.col);
+			}
+		};
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [isSelectionMode, cellSelection, onSelectionChange, onCopySelection, onPasteClipboard]);
 
 	const totalWidth = gridSize.cols * cellSize;
 	const totalHeight = gridSize.rows * cellSize;
@@ -288,7 +327,14 @@ export const KonvaGrid = memo(function KonvaGrid({
 				return;
 			}
 			if (e.evt.button === 0) {
-				if (isShapeGuideEraseMode) {
+				if (isSelectionMode) {
+					const cell = getCellFromPointer();
+					if (cell) {
+						isSelectingRef.current = true;
+						selectionAnchorRef.current = cell;
+						onSelectionChange?.({ startRow: cell.row, startCol: cell.col, endRow: cell.row, endCol: cell.col });
+					}
+				} else if (isShapeGuideEraseMode) {
 					const pt = getGridPointer();
 					if (pt) {
 						isErasingGuide.current = true;
@@ -314,13 +360,20 @@ export const KonvaGrid = memo(function KonvaGrid({
 				}
 			}
 		},
-		[getCellFromPointer, getGridPointer, onCellPaint, onPaintStart, startMousePan, isInSpacePanMode, isShapeGuideDrawMode, isShapeGuideEraseMode],
+		[getCellFromPointer, getGridPointer, onCellPaint, onPaintStart, startMousePan, isInSpacePanMode, isShapeGuideDrawMode, isShapeGuideEraseMode, isSelectionMode, onSelectionChange],
 	);
 
 	const handleMouseMove = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
 			if (updateMousePan(e.evt.clientX, e.evt.clientY)) return;
-			if (isShapeGuideEraseMode) {
+			if (isSelectionMode) {
+				const cell = getCellFromPointer();
+				setHoverCell(cell);
+				if (isSelectingRef.current && cell && selectionAnchorRef.current) {
+					const anchor = selectionAnchorRef.current;
+					onSelectionChange?.({ startRow: anchor.row, startCol: anchor.col, endRow: cell.row, endCol: cell.col });
+				}
+			} else if (isShapeGuideEraseMode) {
 				if (isErasingGuide.current) {
 					const pt = getGridPointer();
 					if (pt) {
@@ -355,7 +408,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				}
 			}
 		},
-		[getCellFromPointer, getGridPointer, onCellPaint, updateMousePan, isShapeGuideDrawMode, isShapeGuideEraseMode, erasePartialStrokes],
+		[getCellFromPointer, getGridPointer, onCellPaint, updateMousePan, isShapeGuideDrawMode, isShapeGuideEraseMode, erasePartialStrokes, isSelectionMode, onSelectionChange],
 	);
 
 	const finishEraseGesture = useCallback(() => {
@@ -371,7 +424,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 	}, [erasePartialStrokesNearPoint]);
 
 	const handleMouseUp = useCallback(() => {
-		if (isShapeGuideEraseMode) {
+		if (isSelectionMode) {
+			isSelectingRef.current = false;
+			selectionAnchorRef.current = null;
+		} else if (isShapeGuideEraseMode) {
 			finishEraseGesture();
 		} else if (isShapeGuideDrawMode) {
 			if (isDrawingGuide.current && currentStroke.length >= 4) {
@@ -386,11 +442,14 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isPainting.current = false;
 		}
 		endMousePan();
-	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture]);
+	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture, isSelectionMode]);
 
 	const handleMouseLeave = useCallback(() => {
 		setHoverCell(null);
-		if (isShapeGuideEraseMode) {
+		if (isSelectionMode) {
+			isSelectingRef.current = false;
+			selectionAnchorRef.current = null;
+		} else if (isShapeGuideEraseMode) {
 			finishEraseGesture();
 		} else if (isShapeGuideDrawMode) {
 			if (isDrawingGuide.current && currentStroke.length >= 4) {
@@ -405,13 +464,15 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isPainting.current = false;
 		}
 		endMousePan();
-	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture]);
+	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture, isSelectionMode]);
 
 	const cursor = isSpacePanning
 		? 'grab'
 		: isShapeGuideEraseMode
 			? ERASER_CURSOR
-			: 'crosshair';
+			: isSelectionMode
+				? 'default'
+				: 'crosshair';
 
 	const hasShapeGuide = shapeGuide && shapeGuide.strokes.length > 0;
 
@@ -458,7 +519,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				))}
 
-				{hoverCell && !isShapeGuideDrawMode && !isShapeGuideEraseMode && (
+				{hoverCell && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode && (
 					<Rect
 						x={hoverCell.col * cellSize}
 						y={hoverCell.row * cellSize}
@@ -468,6 +529,47 @@ export const KonvaGrid = memo(function KonvaGrid({
 						listening={false}
 					/>
 				)}
+
+				{/* 붙여넣기 미리보기 */}
+				{isSelectionMode && clipboard && hoverCell && !cellSelection && clipboard.flatMap((row, dr) =>
+					row.map((cell, dc) => {
+						const r = hoverCell.row + dr;
+						const c = hoverCell.col + dc;
+						if (r >= gridSize.rows || c >= gridSize.cols) return null;
+						return (
+							<Rect
+								key={`paste-preview-${dr}-${dc}`}
+								x={c * cellSize}
+								y={r * cellSize}
+								width={cellSize}
+								height={cellSize}
+								fill={cell.symbolId ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.1)'}
+								listening={false}
+							/>
+						);
+					}).filter((x): x is NonNullable<typeof x> => x !== null),
+				)}
+
+				{/* 선택 영역 사각형 */}
+				{isSelectionMode && cellSelection && (() => {
+					const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
+					const maxRow = Math.max(cellSelection.startRow, cellSelection.endRow);
+					const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
+					const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
+					return (
+						<Rect
+							x={minCol * cellSize}
+							y={minRow * cellSize}
+							width={(maxCol - minCol + 1) * cellSize}
+							height={(maxRow - minRow + 1) * cellSize}
+							stroke="rgba(59,130,246,0.9)"
+							strokeWidth={2}
+							fill="rgba(59,130,246,0.15)"
+							dash={[4, 4]}
+							listening={false}
+						/>
+					);
+				})()}
 			</Layer>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (

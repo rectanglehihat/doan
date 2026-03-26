@@ -108,6 +108,71 @@ describe('useChartEditor', () => {
 		});
 	});
 
+	describe('copySelection', () => {
+		it('선택 영역의 셀을 클립보드에 복사한다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellSymbol(0, 1, 'p');
+			useChartStore.getState().setCellSymbol(1, 0, 'k');
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.copySelection({ startRow: 0, startCol: 0, endRow: 1, endCol: 1 }));
+			const clipboard = useUIStore.getState().clipboard;
+			expect(clipboard).toHaveLength(2);
+			expect(clipboard![0]).toHaveLength(2);
+			expect(clipboard![0][0].symbolId).toBe('k');
+			expect(clipboard![0][1].symbolId).toBe('p');
+			expect(clipboard![1][0].symbolId).toBe('k');
+			expect(clipboard![1][1].symbolId).toBeNull();
+		});
+
+		it('selection이 역방향(endRow < startRow)이어도 정상 복사된다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.copySelection({ startRow: 1, startCol: 1, endRow: 0, endCol: 0 }));
+			const clipboard = useUIStore.getState().clipboard;
+			expect(clipboard![0][0].symbolId).toBe('k');
+		});
+	});
+
+	describe('pasteClipboard', () => {
+		it('클립보드 셀을 지정 위치부터 붙여넣는다', () => {
+			useUIStore.getState().setClipboard([[{ symbolId: 'k' }, { symbolId: 'p' }]]);
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.pasteClipboard(2, 3));
+			const cells = useChartStore.getState().cells;
+			expect(cells[2][3].symbolId).toBe('k');
+			expect(cells[2][4].symbolId).toBe('p');
+		});
+
+		it('클립보드가 없으면 아무것도 하지 않는다', () => {
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.pasteClipboard(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBeNull();
+		});
+
+		it('그리드 경계를 벗어나는 셀은 무시된다', () => {
+			useUIStore.getState().setClipboard([[{ symbolId: 'k' }, { symbolId: 'p' }, { symbolId: 'k' }]]);
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.pasteClipboard(0, 19));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][19].symbolId).toBe('k');
+		});
+
+		it('여러 행에 걸친 클립보드를 붙여넣는다', () => {
+			useUIStore.getState().setClipboard([
+				[{ symbolId: 'k' }, { symbolId: 'p' }],
+				[{ symbolId: 'p' }, { symbolId: 'k' }],
+			]);
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.pasteClipboard(1, 1));
+			const cells = useChartStore.getState().cells;
+			expect(cells[1][1].symbolId).toBe('k');
+			expect(cells[1][2].symbolId).toBe('p');
+			expect(cells[2][1].symbolId).toBe('p');
+			expect(cells[2][2].symbolId).toBe('k');
+		});
+	});
+
 	describe('symbolsMap', () => {
 		it('knitting 모드에서 기호 id를 abbr로 매핑한다', () => {
 			const { result } = renderHook(() => useChartEditor());
