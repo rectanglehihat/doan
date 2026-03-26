@@ -225,6 +225,38 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('툴바 모드와 기호 선택 상호 배타성', () => {
+		it('setSelectedSymbol(symbol) 호출 시 isShapeGuideDrawMode가 false가 된다', () => {
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
+		});
+
+		it('setSelectedSymbol(symbol) 호출 시 isShapeGuideEraseMode가 false가 된다', () => {
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+
+		it('setSelectedSymbol(symbol) 호출 시 isSelectionMode가 false가 된다', () => {
+			useUIStore.getState().setSelectionMode(true);
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+
+		it('setSelectedSymbol(symbol) 호출 시 cellSelection이 null이 된다', () => {
+			useUIStore.getState().setCellSelection({ startRow: 0, startCol: 0, endRow: 2, endCol: 3 });
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().cellSelection).toBeNull();
+		});
+
+		it('setSelectedSymbol(null) 호출 시 모드 상태에 영향을 주지 않는다', () => {
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			useUIStore.getState().setSelectedSymbol(null);
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(true);
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);

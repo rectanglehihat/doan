@@ -29,6 +29,7 @@ export default function EditorPage() {
 		isSelectionMode,
 		setSelectionMode,
 		setCellSelection,
+		setSelectedSymbol,
 	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
@@ -62,9 +63,10 @@ export default function EditorPage() {
 				setShapeGuideEraseMode(false);
 				setSelectionMode(false);
 				setCellSelection(null);
+				setSelectedSymbol(null);
 			}
 		},
-		[setShapeGuideDrawMode, setShapeGuideEraseMode, setSelectionMode, setCellSelection],
+		[setShapeGuideDrawMode, setShapeGuideEraseMode, setSelectionMode, setCellSelection, setSelectedSymbol],
 	);
 
 	const handleShapeGuideEraseModeChange = useCallback(
@@ -74,9 +76,10 @@ export default function EditorPage() {
 				setShapeGuideDrawMode(false);
 				setSelectionMode(false);
 				setCellSelection(null);
+				setSelectedSymbol(null);
 			}
 		},
-		[setShapeGuideEraseMode, setShapeGuideDrawMode, setSelectionMode, setCellSelection],
+		[setShapeGuideEraseMode, setShapeGuideDrawMode, setSelectionMode, setCellSelection, setSelectedSymbol],
 	);
 
 	const handleShapeGuideClear = useCallback(() => {
@@ -91,11 +94,12 @@ export default function EditorPage() {
 			if (active) {
 				setShapeGuideDrawMode(false);
 				setShapeGuideEraseMode(false);
+				setSelectedSymbol(null);
 			} else {
 				setCellSelection(null);
 			}
 		},
-		[setSelectionMode, setShapeGuideDrawMode, setShapeGuideEraseMode, setCellSelection],
+		[setSelectionMode, setShapeGuideDrawMode, setShapeGuideEraseMode, setCellSelection, setSelectedSymbol],
 	);
 
 	useEffect(() => {
