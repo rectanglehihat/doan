@@ -85,6 +85,54 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('setGridSizeSymmetric', () => {
+		it('horizontal 모드에서 cols 증가 시 좌우 외부에 균등하게 추가된다', () => {
+			useChartStore.getState().setGridSize({ rows: 4, cols: 4 });
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellSymbol(0, 3, 'p');
+			useChartStore.getState().setGridSizeSymmetric({ rows: 4, cols: 6 }, 'horizontal');
+			const { cells } = useChartStore.getState();
+			// colOffset = trunc((6-4)/2) = 1 → 기존 셀이 오른쪽으로 1칸 이동
+			expect(cells[0][1].symbolId).toBe('k');
+			expect(cells[0][4].symbolId).toBe('p');
+			expect(cells[0][0].symbolId).toBeNull(); // 새로 추가된 왼쪽 셀
+			expect(cells[0][5].symbolId).toBeNull(); // 새로 추가된 오른쪽 셀
+		});
+
+		it('horizontal 모드에서 cols 감소 시 좌우 외부에서 균등하게 제거된다', () => {
+			useChartStore.getState().setGridSize({ rows: 4, cols: 6 });
+			useChartStore.getState().setCellSymbol(0, 1, 'k');
+			useChartStore.getState().setCellSymbol(0, 4, 'p');
+			useChartStore.getState().setGridSizeSymmetric({ rows: 4, cols: 4 }, 'horizontal');
+			const { cells } = useChartStore.getState();
+			// colOffset = trunc((4-6)/2) = -1 → 기존 셀이 왼쪽으로 1칸 이동
+			expect(cells[0][0].symbolId).toBe('k');
+			expect(cells[0][3].symbolId).toBe('p');
+		});
+
+		it('vertical 모드에서 rows 증가 시 상하 외부에 균등하게 추가된다', () => {
+			useChartStore.getState().setGridSize({ rows: 4, cols: 4 });
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellSymbol(3, 0, 'p');
+			useChartStore.getState().setGridSizeSymmetric({ rows: 6, cols: 4 }, 'vertical');
+			const { cells } = useChartStore.getState();
+			// rowOffset = 1 → 기존 셀이 아래로 1칸 이동
+			expect(cells[1][0].symbolId).toBe('k');
+			expect(cells[4][0].symbolId).toBe('p');
+			expect(cells[0][0].symbolId).toBeNull();
+			expect(cells[5][0].symbolId).toBeNull();
+		});
+
+		it('none 모드에서는 일반 resizeGrid와 동일하게 동작한다', () => {
+			useChartStore.getState().setGridSize({ rows: 4, cols: 4 });
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setGridSizeSymmetric({ rows: 4, cols: 6 }, 'none');
+			const { cells } = useChartStore.getState();
+			// none 모드 → offset 없음 → 기존 셀 위치 유지
+			expect(cells[0][0].symbolId).toBe('k');
+		});
+	});
+
 	describe('setPatternType', () => {
 		it('patternType을 crochet으로 변경한다', () => {
 			useChartStore.getState().setPatternType('crochet');

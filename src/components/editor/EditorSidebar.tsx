@@ -33,8 +33,8 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 export function EditorSidebar() {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
-	const { selectedSymbol, setSelectedSymbol } = useUIStore();
+	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
+	const { selectedSymbol, setSelectedSymbol, rotationalMode } = useUIStore();
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -61,18 +61,41 @@ export function EditorSidebar() {
 		[setPatternTitle],
 	);
 
+	const isColSymmetric = rotationalMode === 'horizontal' || rotationalMode === 'both';
+	const isRowSymmetric = rotationalMode === 'vertical' || rotationalMode === 'both';
+	const stepCols = isColSymmetric ? 2 : 1;
+	const stepRows = isRowSymmetric ? 2 : 1;
+	// min=2 when step=2 so HTML stepper aligns to even values (2,4,6...20,22)
+	const minCols = isColSymmetric ? 2 : 1;
+	const minRows = isRowSymmetric ? 2 : 1;
+
 	const handleColsChange = useCallback(
 		(cols: number) => {
-			setGridSize({ rows: gridSize.rows, cols });
+			if (isColSymmetric) {
+				// 짝수로 스냅: min=2,step=2 정렬을 보장
+				const snapped = Math.max(2, Math.round(cols / 2) * 2);
+				setGridSizeSymmetric({ rows: gridSize.rows, cols: snapped }, rotationalMode);
+			} else if (rotationalMode !== 'none') {
+				setGridSizeSymmetric({ rows: gridSize.rows, cols }, rotationalMode);
+			} else {
+				setGridSize({ rows: gridSize.rows, cols });
+			}
 		},
-		[gridSize.rows, setGridSize],
+		[gridSize.rows, isColSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric],
 	);
 
 	const handleRowsChange = useCallback(
 		(rows: number) => {
-			setGridSize({ rows, cols: gridSize.cols });
+			if (isRowSymmetric) {
+				const snapped = Math.max(2, Math.round(rows / 2) * 2);
+				setGridSizeSymmetric({ rows: snapped, cols: gridSize.cols }, rotationalMode);
+			} else if (rotationalMode !== 'none') {
+				setGridSizeSymmetric({ rows, cols: gridSize.cols }, rotationalMode);
+			} else {
+				setGridSize({ rows, cols: gridSize.cols });
+			}
 		},
-		[gridSize.cols, setGridSize],
+		[gridSize.cols, isRowSymmetric, rotationalMode, setGridSize, setGridSizeSymmetric],
 	);
 
 	const handleCellSizeChange = useCallback(
@@ -143,6 +166,10 @@ export function EditorSidebar() {
 							cols={gridSize.cols}
 							onRowsChange={handleRowsChange}
 							onColsChange={handleColsChange}
+							minCols={minCols}
+							minRows={minRows}
+							stepCols={stepCols}
+							stepRows={stepRows}
 						/>
 						<div className="flex items-center justify-between">
 							<label className="text-xs text-zinc-600">칸 크기 (px)</label>

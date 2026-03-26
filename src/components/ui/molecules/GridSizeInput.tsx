@@ -13,6 +13,10 @@ interface GridSizeInputProps {
 	onColsChange: (cols: number) => void;
 	min?: number;
 	max?: number;
+	minCols?: number;
+	minRows?: number;
+	stepCols?: number;
+	stepRows?: number;
 }
 
 export function GridSizeInput({
@@ -22,21 +26,28 @@ export function GridSizeInput({
 	onColsChange,
 	min = DEFAULT_MIN,
 	max = DEFAULT_MAX,
+	minCols,
+	minRows,
+	stepCols = 1,
+	stepRows = 1,
 }: GridSizeInputProps) {
+	const effectiveMinCols = minCols ?? min;
+	const effectiveMinRows = minRows ?? min;
+
 	const handleColsChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = Math.max(min, Math.min(max, Number(e.target.value)));
+			const value = Math.max(effectiveMinCols, Math.min(max, Number(e.target.value)));
 			if (!Number.isNaN(value)) onColsChange(value);
 		},
-		[min, max, onColsChange],
+		[effectiveMinCols, max, onColsChange],
 	);
 
 	const handleRowsChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = Math.max(min, Math.min(max, Number(e.target.value)));
+			const value = Math.max(effectiveMinRows, Math.min(max, Number(e.target.value)));
 			if (!Number.isNaN(value)) onRowsChange(value);
 		},
-		[min, max, onRowsChange],
+		[effectiveMinRows, max, onRowsChange],
 	);
 
 	return (
@@ -46,8 +57,9 @@ export function GridSizeInput({
 				<Input
 					type="number"
 					value={cols}
-					min={min}
+					min={effectiveMinCols}
 					max={max}
+					step={stepCols}
 					size="sm"
 					className="w-16 text-right"
 					aria-label="너비 코 수"
@@ -59,8 +71,9 @@ export function GridSizeInput({
 				<Input
 					type="number"
 					value={rows}
-					min={min}
+					min={effectiveMinRows}
 					max={max}
+					step={stepRows}
 					size="sm"
 					className="w-16 text-right"
 					aria-label="높이 단 수"
