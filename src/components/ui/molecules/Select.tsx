@@ -1,6 +1,6 @@
 'use client';
 
-import { Children, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from 'react';
+import { Children, cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import type { OptionProps } from '@/components/ui/atoms/Option';
 
@@ -42,6 +42,7 @@ export function Select({
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   const handleTriggerClick = useCallback(() => {
     if (!disabled) setIsOpen((prev) => !prev);
@@ -96,6 +97,7 @@ export function Select({
         type="button"
         role="combobox"
         aria-expanded={isOpen}
+        aria-controls={listboxId}
         aria-haspopup="listbox"
         disabled={disabled}
         onClick={handleTriggerClick}
@@ -120,6 +122,7 @@ export function Select({
 
       {isOpen && (
         <div
+          id={listboxId}
           role="listbox"
           className="absolute z-50 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-md"
         >

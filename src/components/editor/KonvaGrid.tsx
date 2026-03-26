@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
@@ -15,21 +15,33 @@ function cross2D(ux: number, uy: number, vx: number, vy: number): number {
 }
 
 function segmentsProperlyIntersect(
-	x1: number, y1: number, x2: number, y2: number,
-	x3: number, y3: number, x4: number, y4: number,
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	x3: number,
+	y3: number,
+	x4: number,
+	y4: number,
 ): boolean {
 	const d1 = cross2D(x2 - x1, y2 - y1, x3 - x1, y3 - y1);
 	const d2 = cross2D(x2 - x1, y2 - y1, x4 - x1, y4 - y1);
 	const d3 = cross2D(x4 - x3, y4 - y3, x1 - x3, y1 - y3);
 	const d4 = cross2D(x4 - x3, y4 - y3, x2 - x3, y2 - y3);
-	return (d1 > 0 !== d2 > 0) && (d3 > 0 !== d4 > 0);
+	return d1 > 0 !== d2 > 0 && d3 > 0 !== d4 > 0;
 }
 
 const ERASE_THRESHOLD_SQ = 0.5 * 0.5;
 
 function strokeSegmentHitByErase(
-	sx1: number, sy1: number, sx2: number, sy2: number,
-	ex1: number, ey1: number, ex2: number, ey2: number,
+	sx1: number,
+	sy1: number,
+	sx2: number,
+	sy2: number,
+	ex1: number,
+	ey1: number,
+	ex2: number,
+	ey2: number,
 ): boolean {
 	if (segmentsProperlyIntersect(sx1, sy1, sx2, sy2, ex1, ey1, ex2, ey2)) return true;
 	if (pointToSegmentDistSq(sx1, sy1, ex1, ey1, ex2, ey2) <= ERASE_THRESHOLD_SQ) return true;
@@ -39,15 +51,14 @@ function strokeSegmentHitByErase(
 	return false;
 }
 
-function splitStrokeByErasePath(
-	stroke: number[],
-	ex1: number, ey1: number, ex2: number, ey2: number,
-): number[][] {
+function splitStrokeByErasePath(stroke: number[], ex1: number, ey1: number, ex2: number, ey2: number): number[][] {
 	const remaining: number[][] = [];
 	let current: number[] = [];
 	for (let i = 0; i < stroke.length - 2; i += 2) {
-		const sx1 = stroke[i], sy1 = stroke[i + 1];
-		const sx2 = stroke[i + 2], sy2 = stroke[i + 3];
+		const sx1 = stroke[i],
+			sy1 = stroke[i + 1];
+		const sx2 = stroke[i + 2],
+			sy2 = stroke[i + 3];
 		if (strokeSegmentHitByErase(sx1, sy1, sx2, sy2, ex1, ey1, ex2, ey2)) {
 			if (current.length >= 4) remaining.push(current);
 			current = [];
@@ -60,16 +71,14 @@ function splitStrokeByErasePath(
 	return remaining;
 }
 
-function splitStrokeByPoint(
-	stroke: number[],
-	px: number, py: number,
-	thresholdSq: number,
-): number[][] {
+function splitStrokeByPoint(stroke: number[], px: number, py: number, thresholdSq: number): number[][] {
 	const remaining: number[][] = [];
 	let current: number[] = [];
 	for (let i = 0; i < stroke.length - 2; i += 2) {
-		const sx1 = stroke[i], sy1 = stroke[i + 1];
-		const sx2 = stroke[i + 2], sy2 = stroke[i + 3];
+		const sx1 = stroke[i],
+			sy1 = stroke[i + 1];
+		const sx2 = stroke[i + 2],
+			sy2 = stroke[i + 3];
 		if (pointToSegmentDistSq(px, py, sx1, sy1, sx2, sy2) <= thresholdSq) {
 			if (current.length >= 4) remaining.push(current);
 			current = [];
@@ -82,25 +91,21 @@ function splitStrokeByPoint(
 	return remaining;
 }
 
-function pointToSegmentDistSq(
-	px: number, py: number,
-	ax: number, ay: number,
-	bx: number, by: number,
-): number {
-	const dx = bx - ax, dy = by - ay;
+function pointToSegmentDistSq(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+	const dx = bx - ax,
+		dy = by - ay;
 	const lenSq = dx * dx + dy * dy;
 	if (lenSq === 0) return (px - ax) ** 2 + (py - ay) ** 2;
 	const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
 	return (px - ax - t * dx) ** 2 + (py - ay - t * dy) ** 2;
 }
 
-
 // 지우개 커서 SVG (20×20, hotspot 10,18)
 const ERASER_CURSOR =
 	"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E" +
 	"%3Crect x='2' y='10' width='16' height='8' rx='2' fill='%23fde68a' stroke='%23d97706' stroke-width='1.5'/%3E" +
 	"%3Crect x='2' y='10' width='8' height='8' rx='2' fill='white' stroke='%23d97706' stroke-width='1.5'/%3E" +
-	"%3C/svg%3E\") 10 18, cell";
+	'%3C/svg%3E") 10 18, cell';
 
 interface KonvaGridProps {
 	cells: ChartCell[][];
@@ -191,18 +196,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 		hoverCellRef.current = hoverCell;
 	}, [hoverCell]);
 
-	const handleStrokeClick = useCallback(
-		(index: number) => {
-			setSelectedStrokeIndex((prev) => (prev === index ? null : index));
-		},
-		[],
-	);
+	const handleStrokeClick = useCallback((index: number) => {
+		setSelectedStrokeIndex((prev) => (prev === index ? null : index));
+	}, []);
 
 	useEffect(() => {
-		if (!isShapeGuideDrawMode) {
-			setSelectedStrokeIndex(null);
-			return;
-		}
+		if (!isShapeGuideDrawMode) return;
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				setSelectedStrokeIndex((prev) => {
@@ -228,13 +227,49 @@ export const KonvaGrid = memo(function KonvaGrid({
 				if (cellSelection) onCopySelection?.(cellSelection);
 			} else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
 				e.preventDefault();
-				const hover = hoverCellRef.current;
-				if (hover) onPasteClipboard?.(hover.row, hover.col);
+				if (cellSelection) {
+					// 선택 영역이 있으면 선택 영역의 top-left에 붙여넣기 (방향키 이동 후에도 정확히 동작)
+					const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
+					const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
+					onPasteClipboard?.(minRow, minCol);
+				} else {
+					const hover = hoverCellRef.current;
+					if (hover) onPasteClipboard?.(hover.row, hover.col);
+				}
+			} else if (cellSelection && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+				e.preventDefault();
+				const dr = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0;
+				const dc = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
+				const maxRow = gridSize.rows - 1;
+				const maxCol = gridSize.cols - 1;
+
+				if (e.shiftKey) {
+					// Shift+방향키: 끝점만 확장/축소
+					const newEndRow = Math.max(0, Math.min(maxRow, cellSelection.endRow + dr));
+					const newEndCol = Math.max(0, Math.min(maxCol, cellSelection.endCol + dc));
+					onSelectionChange?.({
+						...cellSelection,
+						endRow: newEndRow,
+						endCol: newEndCol,
+					});
+				} else {
+					// 방향키: 선택 영역 전체 이동
+					const selRows = cellSelection.endRow - cellSelection.startRow;
+					const selCols = cellSelection.endCol - cellSelection.startCol;
+					const newStartRow = Math.max(0, Math.min(maxRow - Math.abs(selRows), cellSelection.startRow + dr));
+					const newStartCol = Math.max(0, Math.min(maxCol - Math.abs(selCols), cellSelection.startCol + dc));
+					onSelectionChange?.({
+						startRow: newStartRow,
+						startCol: newStartCol,
+						endRow: newStartRow + selRows,
+						endCol: newStartCol + selCols,
+					});
+				}
 			}
 		};
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [isSelectionMode, cellSelection, onSelectionChange, onCopySelection, onPasteClipboard]);
+	}, [isSelectionMode, cellSelection, gridSize, onSelectionChange, onCopySelection, onPasteClipboard]);
 
 	const totalWidth = gridSize.cols * cellSize;
 	const totalHeight = gridSize.rows * cellSize;
@@ -360,7 +395,18 @@ export const KonvaGrid = memo(function KonvaGrid({
 				}
 			}
 		},
-		[getCellFromPointer, getGridPointer, onCellPaint, onPaintStart, startMousePan, isInSpacePanMode, isShapeGuideDrawMode, isShapeGuideEraseMode, isSelectionMode, onSelectionChange],
+		[
+			getCellFromPointer,
+			getGridPointer,
+			onCellPaint,
+			onPaintStart,
+			startMousePan,
+			isInSpacePanMode,
+			isShapeGuideDrawMode,
+			isShapeGuideEraseMode,
+			isSelectionMode,
+			onSelectionChange,
+		],
 	);
 
 	const handleMouseMove = useCallback(
@@ -408,7 +454,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 				}
 			}
 		},
-		[getCellFromPointer, getGridPointer, onCellPaint, updateMousePan, isShapeGuideDrawMode, isShapeGuideEraseMode, erasePartialStrokes, isSelectionMode, onSelectionChange],
+		[
+			getCellFromPointer,
+			getGridPointer,
+			onCellPaint,
+			updateMousePan,
+			isShapeGuideDrawMode,
+			isShapeGuideEraseMode,
+			erasePartialStrokes,
+			isSelectionMode,
+			onSelectionChange,
+		],
 	);
 
 	const finishEraseGesture = useCallback(() => {
@@ -442,7 +498,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isPainting.current = false;
 		}
 		endMousePan();
-	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture, isSelectionMode]);
+	}, [
+		endMousePan,
+		onPaintEnd,
+		onShapeGuideStrokeAdd,
+		isShapeGuideDrawMode,
+		isShapeGuideEraseMode,
+		currentStroke,
+		finishEraseGesture,
+		isSelectionMode,
+	]);
 
 	const handleMouseLeave = useCallback(() => {
 		setHoverCell(null);
@@ -464,7 +529,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isPainting.current = false;
 		}
 		endMousePan();
-	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture, isSelectionMode]);
+	}, [
+		endMousePan,
+		onPaintEnd,
+		onShapeGuideStrokeAdd,
+		isShapeGuideDrawMode,
+		isShapeGuideEraseMode,
+		currentStroke,
+		finishEraseGesture,
+		isSelectionMode,
+	]);
 
 	const cursor = isSpacePanning
 		? 'grab'
@@ -498,10 +572,21 @@ export const KonvaGrid = memo(function KonvaGrid({
 				scaleX={transform.scale}
 				scaleY={transform.scale}
 			>
-				<Rect x={0} y={0} width={totalWidth} height={totalHeight} fill="white" />
+				<Rect
+					x={0}
+					y={0}
+					width={totalWidth}
+					height={totalHeight}
+					fill="white"
+				/>
 
 				{gridLines.map(({ key, points }) => (
-					<Line key={key} points={points} stroke="#d4d4d8" strokeWidth={0.5} />
+					<Line
+						key={key}
+						points={points}
+						stroke="#d4d4d8"
+						strokeWidth={0.5}
+					/>
 				))}
 
 				{nonEmptyCells.map(({ cell, rowIdx, colIdx }) => (
@@ -531,45 +616,53 @@ export const KonvaGrid = memo(function KonvaGrid({
 				)}
 
 				{/* 붙여넣기 미리보기 */}
-				{isSelectionMode && clipboard && hoverCell && !cellSelection && clipboard.flatMap((row, dr) =>
-					row.map((cell, dc) => {
-						const r = hoverCell.row + dr;
-						const c = hoverCell.col + dc;
-						if (r >= gridSize.rows || c >= gridSize.cols) return null;
+				{isSelectionMode &&
+					clipboard &&
+					hoverCell &&
+					!cellSelection &&
+					clipboard.flatMap((row, dr) =>
+						row
+							.map((cell, dc) => {
+								const r = hoverCell.row + dr;
+								const c = hoverCell.col + dc;
+								if (r >= gridSize.rows || c >= gridSize.cols) return null;
+								return (
+									<Rect
+										key={`paste-preview-${dr}-${dc}`}
+										x={c * cellSize}
+										y={r * cellSize}
+										width={cellSize}
+										height={cellSize}
+										fill={cell.symbolId ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.1)'}
+										listening={false}
+									/>
+								);
+							})
+							.filter((x): x is NonNullable<typeof x> => x !== null),
+					)}
+
+				{/* 선택 영역 사각형 */}
+				{isSelectionMode &&
+					cellSelection &&
+					(() => {
+						const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
+						const maxRow = Math.max(cellSelection.startRow, cellSelection.endRow);
+						const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
+						const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
 						return (
 							<Rect
-								key={`paste-preview-${dr}-${dc}`}
-								x={c * cellSize}
-								y={r * cellSize}
-								width={cellSize}
-								height={cellSize}
-								fill={cell.symbolId ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.1)'}
+								x={minCol * cellSize}
+								y={minRow * cellSize}
+								width={(maxCol - minCol + 1) * cellSize}
+								height={(maxRow - minRow + 1) * cellSize}
+								stroke="rgba(59,130,246,0.9)"
+								strokeWidth={2}
+								fill="rgba(59,130,246,0.15)"
+								dash={[4, 4]}
 								listening={false}
 							/>
 						);
-					}).filter((x): x is NonNullable<typeof x> => x !== null),
-				)}
-
-				{/* 선택 영역 사각형 */}
-				{isSelectionMode && cellSelection && (() => {
-					const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
-					const maxRow = Math.max(cellSelection.startRow, cellSelection.endRow);
-					const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
-					const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
-					return (
-						<Rect
-							x={minCol * cellSize}
-							y={minRow * cellSize}
-							width={(maxCol - minCol + 1) * cellSize}
-							height={(maxRow - minRow + 1) * cellSize}
-							stroke="rgba(59,130,246,0.9)"
-							strokeWidth={2}
-							fill="rgba(59,130,246,0.15)"
-							dash={[4, 4]}
-							listening={false}
-						/>
-					);
-				})()}
+					})()}
 			</Layer>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (
@@ -579,7 +672,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					eraseStroke={currentEraseStroke}
 					cellSize={cellSize}
 					transform={transform}
-					selectedStrokeIndex={selectedStrokeIndex}
+					selectedStrokeIndex={isShapeGuideDrawMode ? selectedStrokeIndex : null}
 					onStrokeClick={handleStrokeClick}
 					isDrawMode={isShapeGuideDrawMode}
 				/>
