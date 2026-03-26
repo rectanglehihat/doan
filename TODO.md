@@ -71,8 +71,8 @@
 - [x] 그리드 크기 변경 시 기존 셀 데이터 유지 로직 (`useChartStore.setGridSize` 내 처리)
 - [x] 도안 초기화 기능 (`ConfirmDialog` 컴포넌트 + `useUIStore.isResetDialogOpen`)
 - [x] 대칭 모드 (가로/세로 대칭 자동 적용, `useUIStore.symmetryMode`)
-- [ ] 점대칭(회전 대칭) 모드
-  - `SymmetryMode`에 `'rotational'` 추가, `useUIStore` 확장
+- [ ] 대칭 모드 (점대칭/회전 대칭)
+  - `useUIStore`에 `isRotationalMode: boolean` 상태 추가
   - 캔버스를 절반으로 분할 — 편집 가능 영역(절반) + 수정 불가 미리보기 영역(나머지 절반)
   - 미리보기 영역: 편집 영역을 중심점 기준 180° 회전한 결과를 반투명 오버레이로 실시간 표시
   - 의류(스웨터, 카디건 등) 좌우 대칭 편물 작업 시 반복 입력 작업 제거

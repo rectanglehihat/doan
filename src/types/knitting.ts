@@ -2,6 +2,8 @@ export type SymbolCategory = 'basic-structure' | 'basic-stitch' | 'increase' | '
 
 export type SymmetryMode = 'none' | 'horizontal' | 'vertical' | 'both';
 
+export type RotationalMode = 'none' | 'horizontal' | 'vertical' | 'both';
+
 export type PatternType = 'knitting' | 'crochet';
 
 export interface KnittingSymbol {

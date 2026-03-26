@@ -18,6 +18,8 @@ const defaultProps = {
 	onShapeGuideClear: vi.fn(),
 	isSelectionMode: false,
 	onSelectionModeChange: vi.fn(),
+	rotationalMode: 'none' as const,
+	onRotationalModeChange: vi.fn(),
 };
 
 describe('Toolbar', () => {
@@ -191,6 +193,54 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} isSelectionMode={true} onSelectionModeChange={handleChange} />);
 			await userEvent.click(screen.getByRole('button', { name: '영역 선택' }));
 			expect(handleChange).toHaveBeenCalledWith(false);
+		});
+
+		it('대칭 모드 버튼 3개를 렌더링한다', () => {
+			render(<Toolbar {...defaultProps} />);
+			expect(screen.getByRole('button', { name: '대칭 모드 좌우' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: '대칭 모드 상하' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: '대칭 모드 양방향' })).toBeInTheDocument();
+		});
+
+		it('rotationalMode=none이면 모든 대칭 모드 버튼이 비활성(aria-pressed=false) 상태이다', () => {
+			render(<Toolbar {...defaultProps} rotationalMode="none" />);
+			expect(screen.getByRole('button', { name: '대칭 모드 좌우' })).toHaveAttribute('aria-pressed', 'false');
+			expect(screen.getByRole('button', { name: '대칭 모드 상하' })).toHaveAttribute('aria-pressed', 'false');
+			expect(screen.getByRole('button', { name: '대칭 모드 양방향' })).toHaveAttribute('aria-pressed', 'false');
+		});
+
+		it('rotationalMode=horizontal이면 좌우 버튼만 활성(aria-pressed=true) 상태이다', () => {
+			render(<Toolbar {...defaultProps} rotationalMode="horizontal" />);
+			expect(screen.getByRole('button', { name: '대칭 모드 좌우' })).toHaveAttribute('aria-pressed', 'true');
+			expect(screen.getByRole('button', { name: '대칭 모드 상하' })).toHaveAttribute('aria-pressed', 'false');
+		});
+
+		it('좌우 버튼 클릭 시 onRotationalModeChange를 horizontal로 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} rotationalMode="none" onRotationalModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '대칭 모드 좌우' }));
+			expect(handleChange).toHaveBeenCalledWith('horizontal');
+		});
+
+		it('활성화된 좌우 버튼 클릭 시 onRotationalModeChange를 none으로 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} rotationalMode="horizontal" onRotationalModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '대칭 모드 좌우' }));
+			expect(handleChange).toHaveBeenCalledWith('none');
+		});
+
+		it('상하 버튼 클릭 시 onRotationalModeChange를 vertical로 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} rotationalMode="none" onRotationalModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '대칭 모드 상하' }));
+			expect(handleChange).toHaveBeenCalledWith('vertical');
+		});
+
+		it('양방향 버튼 클릭 시 onRotationalModeChange를 both로 호출한다', async () => {
+			const handleChange = vi.fn();
+			render(<Toolbar {...defaultProps} rotationalMode="none" onRotationalModeChange={handleChange} />);
+			await userEvent.click(screen.getByRole('button', { name: '대칭 모드 양방향' }));
+			expect(handleChange).toHaveBeenCalledWith('both');
 		});
 	});
 });

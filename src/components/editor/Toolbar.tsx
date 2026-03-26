@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/atoms/Button';
-import { SymmetryMode } from '@/types/knitting';
+import { SymmetryMode, RotationalMode } from '@/types/knitting';
 
 const SYMMETRY_OPTIONS: { value: SymmetryMode; label: string }[] = [
 	{ value: 'none', label: '없음' },
@@ -27,6 +27,8 @@ interface ToolbarProps {
 	onShapeGuideClear: () => void;
 	isSelectionMode: boolean;
 	onSelectionModeChange: (active: boolean) => void;
+	rotationalMode: RotationalMode;
+	onRotationalModeChange: (mode: RotationalMode) => void;
 }
 
 export function Toolbar({
@@ -45,6 +47,8 @@ export function Toolbar({
 	onShapeGuideClear,
 	isSelectionMode,
 	onSelectionModeChange,
+	rotationalMode,
+	onRotationalModeChange,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -73,6 +77,18 @@ export function Toolbar({
 	const handleSelectionModeToggle = useCallback(() => {
 		onSelectionModeChange(!isSelectionMode);
 	}, [onSelectionModeChange, isSelectionMode]);
+
+	const handleRotationalHorizontal = useCallback(() => {
+		onRotationalModeChange(rotationalMode === 'horizontal' ? 'none' : 'horizontal');
+	}, [onRotationalModeChange, rotationalMode]);
+
+	const handleRotationalVertical = useCallback(() => {
+		onRotationalModeChange(rotationalMode === 'vertical' ? 'none' : 'vertical');
+	}, [onRotationalModeChange, rotationalMode]);
+
+	const handleRotationalBoth = useCallback(() => {
+		onRotationalModeChange(rotationalMode === 'both' ? 'none' : 'both');
+	}, [onRotationalModeChange, rotationalMode]);
 
 	const symmetryHandlers = useMemo<Record<SymmetryMode, () => void>>(
 		() => ({
@@ -139,6 +155,40 @@ export function Toolbar({
 					aria-pressed={isSelectionMode}
 				>
 					영역 선택
+				</Button>
+			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 대칭 모드 */}
+			<div className="flex items-center gap-1">
+				<span className="text-xs text-zinc-400 mr-0.5">대칭 모드</span>
+				<Button
+					variant={rotationalMode === 'horizontal' ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleRotationalHorizontal}
+					aria-label="대칭 모드 좌우"
+					aria-pressed={rotationalMode === 'horizontal'}
+				>
+					좌우
+				</Button>
+				<Button
+					variant={rotationalMode === 'vertical' ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleRotationalVertical}
+					aria-label="대칭 모드 상하"
+					aria-pressed={rotationalMode === 'vertical'}
+				>
+					상하
+				</Button>
+				<Button
+					variant={rotationalMode === 'both' ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleRotationalBoth}
+					aria-label="대칭 모드 양방향"
+					aria-pressed={rotationalMode === 'both'}
+				>
+					양방향
 				</Button>
 			</div>
 

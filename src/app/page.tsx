@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useHistory } from '@/hooks/useHistory';
-import { SymmetryMode } from '@/types/knitting';
+import { SymmetryMode, RotationalMode } from '@/types/knitting';
 
 export default function EditorPage() {
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
@@ -30,6 +30,8 @@ export default function EditorPage() {
 		setSelectionMode,
 		setCellSelection,
 		setSelectedSymbol,
+		rotationalMode,
+		setRotationalMode,
 	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
@@ -102,6 +104,13 @@ export default function EditorPage() {
 		[setSelectionMode, setShapeGuideDrawMode, setShapeGuideEraseMode, setCellSelection, setSelectedSymbol],
 	);
 
+	const handleRotationalModeChange = useCallback(
+		(mode: RotationalMode) => {
+			setRotationalMode(mode);
+		},
+		[setRotationalMode],
+	);
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -142,6 +151,8 @@ export default function EditorPage() {
 					onShapeGuideClear={handleShapeGuideClear}
 					isSelectionMode={isSelectionMode}
 					onSelectionModeChange={handleSelectionModeChange}
+					rotationalMode={rotationalMode}
+					onRotationalModeChange={handleRotationalModeChange}
 				/>
 				<div className="flex-1 overflow-auto p-8">
 					<ChartCanvas onPaintStart={beginBatch} onPaintEnd={endBatch} />

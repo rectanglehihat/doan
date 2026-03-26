@@ -4,7 +4,7 @@ import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
-import { ChartCell, GridSize, ShapeGuide, CellSelection } from '@/types/knitting';
+import { ChartCell, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
 import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
 
@@ -130,6 +130,7 @@ interface KonvaGridProps {
 	onSelectionChange?: (sel: CellSelection | null) => void;
 	onCopySelection?: (sel: CellSelection) => void;
 	onPasteClipboard?: (row: number, col: number) => void;
+	rotationalMode?: RotationalMode;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -155,6 +156,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onSelectionChange,
 	onCopySelection,
 	onPasteClipboard,
+	rotationalMode = 'none',
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -318,10 +320,13 @@ export const KonvaGrid = memo(function KonvaGrid({
 		const col = Math.floor(pos.x / cellSize);
 		const row = Math.floor(pos.y / cellSize);
 		if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
+			if (rotationalMode === 'horizontal' && col >= Math.floor(gridSize.cols / 2)) return null;
+			if (rotationalMode === 'vertical' && row >= Math.floor(gridSize.rows / 2)) return null;
+			if (rotationalMode === 'both' && (col >= Math.floor(gridSize.cols / 2) || row >= Math.floor(gridSize.rows / 2))) return null;
 			return { row, col };
 		}
 		return null;
-	}, [gridSize, cellSize]);
+	}, [gridSize, cellSize, rotationalMode]);
 
 	// 드래그 지우기: erase 세그먼트에 히트된 stroke 세그먼트만 부분 제거
 	const erasePartialStrokes = useCallback(
@@ -603,6 +608,92 @@ export const KonvaGrid = memo(function KonvaGrid({
 						fill="#1a1a1a"
 					/>
 				))}
+
+				{/* 대칭 모드: 편집 불가 영역 disabled 오버레이 */}
+				{(rotationalMode === 'horizontal' || rotationalMode === 'both') && (
+					<Rect
+						x={Math.floor(gridSize.cols / 2) * cellSize}
+						y={0}
+						width={totalWidth - Math.floor(gridSize.cols / 2) * cellSize}
+						height={totalHeight}
+						fill="rgba(0,0,0,0.06)"
+						listening={false}
+					/>
+				)}
+				{rotationalMode === 'vertical' && (
+					<Rect
+						x={0}
+						y={Math.floor(gridSize.rows / 2) * cellSize}
+						width={totalWidth}
+						height={totalHeight - Math.floor(gridSize.rows / 2) * cellSize}
+						fill="rgba(0,0,0,0.06)"
+						listening={false}
+					/>
+				)}
+				{rotationalMode === 'both' && (
+					<Rect
+						x={0}
+						y={Math.floor(gridSize.rows / 2) * cellSize}
+						width={Math.floor(gridSize.cols / 2) * cellSize}
+						height={totalHeight - Math.floor(gridSize.rows / 2) * cellSize}
+						fill="rgba(0,0,0,0.06)"
+						listening={false}
+					/>
+				)}
+
+				{/* 대칭 모드: 미러 미리보기 */}
+				{rotationalMode !== 'none' &&
+					nonEmptyCells
+						.filter(({ rowIdx, colIdx }) => {
+							if (rotationalMode === 'horizontal') return colIdx < Math.floor(gridSize.cols / 2);
+							if (rotationalMode === 'vertical') return rowIdx < Math.floor(gridSize.rows / 2);
+							return rowIdx < Math.floor(gridSize.rows / 2) && colIdx < Math.floor(gridSize.cols / 2);
+						})
+						.flatMap(({ cell, rowIdx, colIdx }) => {
+							const mirrorRow = gridSize.rows - 1 - rowIdx;
+							const mirrorCol = gridSize.cols - 1 - colIdx;
+							const positions: Array<{ r: number; c: number }> =
+								rotationalMode === 'horizontal'
+									? [{ r: rowIdx, c: mirrorCol }]
+									: rotationalMode === 'vertical'
+										? [{ r: mirrorRow, c: colIdx }]
+										: [{ r: rowIdx, c: mirrorCol }, { r: mirrorRow, c: colIdx }, { r: mirrorRow, c: mirrorCol }];
+							return positions.map(({ r, c }) => (
+								<Text
+									key={`mirror-${rowIdx}-${colIdx}-${r}-${c}`}
+									x={c * cellSize}
+									y={r * cellSize}
+									width={cellSize}
+									height={cellSize}
+									text={symbolsMap[cell.symbolId] ?? cell.symbolId}
+									align="center"
+									verticalAlign="middle"
+									fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
+									fill="rgba(26,26,26,0.35)"
+									listening={false}
+								/>
+							));
+						})}
+
+				{/* 대칭 모드: 경계선 */}
+				{(rotationalMode === 'horizontal' || rotationalMode === 'both') && (
+					<Line
+						points={[Math.floor(gridSize.cols / 2) * cellSize, 0, Math.floor(gridSize.cols / 2) * cellSize, totalHeight]}
+						stroke="#ef4444"
+						strokeWidth={1.5}
+						dash={[4, 4]}
+						listening={false}
+					/>
+				)}
+				{(rotationalMode === 'vertical' || rotationalMode === 'both') && (
+					<Line
+						points={[0, Math.floor(gridSize.rows / 2) * cellSize, totalWidth, Math.floor(gridSize.rows / 2) * cellSize]}
+						stroke="#ef4444"
+						strokeWidth={1.5}
+						dash={[4, 4]}
+						listening={false}
+					/>
+				)}
 
 				{hoverCell && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode && (
 					<Rect

@@ -257,6 +257,33 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('rotationalMode', () => {
+		it('초기값은 none이다', () => {
+			expect(useUIStore.getState().rotationalMode).toBe('none');
+		});
+
+		it('setRotationalMode("horizontal") 호출 시 horizontal이 된다', () => {
+			useUIStore.getState().setRotationalMode('horizontal');
+			expect(useUIStore.getState().rotationalMode).toBe('horizontal');
+		});
+
+		it('setRotationalMode("vertical") 호출 시 vertical이 된다', () => {
+			useUIStore.getState().setRotationalMode('vertical');
+			expect(useUIStore.getState().rotationalMode).toBe('vertical');
+		});
+
+		it('setRotationalMode("both") 호출 시 both가 된다', () => {
+			useUIStore.getState().setRotationalMode('both');
+			expect(useUIStore.getState().rotationalMode).toBe('both');
+		});
+
+		it('setRotationalMode("none") 호출 시 none으로 되돌아온다', () => {
+			useUIStore.getState().setRotationalMode('horizontal');
+			useUIStore.getState().setRotationalMode('none');
+			expect(useUIStore.getState().rotationalMode).toBe('none');
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);
@@ -268,9 +295,10 @@ describe('useUIStore', () => {
 			useUIStore.getState().setCellSelection({ startRow: 1, startCol: 1, endRow: 3, endCol: 3 });
 			useUIStore.getState().setClipboard([[{ symbolId: 'k' }]]);
 			useUIStore.getState().setSelectionMode(true);
+			useUIStore.getState().setRotationalMode('both');
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode } =
+			const { selectedSymbol, isSaveDialogOpen, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode, rotationalMode } =
 				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isSaveDialogOpen).toBe(false);
@@ -281,6 +309,7 @@ describe('useUIStore', () => {
 			expect(cellSelection).toBeNull();
 			expect(clipboard).toBeNull();
 			expect(isSelectionMode).toBe(false);
+			expect(rotationalMode).toBe('none');
 		});
 	});
 });

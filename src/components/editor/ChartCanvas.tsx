@@ -32,6 +32,7 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 	const removeShapeGuideStroke = useUIStore((state) => state.removeShapeGuideStroke);
 	const replaceShapeGuideStroke = useUIStore((state) => state.replaceShapeGuideStroke);
 	const isSelectionMode = useUIStore((state) => state.isSelectionMode);
+	const rotationalMode = useUIStore((state) => state.rotationalMode);
 	const cellSelection = useUIStore((state) => state.cellSelection);
 	const clipboard = useUIStore((state) => state.clipboard);
 	const setCellSelection = useUIStore((state) => state.setCellSelection);
@@ -78,6 +79,7 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 					onSelectionChange={setCellSelection}
 					onCopySelection={copySelection}
 					onPasteClipboard={pasteClipboard}
+					rotationalMode={rotationalMode}
 				/>
 			</div>
 		</div>
