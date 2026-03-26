@@ -202,6 +202,61 @@ describe('useHistory', () => {
 		});
 	});
 
+	describe('shapeGuide batch', () => {
+		it('beginBatch/endBatch 사이의 shapeGuide 변경이 히스토리에 기록되지 않는다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+			});
+			// 배치 중이므로 아직 canUndo가 true여서는 안 됨
+			expect(result.current.canUndo).toBe(false);
+		});
+
+		it('beginBatch/endBatch 사이에 shapeGuide만 변경되어도 endBatch 후 단일 히스토리로 기록된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+				useUIStore.getState().addShapeGuideStroke([1, 1, 2, 2]);
+				useUIStore.getState().addShapeGuideStroke([2, 2, 3, 3]);
+				result.current.endBatch();
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			// undo 한 번으로 3개 스트로크 추가 전 상태(shapeGuide === null)로 복원
+			act(() => {
+				result.current.undo();
+			});
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('beginBatch/endBatch 사이에 shapeGuide와 cells 모두 변경되면 endBatch 후 단일 히스토리로 기록된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+				useUIStore.getState().addShapeGuideStroke([0, 0, 1, 1]);
+				result.current.endBatch();
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			// undo 한 번으로 cells와 shapeGuide 모두 복원
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('변경 없이 beginBatch/endBatch만 호출하면 canUndo가 false다', () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				result.current.endBatch();
+			});
+			expect(result.current.canUndo).toBe(false);
+		});
+	});
+
 	describe('redo', () => {
 		it('undo 후 redo 호출 시 원래 상태로 복원된다', async () => {
 			const { result } = renderHook(() => useHistory());
