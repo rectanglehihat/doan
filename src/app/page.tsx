@@ -145,7 +145,14 @@ export default function EditorPage() {
 					onRotationalModeChange={handleRotationalModeChange}
 				/>
 				<div className="flex-1 overflow-auto p-8">
-					<ChartCanvas onPaintStart={beginBatch} onPaintEnd={endBatch} />
+					<ChartCanvas
+						onPaintStart={beginBatch}
+						onPaintEnd={endBatch}
+						onShapeGuideDrawStart={beginBatch}
+						onShapeGuideDrawEnd={endBatch}
+						onShapeGuideEraseStart={beginBatch}
+						onShapeGuideEraseEnd={endBatch}
+					/>
 				</div>
 			</main>
 			<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">

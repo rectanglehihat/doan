@@ -69,6 +69,11 @@ export function useHistory() {
 
 			if (shapeGuide === prevShapeGuideRef.current) return;
 
+			if (isBatchingRef.current) {
+				prevShapeGuideRef.current = shapeGuide;
+				return;
+			}
+
 			const entry: HistoryEntry = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
 			futureRef.current = [];
@@ -122,7 +127,8 @@ export function useHistory() {
 		const batchStart = batchStartRef.current;
 		batchStartRef.current = null;
 		const currentCells = prevCellsRef.current;
-		if (batchStart !== null && batchStart.cells !== currentCells) {
+		const currentShapeGuide = prevShapeGuideRef.current;
+		if (batchStart !== null && (batchStart.cells !== currentCells || batchStart.shapeGuide !== currentShapeGuide)) {
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), batchStart];
 			futureRef.current = [];
 			setCanUndo(true);

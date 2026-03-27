@@ -124,6 +124,8 @@ interface KonvaGridProps {
 	onShapeGuideStrokeAdd?: (stroke: number[]) => void;
 	onShapeGuideStrokeRemove?: (index: number) => void;
 	onShapeGuideStrokeReplace?: (index: number, newStrokes: number[][]) => void;
+	onShapeGuideEraseStart?: () => void;
+	onShapeGuideEraseEnd?: () => void;
 	isSelectionMode?: boolean;
 	cellSelection?: CellSelection | null;
 	clipboard?: ChartCell[][] | null;
@@ -150,6 +152,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onShapeGuideStrokeAdd,
 	onShapeGuideStrokeRemove,
 	onShapeGuideStrokeReplace,
+	onShapeGuideEraseStart,
+	onShapeGuideEraseEnd,
 	isSelectionMode = false,
 	cellSelection = null,
 	clipboard = null,
@@ -306,11 +310,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 		if (!layer) return null;
 		const pos = layer.getRelativePointerPosition();
 		if (!pos) return null;
-		return {
-			col: Math.max(0, Math.min(gridSize.cols, Math.round(pos.x / cellSize))),
-			row: Math.max(0, Math.min(gridSize.rows, Math.round(pos.y / cellSize))),
-		};
-	}, [cellSize, gridSize]);
+		const col = Math.max(0, Math.min(gridSize.cols, Math.round(pos.x / cellSize)));
+		const row = Math.max(0, Math.min(gridSize.rows, Math.round(pos.y / cellSize)));
+		// 활성 영역 체크 (grid 교차점 좌표 기준)
+		const halfCols = Math.floor(gridSize.cols / 2);
+		const halfRows = Math.floor(gridSize.rows / 2);
+		if (rotationalMode === 'horizontal' && col > halfCols) return null;
+		if (rotationalMode === 'vertical' && row > halfRows) return null;
+		if (rotationalMode === 'both' && (col > halfCols || row > halfRows)) return null;
+		return { col, row };
+	}, [cellSize, gridSize, rotationalMode]);
 
 	const getCellFromPointer = useCallback((): { row: number; col: number } | null => {
 		const layer = layerRef.current;
@@ -333,14 +342,32 @@ export const KonvaGrid = memo(function KonvaGrid({
 		(ex1: number, ey1: number, ex2: number, ey2: number) => {
 			const strokes = shapeGuideRef.current?.strokes;
 			if (!strokes) return;
+			// 대칭 모드에서 미러 지우기 세그먼트 생성
+			const eraseSegments: [number, number, number, number][] = [[ex1, ey1, ex2, ey2]];
+			if (rotationalMode !== 'none') {
+				const cols = gridSize.cols;
+				const rows = gridSize.rows;
+				if (rotationalMode === 'horizontal' || rotationalMode === 'both') {
+					eraseSegments.push([cols - ex1, ey1, cols - ex2, ey2]);
+				}
+				if (rotationalMode === 'vertical' || rotationalMode === 'both') {
+					eraseSegments.push([ex1, rows - ey1, ex2, rows - ey2]);
+				}
+				if (rotationalMode === 'both') {
+					eraseSegments.push([cols - ex1, rows - ey1, cols - ex2, rows - ey2]);
+				}
+			}
 			for (let i = strokes.length - 1; i >= 0; i--) {
-				const newStrokes = splitStrokeByErasePath(strokes[i], ex1, ey1, ex2, ey2);
-				if (newStrokes.length !== 1 || newStrokes[0].length !== strokes[i].length) {
-					onShapeGuideStrokeReplace?.(i, newStrokes);
+				let result = [strokes[i]];
+				for (const [sex1, sey1, sex2, sey2] of eraseSegments) {
+					result = result.flatMap((s) => splitStrokeByErasePath(s, sex1, sey1, sex2, sey2));
+				}
+				if (result.length !== 1 || result[0].length !== strokes[i].length) {
+					onShapeGuideStrokeReplace?.(i, result);
 				}
 			}
 		},
-		[onShapeGuideStrokeReplace],
+		[onShapeGuideStrokeReplace, rotationalMode, gridSize],
 	);
 
 	// 클릭(단일 점) 지우기: 해당 점 근방 stroke 세그먼트만 부분 제거
@@ -349,14 +376,32 @@ export const KonvaGrid = memo(function KonvaGrid({
 			const strokes = shapeGuideRef.current?.strokes;
 			if (!strokes) return;
 			const THRESHOLD_SQ = 0.7 * 0.7;
+			// 대칭 모드에서 미러 점 생성
+			const erasePoints: [number, number][] = [[px, py]];
+			if (rotationalMode !== 'none') {
+				const cols = gridSize.cols;
+				const rows = gridSize.rows;
+				if (rotationalMode === 'horizontal' || rotationalMode === 'both') {
+					erasePoints.push([cols - px, py]);
+				}
+				if (rotationalMode === 'vertical' || rotationalMode === 'both') {
+					erasePoints.push([px, rows - py]);
+				}
+				if (rotationalMode === 'both') {
+					erasePoints.push([cols - px, rows - py]);
+				}
+			}
 			for (let i = strokes.length - 1; i >= 0; i--) {
-				const newStrokes = splitStrokeByPoint(strokes[i], px, py, THRESHOLD_SQ);
-				if (newStrokes.length !== 1 || newStrokes[0].length !== strokes[i].length) {
-					onShapeGuideStrokeReplace?.(i, newStrokes);
+				let result = [strokes[i]];
+				for (const [epx, epy] of erasePoints) {
+					result = result.flatMap((s) => splitStrokeByPoint(s, epx, epy, THRESHOLD_SQ));
+				}
+				if (result.length !== 1 || result[0].length !== strokes[i].length) {
+					onShapeGuideStrokeReplace?.(i, result);
 				}
 			}
 		},
-		[onShapeGuideStrokeReplace],
+		[onShapeGuideStrokeReplace, rotationalMode, gridSize],
 	);
 
 	const handleMouseDown = useCallback(
@@ -377,6 +422,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				} else if (isShapeGuideEraseMode) {
 					const pt = getGridPointer();
 					if (pt) {
+						onShapeGuideEraseStart?.();
 						isErasingGuide.current = true;
 						const init = [pt.col, pt.row];
 						currentEraseStrokeRef.current = init;
@@ -405,6 +451,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 			getGridPointer,
 			onCellPaint,
 			onPaintStart,
+			onShapeGuideEraseStart,
 			startMousePan,
 			isInSpacePanMode,
 			isShapeGuideDrawMode,
@@ -482,7 +529,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 		isErasingGuide.current = false;
 		currentEraseStrokeRef.current = [];
 		setCurrentEraseStroke([]);
-	}, [erasePartialStrokesNearPoint]);
+		onShapeGuideEraseEnd?.();
+	}, [erasePartialStrokesNearPoint, onShapeGuideEraseEnd]);
 
 	const handleMouseUp = useCallback(() => {
 		if (isSelectionMode) {

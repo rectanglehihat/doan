@@ -55,9 +55,13 @@ function CanvasPlaceholder() {
 interface ChartCanvasProps {
 	onPaintStart?: () => void;
 	onPaintEnd?: () => void;
+	onShapeGuideDrawStart?: () => void;
+	onShapeGuideDrawEnd?: () => void;
+	onShapeGuideEraseStart?: () => void;
+	onShapeGuideEraseEnd?: () => void;
 }
 
-export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
+export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, onShapeGuideDrawEnd, onShapeGuideEraseStart, onShapeGuideEraseEnd }: ChartCanvasProps) {
 	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint, copySelection, pasteClipboard } = useChartEditor();
 	const shapeGuide = useUIStore((state) => state.shapeGuide);
 	const isShapeGuideDrawMode = useUIStore((state) => state.isShapeGuideDrawMode);
@@ -73,10 +77,12 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 
 	const handleShapeGuideStrokeAdd = useCallback(
 		(stroke: number[]) => {
+			onShapeGuideDrawStart?.();
 			const strokes = buildSymmetricStrokes(stroke, rotationalMode, gridSize.cols, gridSize.rows);
 			strokes.forEach((s) => addShapeGuideStroke(s));
+			onShapeGuideDrawEnd?.();
 		},
-		[addShapeGuideStroke, rotationalMode, gridSize],
+		[addShapeGuideStroke, rotationalMode, gridSize, onShapeGuideDrawStart, onShapeGuideDrawEnd],
 	);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
@@ -115,6 +121,8 @@ export function ChartCanvas({ onPaintStart, onPaintEnd }: ChartCanvasProps) {
 					onShapeGuideStrokeAdd={handleShapeGuideStrokeAdd}
 					onShapeGuideStrokeRemove={removeShapeGuideStroke}
 					onShapeGuideStrokeReplace={replaceShapeGuideStroke}
+					onShapeGuideEraseStart={onShapeGuideEraseStart}
+					onShapeGuideEraseEnd={onShapeGuideEraseEnd}
 					isSelectionMode={isSelectionMode}
 					cellSelection={cellSelection}
 					clipboard={clipboard}

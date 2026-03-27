@@ -105,21 +105,6 @@ export function Toolbar({
 
 			<div className="h-5 w-px bg-zinc-200" />
 
-			{/* 영역 선택 */}
-			<div className="flex items-center gap-1">
-				<Button
-					variant={isSelectionMode ? 'default' : 'ghost'}
-					size="sm"
-					onClick={handleSelectionModeToggle}
-					aria-label="영역 선택"
-					aria-pressed={isSelectionMode}
-				>
-					영역 선택
-				</Button>
-			</div>
-
-			<div className="h-5 w-px bg-zinc-200" />
-
 			{/* 대칭 모드 */}
 			<div className="flex items-center gap-1">
 				<span className="text-xs text-zinc-400 mr-0.5">대칭 모드</span>
@@ -149,6 +134,21 @@ export function Toolbar({
 					aria-pressed={rotationalMode === 'both'}
 				>
 					양방향
+				</Button>
+			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 영역 선택 */}
+			<div className="flex items-center gap-1">
+				<Button
+					variant={isSelectionMode ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleSelectionModeToggle}
+					aria-label="영역 선택"
+					aria-pressed={isSelectionMode}
+				>
+					영역 선택
 				</Button>
 			</div>
 
