@@ -27,8 +27,7 @@ export function useHistory() {
 	const [canUndo, setCanUndo] = useState(false);
 	const [canRedo, setCanRedo] = useState(false);
 
-	const setCells = useChartStore((state) => state.setCells);
-	const setCollapsedBlocks = useChartStore((state) => state.setCollapsedBlocks);
+	const setCellsAndBlocks = useChartStore((state) => state.setCellsAndBlocks);
 	const setShapeGuide = useUIStore((state) => state.setShapeGuide);
 
 	// cells + collapsedBlocks 변경 감지 (단일 subscriber로 통합)
@@ -115,12 +114,11 @@ export function useHistory() {
 		prevCellsRef.current = previous.cells;
 		prevCollapsedBlocksRef.current = previous.collapsedBlocks;
 		prevShapeGuideRef.current = previous.shapeGuide;
-		setCells(previous.cells);
-		setCollapsedBlocks(previous.collapsedBlocks);
+		setCellsAndBlocks(previous.cells, previous.collapsedBlocks);
 		setShapeGuide(previous.shapeGuide);
 		setCanUndo(pastRef.current.length > 0);
 		setCanRedo(true);
-	}, [setCells, setCollapsedBlocks, setShapeGuide]);
+	}, [setCellsAndBlocks, setShapeGuide]);
 
 	const redo = useCallback(() => {
 		if (futureRef.current.length === 0) return;
@@ -137,12 +135,11 @@ export function useHistory() {
 		prevCellsRef.current = next.cells;
 		prevCollapsedBlocksRef.current = next.collapsedBlocks;
 		prevShapeGuideRef.current = next.shapeGuide;
-		setCells(next.cells);
-		setCollapsedBlocks(next.collapsedBlocks);
+		setCellsAndBlocks(next.cells, next.collapsedBlocks);
 		setShapeGuide(next.shapeGuide);
 		setCanUndo(true);
 		setCanRedo(futureRef.current.length > 0);
-	}, [setCells, setCollapsedBlocks, setShapeGuide]);
+	}, [setCellsAndBlocks, setShapeGuide]);
 
 	const beginBatch = useCallback(() => {
 		isBatchingRef.current = true;

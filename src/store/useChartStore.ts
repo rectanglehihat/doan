@@ -53,6 +53,7 @@ interface ChartState {
 	setPatternType: (patternType: PatternType) => void;
 	setPatternTitle: (patternTitle: string) => void;
 	setCollapsedBlocks: (blocks: CollapsedBlock[]) => void;
+	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[]) => void;
 	addCollapsedBlock: (startRow: number, endRow: number) => void;
 	removeCollapsedBlock: (id: string) => void;
 	reset: () => void;
@@ -99,6 +100,8 @@ export const useChartStore = create<ChartState>((set, get) => ({
 	setPatternTitle: (patternTitle) => set({ patternTitle }),
 
 	setCollapsedBlocks: (blocks) => set({ collapsedBlocks: blocks }),
+
+	setCellsAndBlocks: (cells, blocks) => set({ cells, collapsedBlocks: blocks }),
 
 	addCollapsedBlock: (startRow, endRow) => {
 		if (startRow >= endRow) {
