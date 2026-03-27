@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
-import { ShapeGuide } from '@/types/knitting';
+import { CollapsedBlock, ShapeGuide } from '@/types/knitting';
 
 vi.mock('react-konva', async () => {
 	const actual = await vi.importActual<typeof import('react-konva')>('react-konva');
@@ -103,6 +103,101 @@ describe('ShapeGuideLayer', () => {
 				currentStroke={[]}
 				cellSize={15}
 				transform={{ x: 0, y: 0, scale: 1 }}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(2);
+	});
+});
+
+describe('ShapeGuideLayer with collapsedBlocks', () => {
+	const collapsedBlocks: CollapsedBlock[] = [{ id: 'b1', startRow: 4, endRow: 6 }];
+	const cellSize = 15;
+	const transform = { x: 0, y: 0, scale: 1 };
+
+	it('collapsedBlocks가 빈 배열이면 모든 stroke를 렌더링한다', () => {
+		const shapeGuide: ShapeGuide = { strokes: [[0, 0, 5, 3, 10, 6]] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={[]}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(1);
+	});
+
+	it('stroke가 중략 범위 내에만 있으면 렌더링하지 않는다', () => {
+		const shapeGuide: ShapeGuide = { strokes: [[0, 5, 10, 5]] };
+		const { queryAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
+			/>,
+		);
+		expect(queryAllByTestId('konva-line')).toHaveLength(0);
+	});
+
+	it('stroke의 모든 점이 중략 범위 밖이면 렌더링한다', () => {
+		const shapeGuide: ShapeGuide = { strokes: [[0, 2, 10, 3]] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(1);
+	});
+
+	it('stroke가 중략 범위를 가로지르면 visible segment만 렌더링한다', () => {
+		// points: row=2(visible), row=3(visible), row=5(null, 4-6 범위), row=8(visible), row=9(visible)
+		// segment1: [(0,2),(5,3)] → 1 Line
+		// segment2: [(12,8),(15,9)] → 1 Line
+		const shapeGuide: ShapeGuide = { strokes: [[0, 2, 5, 3, 8, 5, 12, 8, 15, 9]] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(2);
+	});
+
+	it('currentStroke가 중략 범위 내에만 있으면 렌더링하지 않는다', () => {
+		const shapeGuide: ShapeGuide = { strokes: [] };
+		const { queryAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[0, 5, 10, 5]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
+			/>,
+		);
+		expect(queryAllByTestId('konva-line')).toHaveLength(0);
+	});
+
+	it('currentStroke가 중략 범위를 가로지르면 visible segment만 렌더링한다', () => {
+		// points: row=2(visible), row=3(visible), row=5(null), row=8(visible), row=9(visible)
+		// → 2 Lines
+		const shapeGuide: ShapeGuide = { strokes: [] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[0, 2, 5, 3, 8, 5, 12, 8, 15, 9]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
 			/>,
 		);
 		expect(getAllByTestId('konva-line')).toHaveLength(2);
