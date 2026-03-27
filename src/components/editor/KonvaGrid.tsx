@@ -115,16 +115,18 @@ interface CollapsedRowProps {
 	y: number;
 	width: number;
 	cellSize: number;
+	totalRows: number;
 	onClick: (blockId: string) => void;
 }
 
-const CollapsedRow = memo(function CollapsedRowInner({ block, y, width, cellSize, onClick }: CollapsedRowProps) {
+const CollapsedRow = memo(function CollapsedRowInner({ block, y, width, cellSize, totalRows, onClick }: CollapsedRowProps) {
 	const handleClick = useCallback(() => {
 		onClick(block.id);
 	}, [block.id, onClick]);
 
-	const displayStart = block.startRow + 1;
-	const displayEnd = block.endRow + 1;
+	// 아래가 1단 — displayStart는 작은 단 번호, displayEnd는 큰 단 번호
+	const displayStart = totalRows - block.endRow;
+	const displayEnd = totalRows - block.startRow;
 	const labelText = `${displayStart}~${displayEnd}단 중략`;
 	const fontSize = Math.max(11, Math.min(13, Math.floor(cellSize * 0.7)));
 
@@ -933,6 +935,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 						y={y}
 						width={totalWidth}
 						cellSize={cellSize}
+						totalRows={gridSize.rows}
 						onClick={handleCollapsedRowClick}
 					/>
 				))}

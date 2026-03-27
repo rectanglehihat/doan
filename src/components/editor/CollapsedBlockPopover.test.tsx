@@ -5,19 +5,20 @@ import { CollapsedBlockPopover } from './CollapsedBlockPopover';
 const defaultProps = {
 	startRow: 2,
 	endRow: 5,
+	totalRows: 10,
 	onRemove: vi.fn(),
 	onClose: vi.fn(),
 };
 
 describe('CollapsedBlockPopover', () => {
 	it('"N~M단 중략 중" 정보 텍스트를 렌더링한다', () => {
-		render(<CollapsedBlockPopover {...defaultProps} startRow={2} endRow={5} />);
-		// 0-based → 1-based 변환: startRow+1 ~ endRow+1
-		expect(screen.getByText(/3~6단 중략 중/)).toBeInTheDocument();
+		render(<CollapsedBlockPopover {...defaultProps} startRow={2} endRow={5} totalRows={10} />);
+		// 아래가 1단: displayStart = totalRows - endRow = 5, displayEnd = totalRows - startRow = 8
+		expect(screen.getByText(/5~8단 중략 중/)).toBeInTheDocument();
 	});
 
-	it('startRow=0, endRow=9일 때 "1~10단 중략 중"을 렌더링한다', () => {
-		render(<CollapsedBlockPopover {...defaultProps} startRow={0} endRow={9} />);
+	it('startRow=0, endRow=9, totalRows=10일 때 "1~10단 중략 중"을 렌더링한다', () => {
+		render(<CollapsedBlockPopover {...defaultProps} startRow={0} endRow={9} totalRows={10} />);
 		expect(screen.getByText(/1~10단 중략 중/)).toBeInTheDocument();
 	});
 

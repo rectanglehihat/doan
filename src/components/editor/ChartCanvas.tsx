@@ -198,7 +198,7 @@ export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, o
 					<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
 						<div className="pointer-events-auto bg-white rounded-lg shadow-xl border border-zinc-200 p-4 min-w-[200px]">
 							<p className="text-sm text-zinc-700 mb-3">
-								{selectedCollapsedBlock.startRow + 1}~{selectedCollapsedBlock.endRow + 1}단 중략 중
+								{gridSize.rows - selectedCollapsedBlock.endRow}~{gridSize.rows - selectedCollapsedBlock.startRow}단 중략 중
 							</p>
 							<div className="flex gap-2 justify-end">
 								<button

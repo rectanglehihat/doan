@@ -81,6 +81,30 @@ describe('useHistory', () => {
 			expect(useChartStore.getState().cells[1][1].symbolId).toBeNull();
 			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
 		});
+
+		it('중략 추가 후 undo 시 collapsedBlocks가 제거된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addCollapsedBlock(0, 5);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
+		});
+
+		it('중략 추가 후 undo 1번 후 canUndo가 false이다 (히스토리 스택이 비어야 함)', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addCollapsedBlock(0, 5);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(result.current.canUndo).toBe(false);
+		});
 	});
 
 	describe('batch', () => {
@@ -311,6 +335,24 @@ describe('useHistory', () => {
 				result.current.redo();
 			});
 			expect(useChartStore.getState().cells).toBe(before);
+		});
+
+		it('중략 추가 → undo → redo 시 collapsedBlocks가 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addCollapsedBlock(0, 5);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
+			act(() => {
+				result.current.redo();
+			});
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(1);
+			expect(useChartStore.getState().collapsedBlocks[0].startRow).toBe(0);
+			expect(useChartStore.getState().collapsedBlocks[0].endRow).toBe(5);
 		});
 	});
 });

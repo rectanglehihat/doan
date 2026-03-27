@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 interface CollapsedBlockPopoverProps {
 	startRow: number;
 	endRow: number;
+	totalRows: number;
 	onRemove: () => void;
 	onClose: () => void;
 }
@@ -12,6 +13,7 @@ interface CollapsedBlockPopoverProps {
 export function CollapsedBlockPopover({
 	startRow,
 	endRow,
+	totalRows,
 	onRemove,
 	onClose,
 }: CollapsedBlockPopoverProps) {
@@ -31,9 +33,9 @@ export function CollapsedBlockPopover({
 		};
 	}, [onClose]);
 
-	// 0-based → 1-based 변환
-	const displayStart = startRow + 1;
-	const displayEnd = endRow + 1;
+	// 아래가 1단 — displayStart는 작은 단 번호, displayEnd는 큰 단 번호
+	const displayStart = totalRows - endRow;
+	const displayEnd = totalRows - startRow;
 
 	return (
 		<div role="dialog">
