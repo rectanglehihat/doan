@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ChartCell, GridSize, PatternType, RotationalMode } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
 const DEFAULT_CELL_SIZE = 15;
@@ -44,6 +44,7 @@ interface ChartState {
 	cellSize: number;
 	patternType: PatternType;
 	patternTitle: string;
+	collapsedBlocks: CollapsedBlock[];
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
 	setCells: (cells: ChartCell[][]) => void;
 	setGridSize: (gridSize: GridSize) => void;
@@ -51,6 +52,9 @@ interface ChartState {
 	setCellSize: (cellSize: number) => void;
 	setPatternType: (patternType: PatternType) => void;
 	setPatternTitle: (patternTitle: string) => void;
+	setCollapsedBlocks: (blocks: CollapsedBlock[]) => void;
+	addCollapsedBlock: (startRow: number, endRow: number) => void;
+	removeCollapsedBlock: (id: string) => void;
 	reset: () => void;
 }
 
@@ -60,9 +64,10 @@ const initialState = {
 	cellSize: DEFAULT_CELL_SIZE,
 	patternType: 'knitting' as PatternType,
 	patternTitle: '',
+	collapsedBlocks: [] as CollapsedBlock[],
 };
 
-export const useChartStore = create<ChartState>((set) => ({
+export const useChartStore = create<ChartState>((set, get) => ({
 	...initialState,
 
 	setCellSymbol: (row, col, symbolId) =>
@@ -93,6 +98,32 @@ export const useChartStore = create<ChartState>((set) => ({
 
 	setPatternTitle: (patternTitle) => set({ patternTitle }),
 
+	setCollapsedBlocks: (blocks) => set({ collapsedBlocks: blocks }),
+
+	addCollapsedBlock: (startRow, endRow) => {
+		if (startRow >= endRow) {
+			throw new Error('startRow는 endRow보다 작아야 합니다');
+		}
+		const { collapsedBlocks } = get();
+		const overlapping = collapsedBlocks.some(
+			(block) => startRow <= block.endRow && endRow >= block.startRow,
+		);
+		if (overlapping) {
+			throw new Error('이미 중략된 범위와 겹칩니다');
+		}
+		const newBlock: CollapsedBlock = {
+			id: crypto.randomUUID(),
+			startRow,
+			endRow,
+		};
+		set((state) => ({ collapsedBlocks: [...state.collapsedBlocks, newBlock] }));
+	},
+
+	removeCollapsedBlock: (id) =>
+		set((state) => ({
+			collapsedBlocks: state.collapsedBlocks.filter((block) => block.id !== id),
+		})),
+
 	reset: () =>
 		set({
 			cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
@@ -100,5 +131,6 @@ export const useChartStore = create<ChartState>((set) => ({
 			cellSize: DEFAULT_CELL_SIZE,
 			patternType: 'knitting',
 			patternTitle: '',
+			collapsedBlocks: [],
 		}),
 }));

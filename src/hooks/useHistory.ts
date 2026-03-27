@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChartCell, ShapeGuide } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, ShapeGuide } from '@/types/knitting';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 
@@ -10,14 +10,16 @@ const MAX_HISTORY = 50;
 interface HistoryEntry {
 	cells: ChartCell[][];
 	shapeGuide: ShapeGuide | null;
+	collapsedBlocks: CollapsedBlock[];
 }
 
 export function useHistory() {
 	const pastRef = useRef<HistoryEntry[]>([]);
 	const futureRef = useRef<HistoryEntry[]>([]);
-	const isApplyingCellsRef = useRef(false);
+	const isApplyingChartStoreRef = useRef(false);
 	const isApplyingShapeGuideRef = useRef(false);
 	const prevCellsRef = useRef<ChartCell[][]>(useChartStore.getState().cells);
+	const prevCollapsedBlocksRef = useRef<CollapsedBlock[]>(useChartStore.getState().collapsedBlocks);
 	const prevShapeGuideRef = useRef<ShapeGuide | null>(useUIStore.getState().shapeGuide);
 	const isBatchingRef = useRef(false);
 	const batchStartRef = useRef<HistoryEntry | null>(null);
@@ -26,30 +28,40 @@ export function useHistory() {
 	const [canRedo, setCanRedo] = useState(false);
 
 	const setCells = useChartStore((state) => state.setCells);
+	const setCollapsedBlocks = useChartStore((state) => state.setCollapsedBlocks);
 	const setShapeGuide = useUIStore((state) => state.setShapeGuide);
 
-	// cells 변경 감지
+	// cells + collapsedBlocks 변경 감지 (단일 subscriber로 통합)
 	useEffect(() => {
 		const unsubscribe = useChartStore.subscribe((state) => {
-			const cells = state.cells;
+			const { cells, collapsedBlocks } = state;
 
-			if (isApplyingCellsRef.current) {
-				isApplyingCellsRef.current = false;
+			if (isApplyingChartStoreRef.current) {
+				isApplyingChartStoreRef.current = false;
 				prevCellsRef.current = cells;
+				prevCollapsedBlocksRef.current = collapsedBlocks;
 				return;
 			}
 
-			if (cells === prevCellsRef.current) return;
+			const cellsChanged = cells !== prevCellsRef.current;
+			const blocksChanged = collapsedBlocks !== prevCollapsedBlocksRef.current;
+			if (!cellsChanged && !blocksChanged) return;
 
 			if (isBatchingRef.current) {
 				prevCellsRef.current = cells;
+				prevCollapsedBlocksRef.current = collapsedBlocks;
 				return;
 			}
 
-			const entry: HistoryEntry = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
+			const entry: HistoryEntry = {
+				cells: prevCellsRef.current,
+				shapeGuide: prevShapeGuideRef.current,
+				collapsedBlocks: prevCollapsedBlocksRef.current,
+			};
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
 			futureRef.current = [];
 			prevCellsRef.current = cells;
+			prevCollapsedBlocksRef.current = collapsedBlocks;
 			setCanUndo(true);
 			setCanRedo(false);
 		});
@@ -74,7 +86,11 @@ export function useHistory() {
 				return;
 			}
 
-			const entry: HistoryEntry = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
+			const entry: HistoryEntry = {
+				cells: prevCellsRef.current,
+				shapeGuide: prevShapeGuideRef.current,
+				collapsedBlocks: prevCollapsedBlocksRef.current,
+			};
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
 			futureRef.current = [];
 			prevShapeGuideRef.current = shapeGuide;
@@ -87,38 +103,54 @@ export function useHistory() {
 	const undo = useCallback(() => {
 		if (pastRef.current.length === 0) return;
 		const previous = pastRef.current[pastRef.current.length - 1];
-		const currentEntry: HistoryEntry = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
+		const currentEntry: HistoryEntry = {
+			cells: prevCellsRef.current,
+			shapeGuide: prevShapeGuideRef.current,
+			collapsedBlocks: prevCollapsedBlocksRef.current,
+		};
 		futureRef.current = [currentEntry, ...futureRef.current];
 		pastRef.current = pastRef.current.slice(0, -1);
-		isApplyingCellsRef.current = true;
+		isApplyingChartStoreRef.current = true;
 		isApplyingShapeGuideRef.current = true;
 		prevCellsRef.current = previous.cells;
+		prevCollapsedBlocksRef.current = previous.collapsedBlocks;
 		prevShapeGuideRef.current = previous.shapeGuide;
 		setCells(previous.cells);
+		setCollapsedBlocks(previous.collapsedBlocks);
 		setShapeGuide(previous.shapeGuide);
 		setCanUndo(pastRef.current.length > 0);
 		setCanRedo(true);
-	}, [setCells, setShapeGuide]);
+	}, [setCells, setCollapsedBlocks, setShapeGuide]);
 
 	const redo = useCallback(() => {
 		if (futureRef.current.length === 0) return;
 		const next = futureRef.current[0];
-		const currentEntry: HistoryEntry = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
+		const currentEntry: HistoryEntry = {
+			cells: prevCellsRef.current,
+			shapeGuide: prevShapeGuideRef.current,
+			collapsedBlocks: prevCollapsedBlocksRef.current,
+		};
 		pastRef.current = [...pastRef.current, currentEntry];
 		futureRef.current = futureRef.current.slice(1);
-		isApplyingCellsRef.current = true;
+		isApplyingChartStoreRef.current = true;
 		isApplyingShapeGuideRef.current = true;
 		prevCellsRef.current = next.cells;
+		prevCollapsedBlocksRef.current = next.collapsedBlocks;
 		prevShapeGuideRef.current = next.shapeGuide;
 		setCells(next.cells);
+		setCollapsedBlocks(next.collapsedBlocks);
 		setShapeGuide(next.shapeGuide);
 		setCanUndo(true);
 		setCanRedo(futureRef.current.length > 0);
-	}, [setCells, setShapeGuide]);
+	}, [setCells, setCollapsedBlocks, setShapeGuide]);
 
 	const beginBatch = useCallback(() => {
 		isBatchingRef.current = true;
-		batchStartRef.current = { cells: prevCellsRef.current, shapeGuide: prevShapeGuideRef.current };
+		batchStartRef.current = {
+			cells: prevCellsRef.current,
+			shapeGuide: prevShapeGuideRef.current,
+			collapsedBlocks: prevCollapsedBlocksRef.current,
+		};
 	}, []);
 
 	const endBatch = useCallback(() => {
@@ -128,7 +160,13 @@ export function useHistory() {
 		batchStartRef.current = null;
 		const currentCells = prevCellsRef.current;
 		const currentShapeGuide = prevShapeGuideRef.current;
-		if (batchStart !== null && (batchStart.cells !== currentCells || batchStart.shapeGuide !== currentShapeGuide)) {
+		const currentCollapsedBlocks = prevCollapsedBlocksRef.current;
+		if (
+			batchStart !== null &&
+			(batchStart.cells !== currentCells ||
+				batchStart.shapeGuide !== currentShapeGuide ||
+				batchStart.collapsedBlocks !== currentCollapsedBlocks)
+		) {
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), batchStart];
 			futureRef.current = [];
 			setCanUndo(true);

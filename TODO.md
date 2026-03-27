@@ -76,7 +76,7 @@
   - 미리보기 영역: 편집 영역을 중심점 기준 180° 회전한 결과를 반투명 오버레이로 실시간 표시
   - 의류(스웨터, 카디건 등) 좌우 대칭 편물 작업 시 반복 입력 작업 제거
 - [x] 영역 선택 & 복사/붙여넣기 (`useChartEditor` 확장, Ctrl+C/V 단축키)
-- [ ] 단 반복 블록 마커 — 행 범위 + "N회 반복" 레이블 (`ChartPattern` 타입 확장, PDF 연동)
+- [x] 중략 기능 — 반복되는 행 범위를 "• • • 중략" 한 줄로 접기 (`CollapsedBlock` 타입, `useChartStore` 확장, Undo/Redo 지원)
 - [x] 형태선(Shape Guide) 오버레이 — 목선·진동·소매산 등 반투명 가이드라인 (`KonvaGrid` 레이어 추가)
 - [x] 형태선 드래그 그리기 — 마우스 드래그로 형태선 stroke 추가 (`ShapeGuideLayer`, `isShapeGuideDrawMode`)
 - [x] 형태선 드래그 지우기 — 지우기 모드에서 드래그 경로와 교차하는 stroke 세그먼트 단위 실시간 삭제
