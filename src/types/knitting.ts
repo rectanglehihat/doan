@@ -36,12 +36,19 @@ export interface PatternMetadata {
 	updatedAt: string;
 }
 
+export interface CollapsedBlock {
+	id: string;
+	startRow: number; // 0-based
+	endRow: number; // 0-based, inclusive (startRow < endRow 보장)
+}
+
 export interface ChartPattern {
 	id: string;
 	metadata: PatternMetadata;
 	patternType: PatternType;
 	gridSize: GridSize;
 	cells: ChartCell[][];
+	collapsedBlocks?: CollapsedBlock[];
 }
 
 export interface CellSelection {

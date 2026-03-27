@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 import { useUIStore } from '@/store/useUIStore';
+import { useChartStore } from '@/store/useChartStore';
 import { RotationalMode } from '@/types/knitting';
 
 function mirrorStrokeHorizontal(stroke: number[], cols: number): number[] {
@@ -75,6 +76,11 @@ export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, o
 	const clipboard = useUIStore((state) => state.clipboard);
 	const setCellSelection = useUIStore((state) => state.setCellSelection);
 
+	const collapsedBlocks = useChartStore((state) => state.collapsedBlocks);
+	const addCollapsedBlock = useChartStore((state) => state.addCollapsedBlock);
+
+	const [selectedCollapsedBlockId, setSelectedCollapsedBlockId] = useState<string | null>(null);
+
 	const handleShapeGuideStrokeAdd = useCallback(
 		(stroke: number[]) => {
 			onShapeGuideDrawStart?.();
@@ -84,6 +90,26 @@ export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, o
 		},
 		[addShapeGuideStroke, rotationalMode, gridSize, onShapeGuideDrawStart, onShapeGuideDrawEnd],
 	);
+
+	const handleCollapsedBlockClick = useCallback((blockId: string) => {
+		setSelectedCollapsedBlockId(blockId);
+	}, []);
+
+	const handleCollapseSelection = useCallback(() => {
+		if (!cellSelection) return;
+		const startRow = Math.min(cellSelection.startRow, cellSelection.endRow);
+		const endRow = Math.max(cellSelection.startRow, cellSelection.endRow);
+		if (startRow >= endRow) return;
+		try {
+			addCollapsedBlock(startRow, endRow);
+			setCellSelection(null);
+		} catch (e) {
+			if (e instanceof Error) {
+				console.warn('중략 추가 실패:', e.message);
+			}
+		}
+	}, [cellSelection, addCollapsedBlock, setCellSelection]);
+
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
 
@@ -101,9 +127,29 @@ export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, o
 		return () => observer.disconnect();
 	}, [updateSize]);
 
+	// 선택 영역에서 중략 버튼 표시 조건
+	const canCollapseSelection = isSelectionMode &&
+		cellSelection !== null &&
+		Math.min(cellSelection.startRow, cellSelection.endRow) < Math.max(cellSelection.startRow, cellSelection.endRow);
+
+	const selectedCollapsedBlock = selectedCollapsedBlockId !== null
+		? collapsedBlocks.find((b) => b.id === selectedCollapsedBlockId) ?? null
+		: null;
+
+	const handlePopoverRemove = useCallback(() => {
+		if (selectedCollapsedBlockId === null) return;
+		useChartStore.getState().removeCollapsedBlock(selectedCollapsedBlockId);
+		setSelectedCollapsedBlockId(null);
+	}, [selectedCollapsedBlockId]);
+
+	const handlePopoverClose = useCallback(() => {
+		setSelectedCollapsedBlockId(null);
+	}, []);
+
 	return (
 		<div className="flex flex-col w-full h-full">
-			<div ref={containerRef} className="flex-1 bg-zinc-100 overflow-hidden">
+			<div className="flex flex-1 overflow-hidden">
+			<div ref={containerRef} className="relative flex-1 bg-zinc-100 overflow-hidden">
 				<KonvaGrid
 					cells={cells}
 					gridSize={gridSize}
@@ -130,7 +176,51 @@ export function ChartCanvas({ onPaintStart, onPaintEnd, onShapeGuideDrawStart, o
 					onCopySelection={copySelection}
 					onPasteClipboard={pasteClipboard}
 					rotationalMode={rotationalMode}
+					collapsedBlocks={collapsedBlocks}
+					onCollapsedBlockClick={handleCollapsedBlockClick}
 				/>
+
+				{/* 플로팅 액션바: 선택 모드에서 중략으로 표시 버튼 */}
+				{canCollapseSelection && (
+					<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-zinc-200 px-3 py-2">
+						<button
+							type="button"
+							className="text-sm font-medium text-amber-700 hover:text-amber-800 hover:bg-amber-50 px-3 py-1.5 rounded"
+							onClick={handleCollapseSelection}
+						>
+							중략으로 표시
+						</button>
+					</div>
+				)}
+
+				{/* CollapsedBlock 팝오버 */}
+				{selectedCollapsedBlock !== null && (
+					<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+						<div className="pointer-events-auto bg-white rounded-lg shadow-xl border border-zinc-200 p-4 min-w-[200px]">
+							<p className="text-sm text-zinc-700 mb-3">
+								{selectedCollapsedBlock.startRow + 1}~{selectedCollapsedBlock.endRow + 1}단 중략 중
+							</p>
+							<div className="flex gap-2 justify-end">
+								<button
+									type="button"
+									className="text-sm px-3 py-1.5 rounded border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+									onClick={handlePopoverClose}
+								>
+									닫기
+								</button>
+								<button
+									type="button"
+									className="text-sm px-3 py-1.5 rounded bg-red-500 text-white hover:bg-red-600"
+									onClick={handlePopoverRemove}
+								>
+									중략 해제
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
+
 			</div>
 		</div>
 	);

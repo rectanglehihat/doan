@@ -1,12 +1,13 @@
 'use client';
 
 import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { Stage, Layer, Rect, Line, Text } from 'react-konva';
+import { Stage, Layer, Rect, Line, Text, Group } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
-import { ChartCell, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
 import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
+import { buildRowVisualYMap, getCollapsedBlockVisualY, calcVisualRowCount } from '@/lib/utils/collapsed-rows';
 
 // --- 교차 감지 유틸 ---
 
@@ -107,6 +108,56 @@ const ERASER_CURSOR =
 	"%3Crect x='2' y='10' width='8' height='8' rx='2' fill='white' stroke='%23d97706' stroke-width='1.5'/%3E" +
 	'%3C/svg%3E") 10 18, cell';
 
+// --- 중략 행 서브컴포넌트 ---
+
+interface CollapsedRowProps {
+	block: CollapsedBlock;
+	y: number;
+	width: number;
+	cellSize: number;
+	onClick: (blockId: string) => void;
+}
+
+const CollapsedRow = memo(function CollapsedRowInner({ block, y, width, cellSize, onClick }: CollapsedRowProps) {
+	const handleClick = useCallback(() => {
+		onClick(block.id);
+	}, [block.id, onClick]);
+
+	const displayStart = block.startRow + 1;
+	const displayEnd = block.endRow + 1;
+	const labelText = `${displayStart}~${displayEnd}단 중략`;
+	const fontSize = Math.max(11, Math.min(13, Math.floor(cellSize * 0.7)));
+
+	return (
+		<Group
+			y={y}
+			onClick={handleClick}
+		>
+			<Rect
+				x={0}
+				y={0}
+				width={width}
+				height={cellSize}
+				fill="#FEFCE8"
+				stroke="#EAB308"
+				strokeWidth={1}
+			/>
+			<Text
+				x={0}
+				y={Math.floor((cellSize - fontSize) / 2)}
+				width={width}
+				height={cellSize}
+				text={labelText}
+				align="center"
+				verticalAlign="middle"
+				fontSize={fontSize}
+				fill="#854D0E"
+				listening={false}
+			/>
+		</Group>
+	);
+});
+
 interface KonvaGridProps {
 	cells: ChartCell[][];
 	gridSize: GridSize;
@@ -133,6 +184,8 @@ interface KonvaGridProps {
 	onCopySelection?: (sel: CellSelection) => void;
 	onPasteClipboard?: (row: number, col: number) => void;
 	rotationalMode?: RotationalMode;
+	collapsedBlocks?: CollapsedBlock[];
+	onCollapsedBlockClick?: (blockId: string) => void;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -161,6 +214,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onCopySelection,
 	onPasteClipboard,
 	rotationalMode = 'none',
+	collapsedBlocks = [],
+	onCollapsedBlockClick,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -205,6 +260,13 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const handleStrokeClick = useCallback((index: number) => {
 		setSelectedStrokeIndex((prev) => (prev === index ? null : index));
 	}, []);
+
+	const handleCollapsedRowClick = useCallback(
+		(blockId: string) => {
+			onCollapsedBlockClick?.(blockId);
+		},
+		[onCollapsedBlockClick],
+	);
 
 	useEffect(() => {
 		if (!isShapeGuideDrawMode) return;
@@ -278,30 +340,51 @@ export const KonvaGrid = memo(function KonvaGrid({
 	}, [isSelectionMode, cellSelection, gridSize, onSelectionChange, onCopySelection, onPasteClipboard]);
 
 	const totalWidth = gridSize.cols * cellSize;
-	const totalHeight = gridSize.rows * cellSize;
+	const visualRowCount = useMemo(
+		() => calcVisualRowCount(gridSize.rows, collapsedBlocks),
+		[gridSize.rows, collapsedBlocks],
+	);
+	const totalHeight = visualRowCount * cellSize;
+
+	// 각 행의 시각적 y 좌표 매핑 (collapsed 행은 null) — 내부에서 한 번만 정렬
+	const rowVisualYMap = useMemo(
+		() => buildRowVisualYMap(collapsedBlocks, gridSize.rows, cellSize),
+		[collapsedBlocks, gridSize.rows, cellSize],
+	);
+
+	// 중략 블록 각각의 시각적 y 좌표
+	const collapsedBlockYMap = useMemo(() => {
+		return collapsedBlocks.map((block) => ({
+			block,
+			y: getCollapsedBlockVisualY(block, collapsedBlocks, cellSize),
+		}));
+	}, [collapsedBlocks, cellSize]);
 
 	const gridLines = useMemo(() => {
 		const lines: { key: string; points: number[] }[] = [];
 		for (let i = 0; i <= gridSize.cols; i++) {
 			lines.push({ key: `v${i}`, points: [i * cellSize, 0, i * cellSize, totalHeight] });
 		}
-		for (let i = 0; i <= gridSize.rows; i++) {
+		// 수평선: 시각적 행 수 기준으로 그림
+		for (let i = 0; i <= visualRowCount; i++) {
 			lines.push({ key: `h${i}`, points: [0, i * cellSize, totalWidth, i * cellSize] });
 		}
 		return lines;
-	}, [gridSize, cellSize, totalWidth, totalHeight]);
+	}, [gridSize.cols, cellSize, totalHeight, totalWidth, visualRowCount]);
 
 	const nonEmptyCells = useMemo(
 		() =>
-			cells.flatMap((row, rowIdx) =>
-				row
-					.map((cell, colIdx) => ({ cell, rowIdx, colIdx }))
+			cells.flatMap((row, rowIdx) => {
+				const visualY = rowVisualYMap[rowIdx];
+				if (visualY === null) return [];
+				return row
+					.map((cell, colIdx) => ({ cell, rowIdx, colIdx, visualY }))
 					.filter(
-						(x): x is { cell: ChartCell & { symbolId: string }; rowIdx: number; colIdx: number } =>
+						(x): x is { cell: ChartCell & { symbolId: string }; rowIdx: number; colIdx: number; visualY: number } =>
 							x.cell.symbolId !== null,
-					),
-			),
-		[cells],
+					);
+			}),
+		[cells, rowVisualYMap],
 	);
 
 	// 레이어 기준 포인터 위치를 grid 교차점 좌표계(col, row)로 반환
@@ -321,21 +404,35 @@ export const KonvaGrid = memo(function KonvaGrid({
 		return { col, row };
 	}, [cellSize, gridSize, rotationalMode]);
 
+	// 시각적 행 인덱스(0-based) → 실제 데이터 행 인덱스 역매핑
+	const visualToDataRowMap = useMemo(() => {
+		const map: number[] = [];
+		for (let rowIdx = 0; rowIdx < gridSize.rows; rowIdx++) {
+			if (rowVisualYMap[rowIdx] !== null) {
+				map.push(rowIdx);
+			}
+		}
+		return map;
+	}, [gridSize.rows, rowVisualYMap]);
+
 	const getCellFromPointer = useCallback((): { row: number; col: number } | null => {
 		const layer = layerRef.current;
 		if (!layer) return null;
 		const pos = layer.getRelativePointerPosition();
 		if (!pos) return null;
 		const col = Math.floor(pos.x / cellSize);
-		const row = Math.floor(pos.y / cellSize);
+		const visualRow = Math.floor(pos.y / cellSize);
+		// 시각적 행 인덱스를 실제 데이터 행 인덱스로 변환
+		const row = visualToDataRowMap[visualRow] ?? -1;
 		if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
 			if (rotationalMode === 'horizontal' && col >= Math.floor(gridSize.cols / 2)) return null;
 			if (rotationalMode === 'vertical' && row >= Math.floor(gridSize.rows / 2)) return null;
-			if (rotationalMode === 'both' && (col >= Math.floor(gridSize.cols / 2) || row >= Math.floor(gridSize.rows / 2))) return null;
+			if (rotationalMode === 'both' && (col >= Math.floor(gridSize.cols / 2) || row >= Math.floor(gridSize.rows / 2)))
+				return null;
 			return { row, col };
 		}
 		return null;
-	}, [gridSize, cellSize, rotationalMode]);
+	}, [gridSize, cellSize, rotationalMode, visualToDataRowMap]);
 
 	// 드래그 지우기: erase 세그먼트에 히트된 stroke 세그먼트만 부분 제거
 	const erasePartialStrokes = useCallback(
@@ -603,6 +700,25 @@ export const KonvaGrid = memo(function KonvaGrid({
 
 	const hasShapeGuide = shapeGuide && shapeGuide.strokes.length > 0;
 
+	// IIFE 패턴 대신 조건 변수로 추출
+	const hoverCellVisualY =
+		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode
+			? rowVisualYMap[hoverCell.row]
+			: undefined;
+
+	const cellSelectionVisualBounds =
+		isSelectionMode && cellSelection !== null
+			? (() => {
+					const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
+					const maxRow = Math.max(cellSelection.startRow, cellSelection.endRow);
+					const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
+					const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
+					const topY = rowVisualYMap[minRow] ?? minRow * cellSize;
+					const bottomY = rowVisualYMap[maxRow] ?? maxRow * cellSize;
+					return { minRow, maxRow, minCol, maxCol, topY, bottomY };
+				})()
+			: null;
+
 	return (
 		<Stage
 			ref={stageRef}
@@ -642,11 +758,11 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				))}
 
-				{nonEmptyCells.map(({ cell, rowIdx, colIdx }) => (
+				{nonEmptyCells.map(({ cell, rowIdx, colIdx, visualY }) => (
 					<Text
 						key={`${rowIdx}-${colIdx}`}
 						x={colIdx * cellSize}
-						y={rowIdx * cellSize}
+						y={visualY}
 						width={cellSize}
 						height={cellSize}
 						text={symbolsMap[cell.symbolId] ?? cell.symbolId}
@@ -697,7 +813,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 							if (rotationalMode === 'vertical') return rowIdx < Math.floor(gridSize.rows / 2);
 							return rowIdx < Math.floor(gridSize.rows / 2) && colIdx < Math.floor(gridSize.cols / 2);
 						})
-						.flatMap(({ cell, rowIdx, colIdx }) => {
+						.flatMap(({ cell, rowIdx, colIdx, visualY }) => {
 							const mirrorRow = gridSize.rows - 1 - rowIdx;
 							const mirrorCol = gridSize.cols - 1 - colIdx;
 							const positions: Array<{ r: number; c: number }> =
@@ -705,28 +821,40 @@ export const KonvaGrid = memo(function KonvaGrid({
 									? [{ r: rowIdx, c: mirrorCol }]
 									: rotationalMode === 'vertical'
 										? [{ r: mirrorRow, c: colIdx }]
-										: [{ r: rowIdx, c: mirrorCol }, { r: mirrorRow, c: colIdx }, { r: mirrorRow, c: mirrorCol }];
-							return positions.map(({ r, c }) => (
-								<Text
-									key={`mirror-${rowIdx}-${colIdx}-${r}-${c}`}
-									x={c * cellSize}
-									y={r * cellSize}
-									width={cellSize}
-									height={cellSize}
-									text={symbolsMap[cell.symbolId] ?? cell.symbolId}
-									align="center"
-									verticalAlign="middle"
-									fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
-									fill="rgba(26,26,26,0.35)"
-									listening={false}
-								/>
-							));
+										: [
+												{ r: rowIdx, c: mirrorCol },
+												{ r: mirrorRow, c: colIdx },
+												{ r: mirrorRow, c: mirrorCol },
+											];
+							return positions.map(({ r, c }) => {
+								const ry = rowVisualYMap[r] ?? visualY;
+								return (
+									<Text
+										key={`mirror-${rowIdx}-${colIdx}-${r}-${c}`}
+										x={c * cellSize}
+										y={ry}
+										width={cellSize}
+										height={cellSize}
+										text={symbolsMap[cell.symbolId] ?? cell.symbolId}
+										align="center"
+										verticalAlign="middle"
+										fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
+										fill="rgba(26,26,26,0.35)"
+										listening={false}
+									/>
+								);
+							});
 						})}
 
 				{/* 대칭 모드: 경계선 */}
 				{(rotationalMode === 'horizontal' || rotationalMode === 'both') && (
 					<Line
-						points={[Math.floor(gridSize.cols / 2) * cellSize, 0, Math.floor(gridSize.cols / 2) * cellSize, totalHeight]}
+						points={[
+							Math.floor(gridSize.cols / 2) * cellSize,
+							0,
+							Math.floor(gridSize.cols / 2) * cellSize,
+							totalHeight,
+						]}
 						stroke="#ef4444"
 						strokeWidth={1.5}
 						dash={[4, 4]}
@@ -743,10 +871,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				)}
 
-				{hoverCell && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode && (
+				{hoverCell !== null && hoverCellVisualY !== null && hoverCellVisualY !== undefined && (
 					<Rect
 						x={hoverCell.col * cellSize}
-						y={hoverCell.row * cellSize}
+						y={hoverCellVisualY}
 						width={cellSize}
 						height={cellSize}
 						fill={selectedSymbolAbbr ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.08)'}
@@ -765,11 +893,13 @@ export const KonvaGrid = memo(function KonvaGrid({
 								const r = hoverCell.row + dr;
 								const c = hoverCell.col + dc;
 								if (r >= gridSize.rows || c >= gridSize.cols) return null;
+								const py = rowVisualYMap[r];
+								if (py === null || py === undefined) return null;
 								return (
 									<Rect
 										key={`paste-preview-${dr}-${dc}`}
 										x={c * cellSize}
-										y={r * cellSize}
+										y={py}
 										width={cellSize}
 										height={cellSize}
 										fill={cell.symbolId ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.1)'}
@@ -781,27 +911,31 @@ export const KonvaGrid = memo(function KonvaGrid({
 					)}
 
 				{/* 선택 영역 사각형 */}
-				{isSelectionMode &&
-					cellSelection &&
-					(() => {
-						const minRow = Math.min(cellSelection.startRow, cellSelection.endRow);
-						const maxRow = Math.max(cellSelection.startRow, cellSelection.endRow);
-						const minCol = Math.min(cellSelection.startCol, cellSelection.endCol);
-						const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
-						return (
-							<Rect
-								x={minCol * cellSize}
-								y={minRow * cellSize}
-								width={(maxCol - minCol + 1) * cellSize}
-								height={(maxRow - minRow + 1) * cellSize}
-								stroke="rgba(59,130,246,0.9)"
-								strokeWidth={2}
-								fill="rgba(59,130,246,0.15)"
-								dash={[4, 4]}
-								listening={false}
-							/>
-						);
-					})()}
+				{cellSelectionVisualBounds !== null && (
+					<Rect
+						x={cellSelectionVisualBounds.minCol * cellSize}
+						y={cellSelectionVisualBounds.topY}
+						width={(cellSelectionVisualBounds.maxCol - cellSelectionVisualBounds.minCol + 1) * cellSize}
+						height={cellSelectionVisualBounds.bottomY - cellSelectionVisualBounds.topY + cellSize}
+						stroke="rgba(59,130,246,0.9)"
+						strokeWidth={2}
+						fill="rgba(59,130,246,0.15)"
+						dash={[4, 4]}
+						listening={false}
+					/>
+				)}
+
+				{/* 중략 행 렌더링 */}
+				{collapsedBlockYMap.map(({ block, y }) => (
+					<CollapsedRow
+						key={block.id}
+						block={block}
+						y={y}
+						width={totalWidth}
+						cellSize={cellSize}
+						onClick={handleCollapsedRowClick}
+					/>
+				))}
 			</Layer>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (

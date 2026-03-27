@@ -179,4 +179,72 @@ describe('useChartStore', () => {
 			});
 		});
 	});
+
+	describe('collapsedBlocks', () => {
+		beforeEach(() => {
+			useChartStore.getState().reset();
+		});
+
+		it('초기값은 빈 배열이다', () => {
+			const { collapsedBlocks } = useChartStore.getState();
+			expect(collapsedBlocks).toEqual([]);
+		});
+
+		it('addCollapsedBlock 호출 시 collapsedBlocks에 추가된다', () => {
+			useChartStore.getState().addCollapsedBlock(2, 5);
+			const { collapsedBlocks } = useChartStore.getState();
+			expect(collapsedBlocks).toHaveLength(1);
+			expect(typeof collapsedBlocks[0].id).toBe('string');
+			expect(collapsedBlocks[0].startRow).toBe(2);
+			expect(collapsedBlocks[0].endRow).toBe(5);
+		});
+
+		it('addCollapsedBlock 범위가 겹치면 에러를 던진다', () => {
+			useChartStore.getState().addCollapsedBlock(2, 5);
+			expect(() => useChartStore.getState().addCollapsedBlock(3, 7)).toThrow();
+			expect(() => useChartStore.getState().addCollapsedBlock(0, 3)).toThrow();
+		});
+
+		it('addCollapsedBlock startRow >= endRow이면 에러를 던진다', () => {
+			expect(() => useChartStore.getState().addCollapsedBlock(3, 3)).toThrow();
+			expect(() => useChartStore.getState().addCollapsedBlock(5, 3)).toThrow();
+		});
+
+		it('removeCollapsedBlock 호출 시 해당 블록이 제거된다', () => {
+			useChartStore.getState().addCollapsedBlock(2, 5);
+			const { collapsedBlocks } = useChartStore.getState();
+			const { id } = collapsedBlocks[0];
+			useChartStore.getState().removeCollapsedBlock(id);
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
+		});
+
+		it('removeCollapsedBlock 존재하지 않는 id는 무시한다', () => {
+			expect(() =>
+				useChartStore.getState().removeCollapsedBlock('non-existent-id'),
+			).not.toThrow();
+		});
+
+		it('reset 호출 시 collapsedBlocks가 초기화된다', () => {
+			useChartStore.getState().addCollapsedBlock(2, 5);
+			useChartStore.getState().reset();
+			expect(useChartStore.getState().collapsedBlocks).toEqual([]);
+		});
+
+		it('여러 collapsedBlocks를 겹치지 않게 추가할 수 있다', () => {
+			useChartStore.getState().addCollapsedBlock(0, 2);
+			useChartStore.getState().addCollapsedBlock(5, 8);
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(2);
+		});
+
+		it('기존 블록 종료 행과 새 블록 시작 행이 동일하면 에러를 던진다', () => {
+			useChartStore.getState().addCollapsedBlock(0, 2);
+			expect(() => useChartStore.getState().addCollapsedBlock(2, 5)).toThrow();
+		});
+
+		it('기존 블록 바로 다음 행부터 시작하면 에러 없이 추가된다', () => {
+			useChartStore.getState().addCollapsedBlock(0, 2);
+			expect(() => useChartStore.getState().addCollapsedBlock(3, 5)).not.toThrow();
+			expect(useChartStore.getState().collapsedBlocks).toHaveLength(2);
+		});
+	});
 });
