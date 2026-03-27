@@ -951,6 +951,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					selectedStrokeIndex={isShapeGuideDrawMode ? selectedStrokeIndex : null}
 					onStrokeClick={handleStrokeClick}
 					isDrawMode={isShapeGuideDrawMode}
+					collapsedBlocks={collapsedBlocks ?? []}
 				/>
 			)}
 		</Stage>
