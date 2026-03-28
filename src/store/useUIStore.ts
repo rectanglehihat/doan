@@ -4,7 +4,6 @@ import { KnittingSymbol, ShapeGuide, SymmetryMode, RotationalMode, CellSelection
 interface UIState {
 	selectedSymbol: KnittingSymbol | null;
 	symmetryMode: SymmetryMode;
-	isSaveDialogOpen: boolean;
 	isLoadDialogOpen: boolean;
 	isResetDialogOpen: boolean;
 	currentPatternId: string | null;
@@ -18,8 +17,6 @@ interface UIState {
 	setSelectedSymbol: (symbol: KnittingSymbol | null) => void;
 	setSymmetryMode: (mode: SymmetryMode) => void;
 	setRotationalMode: (mode: RotationalMode) => void;
-	openSaveDialog: () => void;
-	closeSaveDialog: () => void;
 	openLoadDialog: () => void;
 	closeLoadDialog: () => void;
 	openResetDialog: () => void;
@@ -43,7 +40,6 @@ interface UIState {
 export const useUIStore = create<UIState>((set) => ({
 	selectedSymbol: null,
 	symmetryMode: 'none',
-	isSaveDialogOpen: false,
 	isLoadDialogOpen: false,
 	isResetDialogOpen: false,
 	currentPatternId: null,
@@ -65,8 +61,6 @@ export const useUIStore = create<UIState>((set) => ({
 				: { selectedSymbol: null },
 		),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
-	openSaveDialog: () => set({ isSaveDialogOpen: true }),
-	closeSaveDialog: () => set({ isSaveDialogOpen: false }),
 	openLoadDialog: () => set({ isLoadDialogOpen: true }),
 	closeLoadDialog: () => set({ isLoadDialogOpen: false }),
 	openResetDialog: () => set({ isResetDialogOpen: true }),
@@ -113,7 +107,6 @@ export const useUIStore = create<UIState>((set) => ({
 		set({
 			selectedSymbol: null,
 			symmetryMode: 'none',
-			isSaveDialogOpen: false,
 			isLoadDialogOpen: false,
 			isResetDialogOpen: false,
 			currentPatternId: null,

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { usePatterns } from '@/hooks/usePatterns';
 
 interface SidebarSectionProps {
 	title: string;
@@ -32,9 +33,10 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 
 export function EditorSidebar() {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
-	const [difficulty, setDifficulty] = useState<number>(0);
-	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
-	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openSaveDialog, openLoadDialog } = useUIStore();
+	const [saveError, setSaveError] = useState<string | null>(null);
+	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
+	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
+	const { saveCurrentPattern, newPattern } = usePatterns();
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -110,9 +112,29 @@ export function EditorSidebar() {
 		[setCellSize],
 	);
 
+	const handleDifficultyChange = useCallback(
+		(value: number) => {
+			setDifficulty(value);
+		},
+		[setDifficulty],
+	);
+
+	const handleMaterialsChange = useCallback(
+		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+			setMaterials(e.target.value);
+		},
+		[setMaterials],
+	);
+
 	const handleSaveClick = useCallback(() => {
-		openSaveDialog();
-	}, [openSaveDialog]);
+		setSaveError(null);
+		const result = saveCurrentPattern(patternTitle);
+		if (result.ok) {
+			newPattern();
+		} else {
+			setSaveError(result.error);
+		}
+	}, [saveCurrentPattern, patternTitle, newPattern]);
 
 	const handleLoadClick = useCallback(() => {
 		openLoadDialog();
@@ -215,7 +237,7 @@ export function EditorSidebar() {
 							<label className="text-xs text-zinc-600">난이도</label>
 							<DifficultyStars
 								value={difficulty}
-								onChange={setDifficulty}
+								onChange={handleDifficultyChange}
 							/>
 						</div>
 						<div className="flex flex-col gap-1">
@@ -223,6 +245,8 @@ export function EditorSidebar() {
 							<textarea
 								placeholder="사용할 실, 바늘, 부자재 등을 적어주세요"
 								rows={4}
+								value={materials}
+								onChange={handleMaterialsChange}
 								className="w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
 							/>
 						</div>
@@ -231,10 +255,18 @@ export function EditorSidebar() {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
+				{saveError !== null && (
+					<p role="alert" className="text-xs text-red-600">
+						{saveError === 'limit_reached'
+							? '저장 한도(10개)에 도달했습니다.'
+							: '저장 중 오류가 발생했습니다.'}
+					</p>
+				)}
 				<Button
 					variant="default"
 					size="sm"
 					className="w-full"
+					disabled={patternTitle.trim() === ''}
 					onClick={handleSaveClick}
 				>
 					저장

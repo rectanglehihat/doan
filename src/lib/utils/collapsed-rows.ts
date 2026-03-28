@@ -107,3 +107,33 @@ export function calcVisualRowCount(
 	}
 	return totalRows - skipped;
 }
+
+/**
+ * 시각적 행 교차점 인덱스(0~visualRowCount) → 데이터 행 교차점 인덱스(0~totalRows) 매핑 배열을 반환한다.
+ * shape guide 형태선 그리기/지우기에서 마우스 픽셀 위치를 데이터 행 좌표로 변환할 때 사용한다.
+ *
+ * 예: totalRows=10, collapsed {3~6} → visualRowCount=7
+ * 반환: [0, 1, 2, 3, 7, 8, 9, 10]  (길이 = visualRowCount + 1)
+ */
+export function buildVisualToDataIntersectionMap(
+	collapsedBlocks: CollapsedBlock[],
+	visualRowCount: number,
+): number[] {
+	const sorted = [...collapsedBlocks].sort((a, b) => a.startRow - b.startRow);
+	const map: number[] = [0]; // visual intersection 0 → data intersection 0
+	let dataIntersection = 0;
+	let blockIdx = 0;
+
+	for (let visualIdx = 0; visualIdx < visualRowCount; visualIdx++) {
+		if (blockIdx < sorted.length && sorted[blockIdx].startRow === dataIntersection) {
+			// 현재 데이터 교차점이 중략 블록의 시작 → 블록 끝으로 점프
+			dataIntersection = sorted[blockIdx].endRow + 1;
+			blockIdx++;
+		} else {
+			dataIntersection++;
+		}
+		map.push(dataIntersection);
+	}
+
+	return map;
+}

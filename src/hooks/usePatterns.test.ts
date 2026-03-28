@@ -33,6 +33,8 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 		shapeGuide: null,
 		rotationalMode: 'none',
 		savedAt: '2025-01-01T00:00:00.000Z',
+		difficulty: 0,
+		materials: '',
 		...overrides,
 	};
 }
@@ -152,6 +154,22 @@ describe('usePatterns', () => {
 			expect(calledWith.patternType).toBe('crochet');
 			expect(calledWith.savedAt).toBeTruthy();
 		});
+
+		it('저장할 때 현재 스토어의 difficulty와 materials를 포함한다', () => {
+			mockSavePattern.mockReturnValue({ ok: true, data: undefined });
+			useChartStore.getState().setDifficulty(3);
+			useChartStore.getState().setMaterials('대바늘 4mm');
+
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				result.current.saveCurrentPattern('난이도 있는 도안');
+			});
+
+			const calledWith = mockSavePattern.mock.calls[0][0];
+			expect(calledWith.difficulty).toBe(3);
+			expect(calledWith.materials).toBe('대바늘 4mm');
+		});
 	});
 
 	describe('loadPattern', () => {
@@ -202,6 +220,25 @@ describe('usePatterns', () => {
 			});
 
 			expect(result.current.currentPatternId).toBeNull();
+		});
+
+		it('loadPattern 성공 시 difficulty와 materials가 스토어에 복원된다', () => {
+			const snapshot = makeSnapshot({
+				id: 'load-id',
+				difficulty: 4,
+				materials: '실 200g',
+			});
+			mockLoadPattern.mockReturnValue({ ok: true, data: snapshot });
+
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				result.current.loadPattern('load-id');
+			});
+
+			const storeState = useChartStore.getState();
+			expect(storeState.difficulty).toBe(4);
+			expect(storeState.materials).toBe('실 200g');
 		});
 	});
 

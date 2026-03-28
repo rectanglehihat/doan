@@ -20,6 +20,8 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 		shapeGuide: null,
 		rotationalMode: 'none',
 		savedAt: '2025-01-01T00:00:00.000Z',
+		difficulty: 0,
+		materials: '',
 		...overrides,
 	};
 }

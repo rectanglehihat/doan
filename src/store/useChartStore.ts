@@ -52,16 +52,22 @@ interface ChartState {
 	setCellSize: (cellSize: number) => void;
 	setPatternType: (patternType: PatternType) => void;
 	setPatternTitle: (patternTitle: string) => void;
+	difficulty: number;
+	materials: string;
 	setCollapsedBlocks: (blocks: CollapsedBlock[]) => void;
 	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[]) => void;
 	addCollapsedBlock: (startRow: number, endRow: number) => void;
 	removeCollapsedBlock: (id: string) => void;
+	setDifficulty: (difficulty: number) => void;
+	setMaterials: (materials: string) => void;
 	restoreSnapshot: (
 		cells: ChartCell[][],
 		gridSize: GridSize,
 		patternType: PatternType,
 		patternTitle: string,
 		collapsedBlocks: CollapsedBlock[],
+		difficulty: number,
+		materials: string,
 	) => void;
 	reset: () => void;
 }
@@ -73,6 +79,8 @@ const initialState = {
 	patternType: 'knitting' as PatternType,
 	patternTitle: '',
 	collapsedBlocks: [] as CollapsedBlock[],
+	difficulty: 0,
+	materials: '',
 };
 
 export const useChartStore = create<ChartState>((set, get) => ({
@@ -134,8 +142,12 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			collapsedBlocks: state.collapsedBlocks.filter((block) => block.id !== id),
 		})),
 
-	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks) =>
-		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks }),
+	setDifficulty: (difficulty) => set({ difficulty }),
+
+	setMaterials: (materials) => set({ materials }),
+
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials }),
 
 	reset: () =>
 		set({
@@ -145,5 +157,7 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			patternType: 'knitting',
 			patternTitle: '',
 			collapsedBlocks: [],
+			difficulty: 0,
+			materials: '',
 		}),
 }));
