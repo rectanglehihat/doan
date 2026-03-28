@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ChartCell, CollapsedBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
 const DEFAULT_CELL_SIZE = 15;
@@ -45,6 +45,7 @@ interface ChartState {
 	patternType: PatternType;
 	patternTitle: string;
 	collapsedBlocks: CollapsedBlock[];
+	collapsedColumnBlocks: CollapsedColumnBlock[];
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
 	setCells: (cells: ChartCell[][]) => void;
 	setGridSize: (gridSize: GridSize) => void;
@@ -55,9 +56,12 @@ interface ChartState {
 	difficulty: number;
 	materials: string;
 	setCollapsedBlocks: (blocks: CollapsedBlock[]) => void;
-	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[]) => void;
+	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[], columnBlocks?: CollapsedColumnBlock[]) => void;
 	addCollapsedBlock: (startRow: number, endRow: number) => void;
 	removeCollapsedBlock: (id: string) => void;
+	addCollapsedColumnBlock: (startCol: number, endCol: number) => void;
+	removeCollapsedColumnBlock: (id: string) => void;
+	setCollapsedColumnBlocks: (blocks: CollapsedColumnBlock[]) => void;
 	setDifficulty: (difficulty: number) => void;
 	setMaterials: (materials: string) => void;
 	restoreSnapshot: (
@@ -68,6 +72,7 @@ interface ChartState {
 		collapsedBlocks: CollapsedBlock[],
 		difficulty: number,
 		materials: string,
+		collapsedColumnBlocks?: CollapsedColumnBlock[],
 	) => void;
 	reset: () => void;
 }
@@ -79,6 +84,7 @@ const initialState = {
 	patternType: 'knitting' as PatternType,
 	patternTitle: '',
 	collapsedBlocks: [] as CollapsedBlock[],
+	collapsedColumnBlocks: [] as CollapsedColumnBlock[],
 	difficulty: 0,
 	materials: '',
 };
@@ -116,7 +122,8 @@ export const useChartStore = create<ChartState>((set, get) => ({
 
 	setCollapsedBlocks: (blocks) => set({ collapsedBlocks: blocks }),
 
-	setCellsAndBlocks: (cells, blocks) => set({ cells, collapsedBlocks: blocks }),
+	setCellsAndBlocks: (cells, blocks, columnBlocks) =>
+		set({ cells, collapsedBlocks: blocks, ...(columnBlocks !== undefined ? { collapsedColumnBlocks: columnBlocks } : {}) }),
 
 	addCollapsedBlock: (startRow, endRow) => {
 		if (startRow >= endRow) {
@@ -142,12 +149,38 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			collapsedBlocks: state.collapsedBlocks.filter((block) => block.id !== id),
 		})),
 
+	setCollapsedColumnBlocks: (blocks) => set({ collapsedColumnBlocks: blocks }),
+
+	addCollapsedColumnBlock: (startCol, endCol) => {
+		if (startCol >= endCol) {
+			throw new Error('startCol는 endCol보다 작아야 합니다');
+		}
+		const { collapsedColumnBlocks } = get();
+		const overlapping = collapsedColumnBlocks.some(
+			(block) => startCol <= block.endCol && endCol >= block.startCol,
+		);
+		if (overlapping) {
+			throw new Error('이미 중략된 범위와 겹칩니다');
+		}
+		const newBlock: CollapsedColumnBlock = {
+			id: crypto.randomUUID(),
+			startCol,
+			endCol,
+		};
+		set((state) => ({ collapsedColumnBlocks: [...state.collapsedColumnBlocks, newBlock] }));
+	},
+
+	removeCollapsedColumnBlock: (id) =>
+		set((state) => ({
+			collapsedColumnBlocks: state.collapsedColumnBlocks.filter((block) => block.id !== id),
+		})),
+
 	setDifficulty: (difficulty) => set({ difficulty }),
 
 	setMaterials: (materials) => set({ materials }),
 
-	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials) =>
-		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials }),
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [] }),
 
 	reset: () =>
 		set({
@@ -157,6 +190,7 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			patternType: 'knitting',
 			patternTitle: '',
 			collapsedBlocks: [],
+			collapsedColumnBlocks: [],
 			difficulty: 0,
 			materials: '',
 		}),

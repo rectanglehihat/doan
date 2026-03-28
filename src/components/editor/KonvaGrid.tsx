@@ -4,10 +4,11 @@ import { memo, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Stage, Layer, Rect, Line, Text, Group } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type Konva from 'konva';
-import { ChartCell, CollapsedBlock, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
 import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
 import { buildRowVisualYMap, getCollapsedBlockVisualY, calcVisualRowCount, buildVisualToDataIntersectionMap } from '@/lib/utils/collapsed-rows';
+import { buildColVisualXMap, calcVisualColCount, getCollapsedColumnBlockVisualX, buildVisualToDataColIntersectionMap } from '@/lib/utils/collapsed-cols';
 
 // --- 교차 감지 유틸 ---
 
@@ -160,6 +161,60 @@ const CollapsedRow = memo(function CollapsedRowInner({ block, y, width, cellSize
 	);
 });
 
+// --- 중략 열 서브컴포넌트 ---
+
+interface CollapsedColumnProps {
+	block: CollapsedColumnBlock;
+	x: number;
+	height: number;
+	cellSize: number;
+	totalCols: number;
+	onClick: (blockId: string) => void;
+}
+
+const CollapsedColumn = memo(function CollapsedColumnInner({ block, x, height, cellSize, totalCols, onClick }: CollapsedColumnProps) {
+	const handleClick = useCallback(() => {
+		onClick(block.id);
+	}, [block.id, onClick]);
+
+	// 오른쪽이 1열 — displayStart는 작은 열 번호, displayEnd는 큰 열 번호
+	const displayStart = totalCols - block.endCol;
+	const displayEnd = totalCols - block.startCol;
+	const labelText = `${displayStart}~${displayEnd}열 중략`;
+	const fontSize = Math.max(9, Math.min(11, Math.floor(cellSize * 0.6)));
+
+	return (
+		<Group
+			x={x}
+			onClick={handleClick}
+		>
+			<Rect
+				x={0}
+				y={0}
+				width={cellSize}
+				height={height}
+				fill="#FFF7ED"
+				stroke="#F59E0B"
+				strokeWidth={1}
+			/>
+			{/* -90도 회전 세로 텍스트: width↔height 교환, offsetX=height 기준 중앙 배치 */}
+			<Text
+				x={0}
+				y={height}
+				width={height}
+				height={cellSize}
+				text={labelText}
+				align="center"
+				verticalAlign="middle"
+				fontSize={fontSize}
+				fill="#92400E"
+				rotation={-90}
+				listening={false}
+			/>
+		</Group>
+	);
+});
+
 interface KonvaGridProps {
 	cells: ChartCell[][];
 	gridSize: GridSize;
@@ -188,6 +243,8 @@ interface KonvaGridProps {
 	rotationalMode?: RotationalMode;
 	collapsedBlocks?: CollapsedBlock[];
 	onCollapsedBlockClick?: (blockId: string) => void;
+	collapsedColumnBlocks?: CollapsedColumnBlock[];
+	onCollapsedColumnBlockClick?: (blockId: string) => void;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -218,6 +275,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 	rotationalMode = 'none',
 	collapsedBlocks = [],
 	onCollapsedBlockClick,
+	collapsedColumnBlocks = [],
+	onCollapsedColumnBlockClick,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -268,6 +327,13 @@ export const KonvaGrid = memo(function KonvaGrid({
 			onCollapsedBlockClick?.(blockId);
 		},
 		[onCollapsedBlockClick],
+	);
+
+	const handleCollapsedColumnClick = useCallback(
+		(blockId: string) => {
+			onCollapsedColumnBlockClick?.(blockId);
+		},
+		[onCollapsedColumnBlockClick],
 	);
 
 	useEffect(() => {
@@ -341,17 +407,27 @@ export const KonvaGrid = memo(function KonvaGrid({
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [isSelectionMode, cellSelection, gridSize, onSelectionChange, onCopySelection, onPasteClipboard]);
 
-	const totalWidth = gridSize.cols * cellSize;
 	const visualRowCount = useMemo(
 		() => calcVisualRowCount(gridSize.rows, collapsedBlocks),
 		[gridSize.rows, collapsedBlocks],
 	);
+	const visualColCount = useMemo(
+		() => calcVisualColCount(gridSize.cols, collapsedColumnBlocks),
+		[gridSize.cols, collapsedColumnBlocks],
+	);
+	const totalWidth = visualColCount * cellSize;
 	const totalHeight = visualRowCount * cellSize;
 
 	// 각 행의 시각적 y 좌표 매핑 (collapsed 행은 null) — 내부에서 한 번만 정렬
 	const rowVisualYMap = useMemo(
 		() => buildRowVisualYMap(collapsedBlocks, gridSize.rows, cellSize),
 		[collapsedBlocks, gridSize.rows, cellSize],
+	);
+
+	// 각 열의 시각적 x 좌표 매핑 (collapsed 열은 null)
+	const colVisualXMap = useMemo(
+		() => buildColVisualXMap(collapsedColumnBlocks, gridSize.cols, cellSize),
+		[collapsedColumnBlocks, gridSize.cols, cellSize],
 	);
 
 	// 중략 블록 각각의 시각적 y 좌표
@@ -362,9 +438,18 @@ export const KonvaGrid = memo(function KonvaGrid({
 		}));
 	}, [collapsedBlocks, cellSize]);
 
+	// 중략 열 블록 각각의 시각적 x 좌표
+	const collapsedColumnBlockXMap = useMemo(() => {
+		return collapsedColumnBlocks.map((block) => ({
+			block,
+			x: getCollapsedColumnBlockVisualX(block, collapsedColumnBlocks, cellSize),
+		}));
+	}, [collapsedColumnBlocks, cellSize]);
+
 	const gridLines = useMemo(() => {
 		const lines: { key: string; points: number[] }[] = [];
-		for (let i = 0; i <= gridSize.cols; i++) {
+		// 수직선: 시각적 열 수 기준으로 그림
+		for (let i = 0; i <= visualColCount; i++) {
 			lines.push({ key: `v${i}`, points: [i * cellSize, 0, i * cellSize, totalHeight] });
 		}
 		// 수평선: 시각적 행 수 기준으로 그림
@@ -372,7 +457,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 			lines.push({ key: `h${i}`, points: [0, i * cellSize, totalWidth, i * cellSize] });
 		}
 		return lines;
-	}, [gridSize.cols, cellSize, totalHeight, totalWidth, visualRowCount]);
+	}, [visualColCount, cellSize, totalHeight, totalWidth, visualRowCount]);
 
 	const nonEmptyCells = useMemo(
 		() =>
@@ -380,13 +465,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 				const visualY = rowVisualYMap[rowIdx];
 				if (visualY === null) return [];
 				return row
-					.map((cell, colIdx) => ({ cell, rowIdx, colIdx, visualY }))
+					.flatMap((cell, colIdx) => {
+						const visualX = colVisualXMap[colIdx];
+						if (visualX === null) return [];
+						return [{ cell, rowIdx, colIdx, visualY, visualX }];
+					})
 					.filter(
-						(x): x is { cell: ChartCell & { symbolId: string }; rowIdx: number; colIdx: number; visualY: number } =>
+						(x): x is { cell: ChartCell & { symbolId: string }; rowIdx: number; colIdx: number; visualY: number; visualX: number } =>
 							x.cell.symbolId !== null,
 					);
 			}),
-		[cells, rowVisualYMap],
+		[cells, rowVisualYMap, colVisualXMap],
 	);
 
 	// 시각적 행 인덱스(0-based) → 실제 데이터 행 인덱스 역매핑
@@ -407,14 +496,23 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[collapsedBlocks, visualRowCount],
 	);
 
+	// 시각적 열 교차점 인덱스 → 데이터 열 교차점 인덱스 매핑
+	// shape guide 그리기/지우기에서 마우스 위치를 올바른 데이터 열 좌표로 변환할 때 사용
+	const visualToDataColMap = useMemo(
+		() => buildVisualToDataColIntersectionMap(collapsedColumnBlocks, visualColCount),
+		[collapsedColumnBlocks, visualColCount],
+	);
+
 	// 레이어 기준 포인터 위치를 grid 교차점 좌표계(col, row)로 반환
-	// row는 데이터 행 교차점 인덱스 (중략 블록을 반영한 역변환 적용)
+	// row는 데이터 행 교차점 인덱스, col은 데이터 열 교차점 인덱스 (중략 블록을 반영한 역변환 적용)
 	const getGridPointer = useCallback((): { col: number; row: number } | null => {
 		const layer = layerRef.current;
 		if (!layer) return null;
 		const pos = layer.getRelativePointerPosition();
 		if (!pos) return null;
-		const col = Math.max(0, Math.min(gridSize.cols, Math.round(pos.x / cellSize)));
+		// 시각적 교차점 인덱스를 데이터 열 교차점 인덱스로 변환
+		const visualColIntersection = Math.max(0, Math.min(visualColCount, Math.round(pos.x / cellSize)));
+		const col = visualToDataColMap[visualColIntersection] ?? visualColIntersection;
 		// 시각적 교차점 인덱스를 데이터 행 교차점 인덱스로 변환
 		const visualRowIntersection = Math.max(0, Math.min(visualRowCount, Math.round(pos.y / cellSize)));
 		const row = visualToDataIntersectionMap[visualRowIntersection] ?? visualRowIntersection;
@@ -425,14 +523,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 		if (rotationalMode === 'vertical' && row > halfRows) return null;
 		if (rotationalMode === 'both' && (col > halfCols || row > halfRows)) return null;
 		return { col, row };
-	}, [cellSize, gridSize, rotationalMode, visualRowCount, visualToDataIntersectionMap]);
+	}, [cellSize, gridSize, rotationalMode, visualRowCount, visualColCount, visualToDataIntersectionMap, visualToDataColMap]);
 
 	const getCellFromPointer = useCallback((): { row: number; col: number } | null => {
 		const layer = layerRef.current;
 		if (!layer) return null;
 		const pos = layer.getRelativePointerPosition();
 		if (!pos) return null;
-		const col = Math.floor(pos.x / cellSize);
+		const visualCol = Math.floor(pos.x / cellSize);
+		// 시각적 열 인덱스를 실제 데이터 열 인덱스로 변환
+		const col = visualToDataColMap[visualCol] ?? -1;
 		const visualRow = Math.floor(pos.y / cellSize);
 		// 시각적 행 인덱스를 실제 데이터 행 인덱스로 변환
 		const row = visualToDataRowMap[visualRow] ?? -1;
@@ -444,7 +544,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 			return { row, col };
 		}
 		return null;
-	}, [gridSize, cellSize, rotationalMode, visualToDataRowMap]);
+	}, [gridSize, cellSize, rotationalMode, visualToDataRowMap, visualToDataColMap]);
 
 	// 드래그 지우기: erase 세그먼트에 히트된 stroke 세그먼트만 부분 제거
 	const erasePartialStrokes = useCallback(
@@ -718,6 +818,11 @@ export const KonvaGrid = memo(function KonvaGrid({
 			? rowVisualYMap[hoverCell.row]
 			: undefined;
 
+	const hoverCellVisualX =
+		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode
+			? colVisualXMap[hoverCell.col]
+			: undefined;
+
 	const cellSelectionVisualBounds =
 		isSelectionMode && cellSelection !== null
 			? (() => {
@@ -727,7 +832,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 					const maxCol = Math.max(cellSelection.startCol, cellSelection.endCol);
 					const topY = rowVisualYMap[minRow] ?? minRow * cellSize;
 					const bottomY = rowVisualYMap[maxRow] ?? maxRow * cellSize;
-					return { minRow, maxRow, minCol, maxCol, topY, bottomY };
+					const leftX = colVisualXMap[minCol] ?? minCol * cellSize;
+					const rightX = colVisualXMap[maxCol] ?? maxCol * cellSize;
+					return { minRow, maxRow, minCol, maxCol, topY, bottomY, leftX, rightX };
 				})()
 			: null;
 
@@ -770,10 +877,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				))}
 
-				{nonEmptyCells.map(({ cell, rowIdx, colIdx, visualY }) => (
+				{nonEmptyCells.map(({ cell, rowIdx, colIdx, visualY, visualX }) => (
 					<Text
 						key={`${rowIdx}-${colIdx}`}
-						x={colIdx * cellSize}
+						x={visualX}
 						y={visualY}
 						width={cellSize}
 						height={cellSize}
@@ -838,12 +945,14 @@ export const KonvaGrid = memo(function KonvaGrid({
 												{ r: mirrorRow, c: colIdx },
 												{ r: mirrorRow, c: mirrorCol },
 											];
-							return positions.map(({ r, c }) => {
+							return positions.flatMap(({ r, c }) => {
 								const ry = rowVisualYMap[r] ?? visualY;
-								return (
+								const rx = colVisualXMap[c];
+								if (rx === null) return [];
+								return [
 									<Text
 										key={`mirror-${rowIdx}-${colIdx}-${r}-${c}`}
-										x={c * cellSize}
+										x={rx}
 										y={ry}
 										width={cellSize}
 										height={cellSize}
@@ -853,8 +962,8 @@ export const KonvaGrid = memo(function KonvaGrid({
 										fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
 										fill="rgba(26,26,26,0.35)"
 										listening={false}
-									/>
-								);
+									/>,
+								];
 							});
 						})}
 
@@ -883,9 +992,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				)}
 
-				{hoverCell !== null && hoverCellVisualY !== null && hoverCellVisualY !== undefined && (
+				{hoverCell !== null && hoverCellVisualY !== null && hoverCellVisualY !== undefined && hoverCellVisualX !== null && hoverCellVisualX !== undefined && (
 					<Rect
-						x={hoverCell.col * cellSize}
+						x={hoverCellVisualX}
 						y={hoverCellVisualY}
 						width={cellSize}
 						height={cellSize}
@@ -901,33 +1010,34 @@ export const KonvaGrid = memo(function KonvaGrid({
 					!cellSelection &&
 					clipboard.flatMap((row, dr) =>
 						row
-							.map((cell, dc) => {
+							.flatMap((cell, dc) => {
 								const r = hoverCell.row + dr;
 								const c = hoverCell.col + dc;
-								if (r >= gridSize.rows || c >= gridSize.cols) return null;
+								if (r >= gridSize.rows || c >= gridSize.cols) return [];
 								const py = rowVisualYMap[r];
-								if (py === null || py === undefined) return null;
-								return (
+								if (py === null || py === undefined) return [];
+								const px = colVisualXMap[c];
+								if (px === null || px === undefined) return [];
+								return [
 									<Rect
 										key={`paste-preview-${dr}-${dc}`}
-										x={c * cellSize}
+										x={px}
 										y={py}
 										width={cellSize}
 										height={cellSize}
 										fill={cell.symbolId ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.1)'}
 										listening={false}
-									/>
-								);
-							})
-							.filter((x): x is NonNullable<typeof x> => x !== null),
+									/>,
+								];
+							}),
 					)}
 
 				{/* 선택 영역 사각형 */}
 				{cellSelectionVisualBounds !== null && (
 					<Rect
-						x={cellSelectionVisualBounds.minCol * cellSize}
+						x={cellSelectionVisualBounds.leftX}
 						y={cellSelectionVisualBounds.topY}
-						width={(cellSelectionVisualBounds.maxCol - cellSelectionVisualBounds.minCol + 1) * cellSize}
+						width={cellSelectionVisualBounds.rightX - cellSelectionVisualBounds.leftX + cellSize}
 						height={cellSelectionVisualBounds.bottomY - cellSelectionVisualBounds.topY + cellSize}
 						stroke="rgba(59,130,246,0.9)"
 						strokeWidth={2}
@@ -947,6 +1057,19 @@ export const KonvaGrid = memo(function KonvaGrid({
 						cellSize={cellSize}
 						totalRows={gridSize.rows}
 						onClick={handleCollapsedRowClick}
+					/>
+				))}
+
+				{/* 중략 열 렌더링 */}
+				{collapsedColumnBlockXMap.map(({ block, x }) => (
+					<CollapsedColumn
+						key={block.id}
+						block={block}
+						x={x}
+						height={totalHeight}
+						cellSize={cellSize}
+						totalCols={gridSize.cols}
+						onClick={handleCollapsedColumnClick}
 					/>
 				))}
 			</Layer>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
 import {
 	knittingSymbols,
@@ -38,11 +38,15 @@ export function EditorSidebar() {
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
 	const { saveCurrentPattern, newPattern, currentPatternId } = usePatterns();
 
-	useEffect(() => {
-		if (currentPatternId !== null) {
+	// 도안이 로드되어 currentPatternId가 변경되면 저장 에러를 초기화한다.
+	// React 공식 "storing previous state" 패턴: useState로 이전 값 추적
+	const [prevPatternId, setPrevPatternId] = useState(currentPatternId);
+	if (prevPatternId !== currentPatternId) {
+		setPrevPatternId(currentPatternId);
+		if (currentPatternId !== null && saveError !== null) {
 			setSaveError(null);
 		}
-	}, [currentPatternId]);
+	}
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {

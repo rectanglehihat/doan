@@ -30,6 +30,7 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 			Array.from({ length: 10 }, () => ({ symbolId: null })),
 		),
 		collapsedBlocks: [],
+		collapsedColumnBlocks: [],
 		shapeGuide: null,
 		rotationalMode: 'none',
 		savedAt: '2025-01-01T00:00:00.000Z',
