@@ -41,8 +41,8 @@
   - [x] `cells` (2D 배열), `gridSize`, `patternType`, `patternTitle` 상태
   - [x] `setCellSymbol`, `setGridSize`, `setPatternType`, `setPatternTitle`, `reset` 액션
 - [x] `useUIStore` — 선택된 기호, 모달 상태 (`src/store/useUIStore.ts`)
-  - [x] `selectedSymbol`, `isSaveDialogOpen`, `isLoadDialogOpen` 상태
-  - [x] `setSelectedSymbol`, `openSaveDialog`, `closeSaveDialog`, `openLoadDialog`, `closeLoadDialog` 액션
+  - [x] `selectedSymbol`, `isLoadDialogOpen` 상태
+  - [x] `setSelectedSymbol`, `openLoadDialog`, `closeLoadDialog` 액션
 
 ### 1-4. Konva 캔버스 구현
 
@@ -86,16 +86,15 @@
 
 ### 1-6. 저장 및 불러오기
 
-- [ ] `localStorage` 유틸리티 (`src/lib/utils/local-storage-service.ts`)
-  - [ ] 저장 (최대 10개 제한)
-  - [ ] 목록 조회
-  - [ ] 불러오기
-  - [ ] 삭제
-- [ ] `usePatterns` 훅 (`src/hooks/usePatterns.ts`)
-  - [ ] CRUD 인터페이스 제공
-  - [ ] 자동저장 (debounce 300ms)
-- [ ] `SaveDialog` 컴포넌트 (`src/components/editor/SaveDialog.tsx`)
-- [ ] `LoadDialog` 컴포넌트 (`src/components/editor/LoadDialog.tsx`)
+- [x] `localStorage` 유틸리티 (`src/lib/utils/local-storage-service.ts`)
+  - [x] 저장 (최대 10개 제한)
+  - [x] 목록 조회
+  - [x] 불러오기
+  - [x] 삭제
+- [x] `usePatterns` 훅 (`src/hooks/usePatterns.ts`)
+  - [x] CRUD 인터페이스 제공
+  - [x] 자동저장 (debounce 300ms)
+- [x] `LoadDialog` 컴포넌트 (`src/components/editor/LoadDialog.tsx`)
 
 ### 1-7. PDF 내보내기
 
@@ -156,8 +155,7 @@
 | `EditorSidebar`   | 완료   | 2개    |
 | `ShapeGuideLayer` | 완료   | 7개    |
 | `Toolbar`         | 완료   | 23개   |
-| `SaveDialog`      | 미구현 | -      |
-| `LoadDialog`      | 미구현 | -      |
+| `LoadDialog`      | 완료   | 미작성 |
 
 ### Organisms (`src/components/pdf/`)
 
