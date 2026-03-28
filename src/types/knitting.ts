@@ -42,6 +42,12 @@ export interface CollapsedBlock {
 	endRow: number; // 0-based, inclusive (startRow < endRow 보장)
 }
 
+export interface CollapsedColumnBlock {
+	id: string;
+	startCol: number; // 0-based
+	endCol: number; // 0-based, inclusive (startCol < endCol)
+}
+
 export interface ChartPattern {
 	id: string;
 	metadata: PatternMetadata;
@@ -49,6 +55,7 @@ export interface ChartPattern {
 	gridSize: GridSize;
 	cells: ChartCell[][];
 	collapsedBlocks?: CollapsedBlock[];
+	collapsedColumnBlocks?: CollapsedColumnBlock[];
 }
 
 export interface CellSelection {
@@ -74,6 +81,7 @@ export interface SavedPatternSnapshot {
 	gridSize: GridSize;
 	cells: ChartCell[][];
 	collapsedBlocks: CollapsedBlock[];
+	collapsedColumnBlocks: CollapsedColumnBlock[];
 	shapeGuide: ShapeGuide | null;
 	rotationalMode: RotationalMode;
 	savedAt: string; // ISO 8601

@@ -94,6 +94,18 @@ describe('useHistory', () => {
 			expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
 		});
 
+		it('열 중략 추가 후 undo 시 collapsedColumnBlocks가 제거된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addCollapsedColumnBlock(0, 5);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().collapsedColumnBlocks).toHaveLength(0);
+		});
+
 		it('중략 추가 후 undo 1번 후 canUndo가 false이다 (히스토리 스택이 비어야 함)', async () => {
 			const { result } = renderHook(() => useHistory());
 			act(() => {
@@ -405,6 +417,24 @@ describe('useHistory', () => {
 				result.current.redo();
 			});
 			expect(useChartStore.getState().cells).toBe(before);
+		});
+
+		it('열 중략 추가 후 undo → redo 시 collapsedColumnBlocks가 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addCollapsedColumnBlock(0, 5);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().collapsedColumnBlocks).toHaveLength(0);
+			act(() => {
+				result.current.redo();
+			});
+			expect(useChartStore.getState().collapsedColumnBlocks).toHaveLength(1);
+			expect(useChartStore.getState().collapsedColumnBlocks[0].startCol).toBe(0);
+			expect(useChartStore.getState().collapsedColumnBlocks[0].endCol).toBe(5);
 		});
 
 		it('중략 추가 → undo → redo 시 collapsedBlocks가 복원된다', async () => {
