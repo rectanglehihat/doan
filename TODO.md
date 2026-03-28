@@ -87,7 +87,7 @@
 ### 1-6. 저장 및 불러오기
 
 - [x] `localStorage` 유틸리티 (`src/lib/utils/local-storage-service.ts`)
-  - [x] 저장 (최대 10개 제한)
+  - [x] 저장 (최대 5개 제한, MVP)
   - [x] 목록 조회
   - [x] 불러오기
   - [x] 삭제

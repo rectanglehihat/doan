@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
 import {
 	knittingSymbols,
@@ -36,7 +36,13 @@ export function EditorSidebar() {
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
-	const { saveCurrentPattern, newPattern } = usePatterns();
+	const { saveCurrentPattern, newPattern, currentPatternId } = usePatterns();
+
+	useEffect(() => {
+		if (currentPatternId !== null) {
+			setSaveError(null);
+		}
+	}, [currentPatternId]);
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -258,7 +264,7 @@ export function EditorSidebar() {
 				{saveError !== null && (
 					<p role="alert" className="text-xs text-red-600">
 						{saveError === 'limit_reached'
-							? '저장 한도(10개)에 도달했습니다.'
+							? '저장 한도(5개)에 도달했습니다.'
 							: '저장 중 오류가 발생했습니다.'}
 					</p>
 				)}

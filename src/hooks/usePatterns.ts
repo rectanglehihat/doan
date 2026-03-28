@@ -95,8 +95,9 @@ export function usePatterns() {
 			setShapeGuide(snapshot.shapeGuide);
 			setRotationalMode(snapshot.rotationalMode ?? 'none');
 			setCurrentPatternId(snapshot.id);
+			triggerHistoryClear();
 		},
-		[restoreSnapshot, setShapeGuide, setRotationalMode, setCurrentPatternId],
+		[restoreSnapshot, setShapeGuide, setRotationalMode, setCurrentPatternId, triggerHistoryClear],
 	);
 
 	const newPattern = useCallback(() => {

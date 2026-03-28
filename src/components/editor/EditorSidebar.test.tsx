@@ -89,4 +89,21 @@ describe('EditorSidebar', () => {
 
 		expect(screen.getByRole('alert')).toBeInTheDocument();
 	});
+
+	it('limit_reached 에러 표시 중 패턴이 로드되면 에러 메시지가 사라진다', async () => {
+		setupMockUsePatterns({
+			saveCurrentPattern: vi.fn().mockReturnValue({ ok: false, error: 'limit_reached' }),
+			currentPatternId: null,
+		});
+
+		const { rerender } = render(<EditorSidebar />);
+		await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
+		await userEvent.click(screen.getByRole('button', { name: /저장/ }));
+		expect(screen.getByRole('alert')).toBeInTheDocument();
+
+		setupMockUsePatterns({ currentPatternId: 'loaded-pattern-id' });
+		rerender(<EditorSidebar />);
+
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+	});
 });
