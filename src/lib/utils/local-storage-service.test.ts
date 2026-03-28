@@ -124,8 +124,8 @@ describe('savePattern', () => {
 		expect(stored.patterns[0].title).toBe('수정된 제목');
 	});
 
-	it('패턴 수가 MAX_PATTERNS(10)에 도달하면 새 id의 패턴 저장 시 limit_reached를 반환한다', () => {
-		const patterns = Array.from({ length: 10 }, (_, i) =>
+	it('패턴 수가 MAX_PATTERNS(5)에 도달하면 새 id의 패턴 저장 시 limit_reached를 반환한다', () => {
+		const patterns = Array.from({ length: 5 }, (_, i) =>
 			makeSnapshot({ id: `id-${i}`, title: `도안 ${i}` }),
 		);
 		localStorage.setItem(
@@ -133,14 +133,14 @@ describe('savePattern', () => {
 			JSON.stringify({ version: 1, patterns }),
 		);
 
-		const newSnapshot = makeSnapshot({ id: 'new-id', title: '11번째 도안' });
+		const newSnapshot = makeSnapshot({ id: 'new-id', title: '6번째 도안' });
 		const result = savePattern(newSnapshot);
 
 		expect(result).toEqual({ ok: false, error: 'limit_reached' });
 	});
 
-	it('패턴 수가 10이어도 기존 id 업데이트는 허용된다', () => {
-		const patterns = Array.from({ length: 10 }, (_, i) =>
+	it('패턴 수가 5이어도 기존 id 업데이트는 허용된다', () => {
+		const patterns = Array.from({ length: 5 }, (_, i) =>
 			makeSnapshot({ id: `id-${i}`, title: `도안 ${i}` }),
 		);
 		localStorage.setItem(

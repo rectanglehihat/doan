@@ -1,7 +1,7 @@
 import type { PatternStorageEntry, SavedPatternSnapshot } from '@/types/knitting';
 
 const STORAGE_KEY = 'doan_patterns';
-const MAX_PATTERNS = 10;
+const MAX_PATTERNS = 5;
 
 export type StorageResult<T> =
 	| { ok: true; data: T }
