@@ -56,6 +56,13 @@ interface ChartState {
 	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[]) => void;
 	addCollapsedBlock: (startRow: number, endRow: number) => void;
 	removeCollapsedBlock: (id: string) => void;
+	restoreSnapshot: (
+		cells: ChartCell[][],
+		gridSize: GridSize,
+		patternType: PatternType,
+		patternTitle: string,
+		collapsedBlocks: CollapsedBlock[],
+	) => void;
 	reset: () => void;
 }
 
@@ -126,6 +133,9 @@ export const useChartStore = create<ChartState>((set, get) => ({
 		set((state) => ({
 			collapsedBlocks: state.collapsedBlocks.filter((block) => block.id !== id),
 		})),
+
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks }),
 
 	reset: () =>
 		set({

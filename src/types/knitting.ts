@@ -66,3 +66,20 @@ export interface CellSelection {
 export interface ShapeGuide {
 	strokes: number[][];
 }
+
+export interface SavedPatternSnapshot {
+	id: string;
+	title: string;
+	patternType: PatternType;
+	gridSize: GridSize;
+	cells: ChartCell[][];
+	collapsedBlocks: CollapsedBlock[];
+	shapeGuide: ShapeGuide | null;
+	rotationalMode: RotationalMode;
+	savedAt: string; // ISO 8601
+}
+
+export interface PatternStorageEntry {
+	version: 1;
+	patterns: SavedPatternSnapshot[];
+}

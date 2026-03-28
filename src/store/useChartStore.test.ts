@@ -180,6 +180,61 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('restoreSnapshot', () => {
+		it('cells, gridSize, patternType, patternTitle, collapsedBlocks를 한번에 덮어쓴다', () => {
+			const cells = [[{ symbolId: 'k' }, { symbolId: null }], [{ symbolId: 'p' }, { symbolId: null }]];
+			const gridSize = { rows: 2, cols: 2 };
+			const collapsedBlocks = [{ id: 'block-1', startRow: 0, endRow: 1 }];
+
+			useChartStore
+				.getState()
+				.restoreSnapshot(cells, gridSize, 'crochet', '코바늘 도안', collapsedBlocks);
+
+			const state = useChartStore.getState();
+			expect(state.cells).toEqual(cells);
+			expect(state.gridSize).toEqual(gridSize);
+			expect(state.patternType).toBe('crochet');
+			expect(state.patternTitle).toBe('코바늘 도안');
+			expect(state.collapsedBlocks).toEqual(collapsedBlocks);
+		});
+
+		it('기존 cells를 새 cells로 완전히 교체한다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			const newCells = [[{ symbolId: 'p' }]];
+
+			useChartStore
+				.getState()
+				.restoreSnapshot(newCells, { rows: 1, cols: 1 }, 'knitting', '', []);
+
+			expect(useChartStore.getState().cells).toEqual([[{ symbolId: 'p' }]]);
+		});
+
+		it('collapsedBlocks가 빈 배열이면 빈 배열로 설정된다', () => {
+			useChartStore.getState().addCollapsedBlock(1, 3);
+			const cells = [[{ symbolId: null }]];
+
+			useChartStore
+				.getState()
+				.restoreSnapshot(cells, { rows: 1, cols: 1 }, 'knitting', '', []);
+
+			expect(useChartStore.getState().collapsedBlocks).toEqual([]);
+		});
+
+		it('gridSize가 cells 배열 크기와 일치하도록 설정된다', () => {
+			const cells = Array.from({ length: 5 }, () =>
+				Array.from({ length: 8 }, () => ({ symbolId: null })),
+			);
+
+			useChartStore
+				.getState()
+				.restoreSnapshot(cells, { rows: 5, cols: 8 }, 'knitting', '5x8 도안', []);
+
+			expect(useChartStore.getState().gridSize).toEqual({ rows: 5, cols: 8 });
+			expect(useChartStore.getState().cells).toHaveLength(5);
+			expect(useChartStore.getState().cells[0]).toHaveLength(8);
+		});
+	});
+
 	describe('collapsedBlocks', () => {
 		beforeEach(() => {
 			useChartStore.getState().reset();

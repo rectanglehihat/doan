@@ -5,6 +5,8 @@ import { ChartCanvas } from '@/components/editor/ChartCanvas';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
+import { SaveDialog } from '@/components/editor/SaveDialog';
+import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useHistory } from '@/hooks/useHistory';
@@ -166,6 +168,8 @@ export default function EditorPage() {
 				onConfirm={handleResetConfirm}
 				onCancel={handleResetCancel}
 			/>
+			<SaveDialog />
+			<LoadDialog />
 		</div>
 	);
 }

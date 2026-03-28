@@ -7,6 +7,8 @@ interface UIState {
 	isSaveDialogOpen: boolean;
 	isLoadDialogOpen: boolean;
 	isResetDialogOpen: boolean;
+	currentPatternId: string | null;
+	setCurrentPatternId: (id: string | null) => void;
 	shapeGuide: ShapeGuide | null;
 	isShapeGuideDrawMode: boolean;
 	isShapeGuideEraseMode: boolean;
@@ -42,6 +44,8 @@ export const useUIStore = create<UIState>((set) => ({
 	isSaveDialogOpen: false,
 	isLoadDialogOpen: false,
 	isResetDialogOpen: false,
+	currentPatternId: null,
+	setCurrentPatternId: (id) => set({ currentPatternId: id }),
 	shapeGuide: null,
 	isShapeGuideDrawMode: false,
 	isShapeGuideEraseMode: false,
@@ -108,6 +112,7 @@ export const useUIStore = create<UIState>((set) => ({
 			isSaveDialogOpen: false,
 			isLoadDialogOpen: false,
 			isResetDialogOpen: false,
+			currentPatternId: null,
 			shapeGuide: null,
 			isShapeGuideDrawMode: false,
 			isShapeGuideEraseMode: false,
