@@ -79,7 +79,7 @@ pnpm test → pnpm tsc --noEmit → pnpm lint → pnpm build
 - 점 대칭 회전 (rotational symmetry)
 - 선택·복사·붙여넣기 (Ctrl+C/V)
 - 반복 블록 마커
-- localStorage 저장/불러오기 (SaveDialog, LoadDialog)
+- localStorage 저장/불러오기 (LoadDialog)
 - PDF 내보내기 (jsPDF + html2canvas)
 
 ### Phase 2 항목 (Cloud)

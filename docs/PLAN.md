@@ -272,7 +272,6 @@
 
 - localStorageService 유틸리티 (저장/불러오기/삭제)
 - usePatterns custom hook
-- SaveDialog 컴포넌트
 - LoadDialog 컴포넌트
 - 자동저장 로직 (debounce 적용)
 
