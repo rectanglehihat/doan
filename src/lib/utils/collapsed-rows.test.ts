@@ -1,4 +1,4 @@
-import { getRowVisualY, calcVisualRowCount, getCollapsedBlockVisualY, buildRowVisualYMap } from './collapsed-rows';
+import { getRowVisualY, calcVisualRowCount, getCollapsedBlockVisualY, buildRowVisualYMap, buildVisualToDataIntersectionMap } from './collapsed-rows';
 import type { CollapsedBlock } from '@/types/knitting';
 
 describe('getRowVisualY', () => {
@@ -142,5 +142,44 @@ describe('buildRowVisualYMap', () => {
 		for (let i = 0; i < totalRows; i++) {
 			expect(map[i]).toBe(getRowVisualY(i, blocks, cellSize));
 		}
+	});
+});
+
+describe('buildVisualToDataIntersectionMap', () => {
+	it('중략 블록이 없을 때 [0, 1, 2, ..., visualRowCount]를 반환한다', () => {
+		const totalRows = 5;
+		const blocks: CollapsedBlock[] = [];
+		const visualRowCount = calcVisualRowCount(totalRows, blocks); // 5
+		const result = buildVisualToDataIntersectionMap(blocks, visualRowCount);
+		expect(result).toEqual([0, 1, 2, 3, 4, 5]);
+	});
+
+	it('단일 중략 블록(startRow=3, endRow=6, totalRows=10)일 때 올바른 매핑을 반환한다', () => {
+		const totalRows = 10;
+		const blocks: CollapsedBlock[] = [{ id: 'a', startRow: 3, endRow: 6 }];
+		const visualRowCount = calcVisualRowCount(totalRows, blocks); // 10 - (6-3+1-1) = 7
+		const result = buildVisualToDataIntersectionMap(blocks, visualRowCount);
+		// visual 0→data 0, 1→1, 2→2, 3→3(블록 top), 4→7(블록 bottom=endRow+1), 5→8, 6→9, 7→10
+		expect(result).toEqual([0, 1, 2, 3, 7, 8, 9, 10]);
+	});
+
+	it('복수 중략 블록(block1: startRow=1,endRow=2 / block2: startRow=5,endRow=7, totalRows=10)일 때 올바른 매핑을 반환한다', () => {
+		const totalRows = 10;
+		const blocks: CollapsedBlock[] = [
+			{ id: 'a', startRow: 1, endRow: 2 }, // 2행→1행(중략): -1
+			{ id: 'b', startRow: 5, endRow: 7 }, // 3행→1행(중략): -2
+		];
+		const visualRowCount = calcVisualRowCount(totalRows, blocks); // 10 - 1 - 2 = 7
+		const result = buildVisualToDataIntersectionMap(blocks, visualRowCount);
+		// visual 0→data 0, 1→1(블록a top), 2→3(블록a bottom), 3→4, 4→5(블록b top), 5→8(블록b bottom), 6→9, 7→10
+		expect(result).toEqual([0, 1, 3, 4, 5, 8, 9, 10]);
+	});
+
+	it('배열 길이는 항상 visualRowCount + 1이다', () => {
+		const totalRows = 10;
+		const blocks: CollapsedBlock[] = [{ id: 'a', startRow: 2, endRow: 5 }];
+		const visualRowCount = calcVisualRowCount(totalRows, blocks);
+		const result = buildVisualToDataIntersectionMap(blocks, visualRowCount);
+		expect(result).toHaveLength(visualRowCount + 1);
 	});
 });

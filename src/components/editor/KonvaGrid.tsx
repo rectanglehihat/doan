@@ -7,7 +7,7 @@ import type Konva from 'konva';
 import { ChartCell, CollapsedBlock, GridSize, ShapeGuide, CellSelection, RotationalMode } from '@/types/knitting';
 import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { ShapeGuideLayer } from './ShapeGuideLayer';
-import { buildRowVisualYMap, getCollapsedBlockVisualY, calcVisualRowCount } from '@/lib/utils/collapsed-rows';
+import { buildRowVisualYMap, getCollapsedBlockVisualY, calcVisualRowCount, buildVisualToDataIntersectionMap } from '@/lib/utils/collapsed-rows';
 
 // --- 교차 감지 유틸 ---
 
@@ -389,23 +389,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[cells, rowVisualYMap],
 	);
 
-	// 레이어 기준 포인터 위치를 grid 교차점 좌표계(col, row)로 반환
-	const getGridPointer = useCallback((): { col: number; row: number } | null => {
-		const layer = layerRef.current;
-		if (!layer) return null;
-		const pos = layer.getRelativePointerPosition();
-		if (!pos) return null;
-		const col = Math.max(0, Math.min(gridSize.cols, Math.round(pos.x / cellSize)));
-		const row = Math.max(0, Math.min(gridSize.rows, Math.round(pos.y / cellSize)));
-		// 활성 영역 체크 (grid 교차점 좌표 기준)
-		const halfCols = Math.floor(gridSize.cols / 2);
-		const halfRows = Math.floor(gridSize.rows / 2);
-		if (rotationalMode === 'horizontal' && col > halfCols) return null;
-		if (rotationalMode === 'vertical' && row > halfRows) return null;
-		if (rotationalMode === 'both' && (col > halfCols || row > halfRows)) return null;
-		return { col, row };
-	}, [cellSize, gridSize, rotationalMode]);
-
 	// 시각적 행 인덱스(0-based) → 실제 데이터 행 인덱스 역매핑
 	const visualToDataRowMap = useMemo(() => {
 		const map: number[] = [];
@@ -416,6 +399,33 @@ export const KonvaGrid = memo(function KonvaGrid({
 		}
 		return map;
 	}, [gridSize.rows, rowVisualYMap]);
+
+	// 시각적 행 교차점 인덱스 → 데이터 행 교차점 인덱스 매핑
+	// shape guide 그리기/지우기에서 마우스 위치를 올바른 데이터 행 좌표로 변환할 때 사용
+	const visualToDataIntersectionMap = useMemo(
+		() => buildVisualToDataIntersectionMap(collapsedBlocks, visualRowCount),
+		[collapsedBlocks, visualRowCount],
+	);
+
+	// 레이어 기준 포인터 위치를 grid 교차점 좌표계(col, row)로 반환
+	// row는 데이터 행 교차점 인덱스 (중략 블록을 반영한 역변환 적용)
+	const getGridPointer = useCallback((): { col: number; row: number } | null => {
+		const layer = layerRef.current;
+		if (!layer) return null;
+		const pos = layer.getRelativePointerPosition();
+		if (!pos) return null;
+		const col = Math.max(0, Math.min(gridSize.cols, Math.round(pos.x / cellSize)));
+		// 시각적 교차점 인덱스를 데이터 행 교차점 인덱스로 변환
+		const visualRowIntersection = Math.max(0, Math.min(visualRowCount, Math.round(pos.y / cellSize)));
+		const row = visualToDataIntersectionMap[visualRowIntersection] ?? visualRowIntersection;
+		// 활성 영역 체크 (grid 교차점 좌표 기준)
+		const halfCols = Math.floor(gridSize.cols / 2);
+		const halfRows = Math.floor(gridSize.rows / 2);
+		if (rotationalMode === 'horizontal' && col > halfCols) return null;
+		if (rotationalMode === 'vertical' && row > halfRows) return null;
+		if (rotationalMode === 'both' && (col > halfCols || row > halfRows)) return null;
+		return { col, row };
+	}, [cellSize, gridSize, rotationalMode, visualRowCount, visualToDataIntersectionMap]);
 
 	const getCellFromPointer = useCallback((): { row: number; col: number } | null => {
 		const layer = layerRef.current;
