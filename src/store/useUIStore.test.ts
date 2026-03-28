@@ -317,6 +317,24 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('triggerHistoryClear', () => {
+		it('초기 historyResetToken은 0이다', () => {
+			expect(useUIStore.getState().historyResetToken).toBe(0);
+		});
+
+		it('triggerHistoryClear 호출 시 historyResetToken이 1 증가한다', () => {
+			useUIStore.getState().triggerHistoryClear();
+			expect(useUIStore.getState().historyResetToken).toBe(1);
+		});
+
+		it('triggerHistoryClear를 여러 번 호출하면 호출 수만큼 증가한다', () => {
+			useUIStore.getState().triggerHistoryClear();
+			useUIStore.getState().triggerHistoryClear();
+			useUIStore.getState().triggerHistoryClear();
+			expect(useUIStore.getState().historyResetToken).toBe(3);
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useUIStore.getState().setSelectedSymbol(mockSymbol);

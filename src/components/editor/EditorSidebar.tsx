@@ -34,7 +34,7 @@ export function EditorSidebar() {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [difficulty, setDifficulty] = useState<number>(0);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle } = useChartStore();
-	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide } = useUIStore();
+	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openSaveDialog, openLoadDialog } = useUIStore();
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
@@ -109,6 +109,14 @@ export function EditorSidebar() {
 		},
 		[setCellSize],
 	);
+
+	const handleSaveClick = useCallback(() => {
+		openSaveDialog();
+	}, [openSaveDialog]);
+
+	const handleLoadClick = useCallback(() => {
+		openLoadDialog();
+	}, [openLoadDialog]);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -227,8 +235,17 @@ export function EditorSidebar() {
 					variant="default"
 					size="sm"
 					className="w-full"
+					onClick={handleSaveClick}
 				>
 					저장
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					className="w-full"
+					onClick={handleLoadClick}
+				>
+					불러오기
 				</Button>
 				<Button
 					variant="outline"
