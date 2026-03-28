@@ -23,6 +23,8 @@ export function usePatterns() {
 	const patternType = useChartStore((s) => s.patternType);
 	const patternTitle = useChartStore((s) => s.patternTitle);
 	const collapsedBlocks = useChartStore((s) => s.collapsedBlocks);
+	const difficulty = useChartStore((s) => s.difficulty);
+	const materials = useChartStore((s) => s.materials);
 	const restoreSnapshot = useChartStore((s) => s.restoreSnapshot);
 	const resetChart = useChartStore((s) => s.reset);
 
@@ -61,6 +63,8 @@ export function usePatterns() {
 				shapeGuide,
 				rotationalMode,
 				savedAt: new Date().toISOString(),
+				difficulty,
+				materials,
 			};
 
 			const result = savePattern(snapshot);
@@ -70,7 +74,7 @@ export function usePatterns() {
 			}
 			return result;
 		},
-		[cells, gridSize, patternType, collapsedBlocks, shapeGuide, rotationalMode, refreshPatterns, setCurrentPatternId],
+		[cells, gridSize, patternType, collapsedBlocks, shapeGuide, rotationalMode, difficulty, materials, refreshPatterns, setCurrentPatternId],
 	);
 
 	const loadPattern = useCallback(
@@ -85,6 +89,8 @@ export function usePatterns() {
 				snapshot.patternType,
 				snapshot.title,
 				snapshot.collapsedBlocks,
+				snapshot.difficulty ?? 0,
+				snapshot.materials ?? '',
 			);
 			setShapeGuide(snapshot.shapeGuide);
 			setRotationalMode(snapshot.rotationalMode ?? 'none');
@@ -143,6 +149,8 @@ export function usePatterns() {
 				shapeGuide,
 				rotationalMode,
 				savedAt: new Date().toISOString(),
+				difficulty,
+				materials,
 			};
 
 			savePattern(snapshot);
@@ -156,7 +164,7 @@ export function usePatterns() {
 			}
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [cells, gridSize, patternType, patternTitle, collapsedBlocks, shapeGuide, rotationalMode]);
+	}, [cells, gridSize, patternType, patternTitle, collapsedBlocks, shapeGuide, rotationalMode, difficulty, materials]);
 
 	return {
 		patterns,

@@ -22,6 +22,16 @@ describe('useChartStore', () => {
 			expect(patternTitle).toBe('');
 		});
 
+		it('기본 difficulty는 0이다', () => {
+			const { difficulty } = useChartStore.getState();
+			expect(difficulty).toBe(0);
+		});
+
+		it('기본 materials는 빈 문자열이다', () => {
+			const { materials } = useChartStore.getState();
+			expect(materials).toBe('');
+		});
+
 		it('cells는 20x20 2D 배열이고 모든 셀의 symbolId는 null이다', () => {
 			const { cells, gridSize } = useChartStore.getState();
 			expect(cells).toHaveLength(gridSize.rows);
@@ -159,18 +169,51 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('setDifficulty', () => {
+		it('difficulty를 변경한다', () => {
+			useChartStore.getState().setDifficulty(3);
+			expect(useChartStore.getState().difficulty).toBe(3);
+		});
+
+		it('0~5 범위의 값을 설정할 수 있다', () => {
+			useChartStore.getState().setDifficulty(0);
+			expect(useChartStore.getState().difficulty).toBe(0);
+
+			useChartStore.getState().setDifficulty(5);
+			expect(useChartStore.getState().difficulty).toBe(5);
+		});
+	});
+
+	describe('setMaterials', () => {
+		it('materials를 변경한다', () => {
+			useChartStore.getState().setMaterials('4mm 대바늘, 100g 실');
+			expect(useChartStore.getState().materials).toBe('4mm 대바늘, 100g 실');
+		});
+
+		it('빈 문자열로 변경할 수 있다', () => {
+			useChartStore.getState().setMaterials('대바늘');
+			useChartStore.getState().setMaterials('');
+			expect(useChartStore.getState().materials).toBe('');
+		});
+	});
+
 	describe('reset', () => {
 		it('모든 상태를 초기값으로 되돌린다', () => {
 			useChartStore.getState().setCellSymbol(0, 0, 'k');
 			useChartStore.getState().setGridSize({ rows: 5, cols: 5 });
 			useChartStore.getState().setPatternType('crochet');
 			useChartStore.getState().setPatternTitle('테스트 도안');
+			useChartStore.getState().setDifficulty(3);
+			useChartStore.getState().setMaterials('4mm 대바늘, 100g 실');
 			useChartStore.getState().reset();
 
-			const { cells, gridSize, patternType, patternTitle } = useChartStore.getState();
+			const { cells, gridSize, patternType, patternTitle, difficulty, materials } =
+				useChartStore.getState();
 			expect(gridSize).toEqual({ rows: 20, cols: 20 });
 			expect(patternType).toBe('knitting');
 			expect(patternTitle).toBe('');
+			expect(difficulty).toBe(0);
+			expect(materials).toBe('');
 			expect(cells).toHaveLength(20);
 			cells.forEach((row) => {
 				row.forEach((cell) => {
@@ -181,14 +224,14 @@ describe('useChartStore', () => {
 	});
 
 	describe('restoreSnapshot', () => {
-		it('cells, gridSize, patternType, patternTitle, collapsedBlocks를 한번에 덮어쓴다', () => {
+		it('cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials를 한번에 덮어쓴다', () => {
 			const cells = [[{ symbolId: 'k' }, { symbolId: null }], [{ symbolId: 'p' }, { symbolId: null }]];
 			const gridSize = { rows: 2, cols: 2 };
 			const collapsedBlocks = [{ id: 'block-1', startRow: 0, endRow: 1 }];
 
 			useChartStore
 				.getState()
-				.restoreSnapshot(cells, gridSize, 'crochet', '코바늘 도안', collapsedBlocks);
+				.restoreSnapshot(cells, gridSize, 'crochet', '코바늘 도안', collapsedBlocks, 4, '5mm 코바늘, 200g 실');
 
 			const state = useChartStore.getState();
 			expect(state.cells).toEqual(cells);
@@ -196,6 +239,8 @@ describe('useChartStore', () => {
 			expect(state.patternType).toBe('crochet');
 			expect(state.patternTitle).toBe('코바늘 도안');
 			expect(state.collapsedBlocks).toEqual(collapsedBlocks);
+			expect(state.difficulty).toBe(4);
+			expect(state.materials).toBe('5mm 코바늘, 200g 실');
 		});
 
 		it('기존 cells를 새 cells로 완전히 교체한다', () => {
@@ -204,7 +249,7 @@ describe('useChartStore', () => {
 
 			useChartStore
 				.getState()
-				.restoreSnapshot(newCells, { rows: 1, cols: 1 }, 'knitting', '', []);
+				.restoreSnapshot(newCells, { rows: 1, cols: 1 }, 'knitting', '', [], 0, '');
 
 			expect(useChartStore.getState().cells).toEqual([[{ symbolId: 'p' }]]);
 		});
@@ -215,7 +260,7 @@ describe('useChartStore', () => {
 
 			useChartStore
 				.getState()
-				.restoreSnapshot(cells, { rows: 1, cols: 1 }, 'knitting', '', []);
+				.restoreSnapshot(cells, { rows: 1, cols: 1 }, 'knitting', '', [], 0, '');
 
 			expect(useChartStore.getState().collapsedBlocks).toEqual([]);
 		});
@@ -227,11 +272,22 @@ describe('useChartStore', () => {
 
 			useChartStore
 				.getState()
-				.restoreSnapshot(cells, { rows: 5, cols: 8 }, 'knitting', '5x8 도안', []);
+				.restoreSnapshot(cells, { rows: 5, cols: 8 }, 'knitting', '5x8 도안', [], 0, '');
 
 			expect(useChartStore.getState().gridSize).toEqual({ rows: 5, cols: 8 });
 			expect(useChartStore.getState().cells).toHaveLength(5);
 			expect(useChartStore.getState().cells[0]).toHaveLength(8);
+		});
+
+		it('difficulty와 materials가 복원된다', () => {
+			const cells = [[{ symbolId: null }]];
+
+			useChartStore
+				.getState()
+				.restoreSnapshot(cells, { rows: 1, cols: 1 }, 'knitting', '복원 도안', [], 2, '대바늘 3mm');
+
+			expect(useChartStore.getState().difficulty).toBe(2);
+			expect(useChartStore.getState().materials).toBe('대바늘 3mm');
 		});
 	});
 

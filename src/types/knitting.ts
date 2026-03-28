@@ -77,6 +77,8 @@ export interface SavedPatternSnapshot {
 	shapeGuide: ShapeGuide | null;
 	rotationalMode: RotationalMode;
 	savedAt: string; // ISO 8601
+	difficulty: number; // 0~5
+	materials: string;
 }
 
 export interface PatternStorageEntry {

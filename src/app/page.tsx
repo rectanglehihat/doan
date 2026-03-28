@@ -5,7 +5,6 @@ import { ChartCanvas } from '@/components/editor/ChartCanvas';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
-import { SaveDialog } from '@/components/editor/SaveDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
@@ -20,7 +19,6 @@ export default function EditorPage() {
 		openResetDialog,
 		closeResetDialog,
 		reset: resetUI,
-		openSaveDialog,
 		shapeGuide,
 		isShapeGuideDrawMode,
 		isShapeGuideEraseMode,
@@ -116,15 +114,12 @@ export default function EditorPage() {
 			} else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
 				e.preventDefault();
 				redo();
-			} else if (e.key === 's') {
-				e.preventDefault();
-				openSaveDialog();
 			}
 		};
 
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [undo, redo, openSaveDialog]);
+	}, [undo, redo]);
 
 	return (
 		<div className="flex h-screen overflow-hidden bg-zinc-100">
@@ -168,7 +163,6 @@ export default function EditorPage() {
 				onConfirm={handleResetConfirm}
 				onCancel={handleResetCancel}
 			/>
-			<SaveDialog />
 			<LoadDialog />
 		</div>
 	);
