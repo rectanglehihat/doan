@@ -20,6 +20,7 @@ function setupMockUsePatterns(overrides: Partial<ReturnType<typeof usePatterns>>
 		loadPattern: vi.fn(),
 		deletePattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
 		refreshPatterns: vi.fn(),
+		newPattern: vi.fn(),
 		isAutoSaving: false,
 		currentPatternId: null,
 		...overrides,
@@ -136,6 +137,24 @@ describe('SaveDialog', () => {
 			await userEvent.click(screen.getByRole('button', { name: /저장/ }));
 
 			expect(useUIStore.getState().isSaveDialogOpen).toBe(true);
+		});
+	});
+
+	describe('저장 후 초기화', () => {
+		it('저장 성공 시 newPattern이 호출된다', async () => {
+			const mockNewPattern = vi.fn();
+			setupMockUsePatterns({
+				saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+				newPattern: mockNewPattern,
+			});
+			useUIStore.getState().openSaveDialog();
+
+			render(<SaveDialog />);
+
+			await userEvent.type(screen.getByRole('textbox'), '새 도안 제목');
+			await userEvent.click(screen.getByRole('button', { name: /저장/ }));
+
+			expect(mockNewPattern).toHaveBeenCalledTimes(1);
 		});
 	});
 

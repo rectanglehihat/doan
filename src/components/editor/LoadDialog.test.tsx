@@ -37,6 +37,7 @@ function setupMockUsePatterns(overrides: Partial<ReturnType<typeof usePatterns>>
 		saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
 		loadPattern: vi.fn(),
 		deletePattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+		newPattern: vi.fn(),
 		refreshPatterns: vi.fn(),
 		isAutoSaving: false,
 		currentPatternId: null,

@@ -15,7 +15,7 @@ interface SaveDialogContentProps {
 }
 
 function SaveDialogContent({ initialTitle, onClose }: SaveDialogContentProps) {
-	const { saveCurrentPattern } = usePatterns();
+	const { saveCurrentPattern, newPattern } = usePatterns();
 	const [inputValue, setInputValue] = useState(initialTitle);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -42,11 +42,12 @@ function SaveDialogContent({ initialTitle, onClose }: SaveDialogContentProps) {
 	const handleSave = useCallback(() => {
 		const result = saveCurrentPattern(inputValue);
 		if (result.ok) {
+			newPattern();
 			onClose();
 		} else if (result.error === 'limit_reached') {
 			setErrorMessage('저장 가능한 도안 수를 초과했습니다. 기존 도안을 삭제해 주세요.');
 		}
-	}, [inputValue, saveCurrentPattern, onClose]);
+	}, [inputValue, saveCurrentPattern, newPattern, onClose]);
 
 	const handleCancel = useCallback(() => {
 		onClose();

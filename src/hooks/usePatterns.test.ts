@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { usePatterns } from './usePatterns';
 import { useChartStore } from '@/store/useChartStore';
@@ -267,6 +267,68 @@ describe('usePatterns', () => {
 		});
 	});
 
+	describe('newPattern', () => {
+		it('호출 시 useChartStore.reset을 호출하여 차트를 초기화한다', () => {
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				useChartStore.getState().setPatternTitle('기존 제목');
+			});
+
+			act(() => {
+				result.current.newPattern();
+			});
+
+			expect(useChartStore.getState().patternTitle).toBe('');
+		});
+
+		it('호출 시 currentPatternId가 null로 초기화된다', () => {
+			mockLoadPattern.mockReturnValue({ ok: true, data: makeSnapshot({ id: 'some-id' }) });
+
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				result.current.loadPattern('some-id');
+			});
+
+			expect(result.current.currentPatternId).toBe('some-id');
+
+			act(() => {
+				result.current.newPattern();
+			});
+
+			expect(result.current.currentPatternId).toBeNull();
+		});
+
+		it('호출 시 shapeGuide가 null로 초기화된다', () => {
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				useUIStore.getState().setShapeGuide({ strokes: [[1, 2, 3, 4]] });
+			});
+
+			act(() => {
+				result.current.newPattern();
+			});
+
+			expect(useUIStore.getState().shapeGuide).toBeNull();
+		});
+
+		it('호출 시 rotationalMode가 none으로 초기화된다', () => {
+			const { result } = renderHook(() => usePatterns());
+
+			act(() => {
+				useUIStore.getState().setRotationalMode('horizontal');
+			});
+
+			act(() => {
+				result.current.newPattern();
+			});
+
+			expect(useUIStore.getState().rotationalMode).toBe('none');
+		});
+	});
+
 	describe('refreshPatterns', () => {
 		it('호출 시 loadAllPatterns를 다시 실행해 patterns를 갱신한다', () => {
 			const initialSnapshots = [makeSnapshot({ id: 'id-1' })];
@@ -291,7 +353,7 @@ describe('usePatterns', () => {
 	describe('자동저장 (auto-save)', () => {
 		it('currentPatternId가 null이면 자동저장을 수행하지 않는다', async () => {
 			vi.useFakeTimers();
-			const { result } = renderHook(() => usePatterns());
+			renderHook(() => usePatterns());
 
 			// currentPatternId가 null인 상태에서 스토어 변경
 			act(() => {

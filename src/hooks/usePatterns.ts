@@ -24,6 +24,7 @@ export function usePatterns() {
 	const patternTitle = useChartStore((s) => s.patternTitle);
 	const collapsedBlocks = useChartStore((s) => s.collapsedBlocks);
 	const restoreSnapshot = useChartStore((s) => s.restoreSnapshot);
+	const resetChart = useChartStore((s) => s.reset);
 
 	const shapeGuide = useUIStore((s) => s.shapeGuide);
 	const setShapeGuide = useUIStore((s) => s.setShapeGuide);
@@ -91,6 +92,13 @@ export function usePatterns() {
 		[restoreSnapshot, setShapeGuide, setRotationalMode, setCurrentPatternId],
 	);
 
+	const newPattern = useCallback(() => {
+		resetChart();
+		setShapeGuide(null);
+		setRotationalMode('none');
+		setCurrentPatternId(null);
+	}, [resetChart, setShapeGuide, setRotationalMode, setCurrentPatternId]);
+
 	const deletePattern = useCallback(
 		(id: string): StorageResult<void> => {
 			const result = deletePatternFromStorage(id);
@@ -155,6 +163,7 @@ export function usePatterns() {
 		saveCurrentPattern,
 		loadPattern,
 		deletePattern,
+		newPattern,
 		refreshPatterns,
 	};
 }
