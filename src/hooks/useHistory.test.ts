@@ -281,6 +281,76 @@ describe('useHistory', () => {
 		});
 	});
 
+	describe('historyResetToken — 히스토리 초기화', () => {
+		it('triggerHistoryClear 호출 시 canUndo가 false가 된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+
+			act(() => {
+				useUIStore.getState().triggerHistoryClear();
+			});
+
+			expect(result.current.canUndo).toBe(false);
+		});
+
+		it('triggerHistoryClear 호출 시 canRedo가 false가 된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(result.current.canRedo).toBe(true);
+
+			act(() => {
+				useUIStore.getState().triggerHistoryClear();
+			});
+
+			expect(result.current.canRedo).toBe(false);
+		});
+
+		it('triggerHistoryClear 후 undo를 호출해도 셀이 변경되지 않는다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+
+			act(() => {
+				useUIStore.getState().triggerHistoryClear();
+			});
+
+			const cellsBefore = useChartStore.getState().cells;
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells).toBe(cellsBefore);
+		});
+
+		it('triggerHistoryClear 후 새 변경 사항은 정상적으로 히스토리에 기록된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+
+			act(() => {
+				useUIStore.getState().triggerHistoryClear();
+			});
+			expect(result.current.canUndo).toBe(false);
+
+			act(() => {
+				useChartStore.getState().setCellSymbol(1, 1, 'p');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+		});
+	});
+
 	describe('redo', () => {
 		it('undo 후 redo 호출 시 원래 상태로 복원된다', async () => {
 			const { result } = renderHook(() => useHistory());

@@ -32,6 +32,7 @@ export function usePatterns() {
 	const setRotationalMode = useUIStore((s) => s.setRotationalMode);
 	const currentPatternId = useUIStore((s) => s.currentPatternId);
 	const setCurrentPatternId = useUIStore((s) => s.setCurrentPatternId);
+	const triggerHistoryClear = useUIStore((s) => s.triggerHistoryClear);
 
 	const currentPatternIdRef = useRef<string | null>(null);
 	currentPatternIdRef.current = currentPatternId;
@@ -97,7 +98,8 @@ export function usePatterns() {
 		setShapeGuide(null);
 		setRotationalMode('none');
 		setCurrentPatternId(null);
-	}, [resetChart, setShapeGuide, setRotationalMode, setCurrentPatternId]);
+		triggerHistoryClear();
+	}, [resetChart, setShapeGuide, setRotationalMode, setCurrentPatternId, triggerHistoryClear]);
 
 	const deletePattern = useCallback(
 		(id: string): StorageResult<void> => {

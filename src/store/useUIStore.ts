@@ -9,6 +9,8 @@ interface UIState {
 	isResetDialogOpen: boolean;
 	currentPatternId: string | null;
 	setCurrentPatternId: (id: string | null) => void;
+	historyResetToken: number;
+	triggerHistoryClear: () => void;
 	shapeGuide: ShapeGuide | null;
 	isShapeGuideDrawMode: boolean;
 	isShapeGuideEraseMode: boolean;
@@ -46,6 +48,8 @@ export const useUIStore = create<UIState>((set) => ({
 	isResetDialogOpen: false,
 	currentPatternId: null,
 	setCurrentPatternId: (id) => set({ currentPatternId: id }),
+	historyResetToken: 0,
+	triggerHistoryClear: () => set((state) => ({ historyResetToken: state.historyResetToken + 1 })),
 	shapeGuide: null,
 	isShapeGuideDrawMode: false,
 	isShapeGuideEraseMode: false,
@@ -120,5 +124,6 @@ export const useUIStore = create<UIState>((set) => ({
 			clipboard: null,
 			isSelectionMode: false,
 			rotationalMode: 'none',
+			historyResetToken: 0,
 		}),
 }));

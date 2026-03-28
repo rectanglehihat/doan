@@ -21,6 +21,7 @@ export function useHistory() {
 	const prevCellsRef = useRef<ChartCell[][]>(useChartStore.getState().cells);
 	const prevCollapsedBlocksRef = useRef<CollapsedBlock[]>(useChartStore.getState().collapsedBlocks);
 	const prevShapeGuideRef = useRef<ShapeGuide | null>(useUIStore.getState().shapeGuide);
+	const prevHistoryResetTokenRef = useRef<number>(useUIStore.getState().historyResetToken);
 	const isBatchingRef = useRef(false);
 	const batchStartRef = useRef<HistoryEntry | null>(null);
 
@@ -62,6 +63,22 @@ export function useHistory() {
 			prevCellsRef.current = cells;
 			prevCollapsedBlocksRef.current = collapsedBlocks;
 			setCanUndo(true);
+			setCanRedo(false);
+		});
+		return unsubscribe;
+	}, []);
+
+	// historyResetToken 변경 감지 — newPattern() 호출 시 히스토리 전체 초기화
+	useEffect(() => {
+		const unsubscribe = useUIStore.subscribe((state) => {
+			if (state.historyResetToken === prevHistoryResetTokenRef.current) return;
+			prevHistoryResetTokenRef.current = state.historyResetToken;
+			pastRef.current = [];
+			futureRef.current = [];
+			prevCellsRef.current = useChartStore.getState().cells;
+			prevCollapsedBlocksRef.current = useChartStore.getState().collapsedBlocks;
+			prevShapeGuideRef.current = state.shapeGuide;
+			setCanUndo(false);
 			setCanRedo(false);
 		});
 		return unsubscribe;

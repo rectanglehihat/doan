@@ -327,6 +327,17 @@ describe('usePatterns', () => {
 
 			expect(useUIStore.getState().rotationalMode).toBe('none');
 		});
+
+		it('호출 시 historyResetToken이 증가하여 히스토리 초기화 신호를 보낸다', () => {
+			const { result } = renderHook(() => usePatterns());
+			const tokenBefore = useUIStore.getState().historyResetToken;
+
+			act(() => {
+				result.current.newPattern();
+			});
+
+			expect(useUIStore.getState().historyResetToken).toBe(tokenBefore + 1);
+		});
 	});
 
 	describe('refreshPatterns', () => {
