@@ -247,7 +247,7 @@ export function ChartCanvas({
 						onCollapsedColumnBlockClick={handleCollapsedColumnBlockClick}
 					/>
 
-					{/* 플로팅 액션바: 선택 모드에서 중략으로 표시 버튼 */}
+					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}
 					{canCollapseSelection && (
 						<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-zinc-200 px-3 py-2">
 							<button
@@ -260,7 +260,7 @@ export function ChartCanvas({
 						</div>
 					)}
 
-					{/* 플로팅 액션바: 열 중략으로 표시 버튼 */}
+					{/* 플로팅 액션바: 열 중략 버튼 */}
 					{canCollapseColumnSelection && (
 						<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white rounded-lg shadow-lg border border-zinc-200 px-3 py-2">
 							<button
