@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type Konva from 'konva';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
 import {
@@ -33,6 +33,31 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 	);
 }
 
+interface SaveStatusProps {
+	saveError: string | null;
+	isSaved: boolean;
+	isAutoSaving: boolean;
+}
+
+function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
+	if (saveError !== null) {
+		return (
+			<p role="alert" className="text-xs text-red-600">
+				{saveError === 'limit_reached'
+					? '저장 한도(5개)에 도달했습니다.'
+					: '저장 중 오류가 발생했습니다.'}
+			</p>
+		);
+	}
+	if (isSaved) {
+		return <p className="text-xs text-green-600">저장됨 ✓</p>;
+	}
+	if (isAutoSaving) {
+		return <p className="text-xs text-zinc-400">저장 중...</p>;
+	}
+	return null;
+}
+
 interface EditorSidebarProps {
 	stageRef?: React.RefObject<Konva.Stage | null>;
 }
@@ -40,12 +65,14 @@ interface EditorSidebarProps {
 export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [saveError, setSaveError] = useState<string | null>(null);
+	const [isSaved, setIsSaved] = useState(false);
+	const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const fallbackRef = useRef<Konva.Stage | null>(null);
 	const resolvedStageRef = stageRef ?? fallbackRef;
 	const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
-	const { saveCurrentPattern, currentPatternId } = usePatterns();
+	const { saveCurrentPattern, currentPatternId, isAutoSaving } = usePatterns();
 
 	// 도안이 로드되어 currentPatternId가 변경되면 저장 에러를 초기화한다.
 	// React 공식 "storing previous state" 패턴: useState로 이전 값 추적
@@ -147,11 +174,27 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 
 	const handleSaveClick = useCallback(() => {
 		setSaveError(null);
+		if (savedTimerRef.current !== null) {
+			clearTimeout(savedTimerRef.current);
+		}
 		const result = saveCurrentPattern(patternTitle);
-		if (!result.ok) {
+		if (result.ok) {
+			setIsSaved(true);
+			savedTimerRef.current = setTimeout(() => {
+				setIsSaved(false);
+			}, 2000);
+		} else {
 			setSaveError(result.error);
 		}
 	}, [saveCurrentPattern, patternTitle]);
+
+	useEffect(() => {
+		return () => {
+			if (savedTimerRef.current !== null) {
+				clearTimeout(savedTimerRef.current);
+			}
+		};
+	}, []);
 
 	const handleLoadClick = useCallback(() => {
 		openLoadDialog();
@@ -280,13 +323,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				{saveError !== null && (
-					<p role="alert" className="text-xs text-red-600">
-						{saveError === 'limit_reached'
-							? '저장 한도(5개)에 도달했습니다.'
-							: '저장 중 오류가 발생했습니다.'}
-					</p>
-				)}
+				<SaveStatus saveError={saveError} isSaved={isSaved} isAutoSaving={isAutoSaving} />
 				<Button
 					variant="default"
 					size="sm"
