@@ -287,6 +287,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const isErasingGuide = useRef(false);
 	const [currentStroke, setCurrentStroke] = useState<number[]>([]);
 	const [currentEraseStroke, setCurrentEraseStroke] = useState<number[]>([]);
+
 	// currentEraseStroke를 ref로도 관리해 콜백 내에서 stale closure 없이 최신값 참조
 	const currentEraseStrokeRef = useRef<number[]>([]);
 
@@ -938,48 +939,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				)}
 
-				{/* 대칭 모드: 미러 미리보기 */}
-				{rotationalMode !== 'none' &&
-					nonEmptyCells
-						.filter(({ rowIdx, colIdx }) => {
-							if (rotationalMode === 'horizontal') return colIdx < Math.floor(gridSize.cols / 2);
-							if (rotationalMode === 'vertical') return rowIdx < Math.floor(gridSize.rows / 2);
-							return rowIdx < Math.floor(gridSize.rows / 2) && colIdx < Math.floor(gridSize.cols / 2);
-						})
-						.flatMap(({ cell, rowIdx, colIdx, visualY }) => {
-							const mirrorRow = gridSize.rows - 1 - rowIdx;
-							const mirrorCol = gridSize.cols - 1 - colIdx;
-							const positions: Array<{ r: number; c: number }> =
-								rotationalMode === 'horizontal'
-									? [{ r: rowIdx, c: mirrorCol }]
-									: rotationalMode === 'vertical'
-										? [{ r: mirrorRow, c: colIdx }]
-										: [
-												{ r: rowIdx, c: mirrorCol },
-												{ r: mirrorRow, c: colIdx },
-												{ r: mirrorRow, c: mirrorCol },
-											];
-							return positions.flatMap(({ r, c }) => {
-								const ry = rowVisualYMap[r] ?? visualY;
-								const rx = colVisualXMap[c];
-								if (rx === null) return [];
-								return [
-									<Text
-										key={`mirror-${rowIdx}-${colIdx}-${r}-${c}`}
-										x={rx}
-										y={ry}
-										width={cellSize}
-										height={cellSize}
-										text={symbolsMap[cell.symbolId] ?? cell.symbolId}
-										align="center"
-										verticalAlign="middle"
-										fontSize={Math.max(8, Math.floor(cellSize * 0.4))}
-										fill="rgba(26,26,26,0.35)"
-										listening={false}
-									/>,
-								];
-							});
-						})}
 
 				{/* 대칭 모드: 경계선 */}
 				{(rotationalMode === 'horizontal' || rotationalMode === 'both') && (
