@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import type Konva from 'konva';
 import { ChartCanvas } from '@/components/editor/ChartCanvas';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
 import { Toolbar } from '@/components/editor/Toolbar';
@@ -12,6 +13,7 @@ import { useHistory } from '@/hooks/useHistory';
 import { RotationalMode } from '@/types/knitting';
 
 export default function EditorPage() {
+	const stageRef = useRef<Konva.Stage | null>(null);
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
 	const reset = useChartStore((state) => state.reset);
 	const {
@@ -149,11 +151,12 @@ export default function EditorPage() {
 						onShapeGuideDrawEnd={endBatch}
 						onShapeGuideEraseStart={beginBatch}
 						onShapeGuideEraseEnd={endBatch}
+						stageRef={stageRef}
 					/>
 				</div>
 			</main>
 			<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">
-				<EditorSidebar />
+				<EditorSidebar stageRef={stageRef} />
 			</aside>
 			<ConfirmDialog
 				open={isResetDialogOpen}

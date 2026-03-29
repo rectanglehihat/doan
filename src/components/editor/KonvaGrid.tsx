@@ -245,6 +245,7 @@ interface KonvaGridProps {
 	onCollapsedBlockClick?: (blockId: string) => void;
 	collapsedColumnBlocks?: CollapsedColumnBlock[];
 	onCollapsedColumnBlockClick?: (blockId: string) => void;
+	externalStageRef?: React.RefObject<Konva.Stage | null>;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -277,6 +278,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onCollapsedBlockClick,
 	collapsedColumnBlocks = [],
 	onCollapsedColumnBlockClick,
+	externalStageRef,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -287,6 +289,18 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const [currentEraseStroke, setCurrentEraseStroke] = useState<number[]>([]);
 	// currentEraseStroke를 ref로도 관리해 콜백 내에서 stale closure 없이 최신값 참조
 	const currentEraseStrokeRef = useRef<number[]>([]);
+
+	// externalStageRef 동기화 — 외부에서 Konva Stage 인스턴스에 접근할 수 있도록
+	useEffect(() => {
+		if (externalStageRef) {
+			externalStageRef.current = stageRef.current;
+		}
+		return () => {
+			if (externalStageRef) {
+				externalStageRef.current = null;
+			}
+		};
+	}, [externalStageRef]);
 
 	// shapeGuide를 ref로 유지해 콜백 클로저 문제 방지
 	const shapeGuideRef = useRef(shapeGuide);
