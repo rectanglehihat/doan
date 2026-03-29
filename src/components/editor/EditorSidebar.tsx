@@ -45,7 +45,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
-	const { saveCurrentPattern, newPattern, currentPatternId } = usePatterns();
+	const { saveCurrentPattern, currentPatternId } = usePatterns();
 
 	// 도안이 로드되어 currentPatternId가 변경되면 저장 에러를 초기화한다.
 	// React 공식 "storing previous state" 패턴: useState로 이전 값 추적
@@ -148,12 +148,10 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const handleSaveClick = useCallback(() => {
 		setSaveError(null);
 		const result = saveCurrentPattern(patternTitle);
-		if (result.ok) {
-			newPattern();
-		} else {
+		if (!result.ok) {
 			setSaveError(result.error);
 		}
-	}, [saveCurrentPattern, patternTitle, newPattern]);
+	}, [saveCurrentPattern, patternTitle]);
 
 	const handleLoadClick = useCallback(() => {
 		openLoadDialog();

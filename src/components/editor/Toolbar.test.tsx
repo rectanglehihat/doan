@@ -85,10 +85,10 @@ describe('Toolbar', () => {
 			expect(handleRedo).not.toHaveBeenCalled();
 		});
 
-		it('초기화 버튼 클릭 시 onReset을 호출한다', async () => {
+		it('새 도안 버튼 클릭 시 onReset을 호출한다', async () => {
 			const handleReset = vi.fn();
 			render(<Toolbar {...defaultProps} onReset={handleReset} />);
-			await userEvent.click(screen.getByRole('button', { name: '도안 초기화' }));
+			await userEvent.click(screen.getByRole('button', { name: '새 도안' }));
 			expect(handleReset).toHaveBeenCalledTimes(1);
 		});
 
