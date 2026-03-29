@@ -24,39 +24,39 @@ describe('ChartCanvas', () => {
 		expect(screen.getByTestId('konva-grid')).toBeInTheDocument();
 	});
 
-	it('isSelectionMode=true이고 cellSelection이 있을 때 "행 중략" 버튼이 렌더링된다', () => {
+	it('isSelectionMode=true이고 cellSelection이 있을 때 "중략으로 표시" 버튼이 렌더링된다', () => {
 		act(() => {
 			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().setCellSelection({ startRow: 1, startCol: 0, endRow: 4, endCol: 19 });
 		});
 		render(<ChartCanvas />);
-		expect(screen.getByRole('button', { name: '행 중략' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: '중략으로 표시' })).toBeInTheDocument();
 	});
 
-	it('isSelectionMode=false이면 "행 중략" 버튼이 없다', () => {
+	it('isSelectionMode=false이면 "중략으로 표시" 버튼이 없다', () => {
 		act(() => {
 			useUIStore.getState().setSelectionMode(false);
 		});
 		render(<ChartCanvas />);
-		expect(screen.queryByRole('button', { name: '행 중략' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: '중략으로 표시' })).not.toBeInTheDocument();
 	});
 
-	it('cellSelection이 null이면 "행 중략" 버튼이 없다', () => {
+	it('cellSelection이 null이면 "중략으로 표시" 버튼이 없다', () => {
 		act(() => {
 			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().setCellSelection(null);
 		});
 		render(<ChartCanvas />);
-		expect(screen.queryByRole('button', { name: '행 중략' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: '중략으로 표시' })).not.toBeInTheDocument();
 	});
 
-	it('"행 중략" 버튼 클릭 시 addCollapsedBlock 이 호출되고 cellSelection이 해제된다', async () => {
+	it('"중략으로 표시" 버튼 클릭 시 addCollapsedBlock 이 호출되고 cellSelection이 해제된다', async () => {
 		act(() => {
 			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().setCellSelection({ startRow: 1, startCol: 0, endRow: 4, endCol: 19 });
 		});
 		render(<ChartCanvas />);
-		const btn = screen.getByRole('button', { name: '행 중략' });
+		const btn = screen.getByRole('button', { name: '중략으로 표시' });
 		await userEvent.click(btn);
 		// collapsedBlocks 추가 확인
 		const blocks = useChartStore.getState().collapsedBlocks;
@@ -67,7 +67,7 @@ describe('ChartCanvas', () => {
 		expect(useUIStore.getState().cellSelection).toBeNull();
 	});
 
-	it('"행 중략" 클릭 시 startRow >= endRow이면 추가하지 않는다', async () => {
+	it('"중략으로 표시" 클릭 시 startRow >= endRow이면 추가하지 않는다', async () => {
 		act(() => {
 			useUIStore.getState().setSelectionMode(true);
 			// 단일 행 선택 (startRow === endRow)
@@ -76,6 +76,6 @@ describe('ChartCanvas', () => {
 		render(<ChartCanvas />);
 		// startRow === endRow인 경우 버튼 자체가 없어야 함 (또는 disabled)
 		// 구현 정책: startRow < endRow인 경우만 버튼 노출
-		expect(screen.queryByRole('button', { name: '행 중략' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: '중략으로 표시' })).not.toBeInTheDocument();
 	});
 });
