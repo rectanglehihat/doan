@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { EditorSidebar } from './EditorSidebar';
 import { useChartStore } from '@/store/useChartStore';
 
@@ -116,5 +116,75 @@ describe('EditorSidebar', () => {
 		rerender(<EditorSidebar />);
 
 		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+	});
+
+	describe('저장 상태 피드백 UI', () => {
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it('저장 버튼 클릭 성공 시 "저장됨" 텍스트가 표시된다', async () => {
+			setupMockUsePatterns({
+				saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+			});
+
+			render(<EditorSidebar />);
+			await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
+			await userEvent.click(screen.getByRole('button', { name: /저장/ }));
+
+			expect(screen.getByText(/저장됨/)).toBeInTheDocument();
+		});
+
+		it('isAutoSaving이 true일 때 "저장 중..." 텍스트가 표시된다', () => {
+			setupMockUsePatterns({ isAutoSaving: true });
+
+			render(<EditorSidebar />);
+
+			expect(screen.getByText('저장 중...')).toBeInTheDocument();
+		});
+
+		it('저장됨 텍스트는 2초 후에 사라진다', async () => {
+			setupMockUsePatterns({
+				saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+			});
+
+			render(<EditorSidebar />);
+			await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
+
+			vi.useFakeTimers();
+
+			act(() => {
+				fireEvent.click(screen.getByRole('button', { name: /저장/ }));
+			});
+
+			expect(screen.getByText(/저장됨/)).toBeInTheDocument();
+
+			act(() => {
+				vi.advanceTimersByTime(2100);
+			});
+
+			expect(screen.queryByText(/저장됨/)).not.toBeInTheDocument();
+		});
+
+		it('저장됨 상태에서 에러가 발생하면 에러 메시지만 표시된다', async () => {
+			// 첫 번째 저장은 성공, 두 번째 저장은 실패하는 시나리오
+			const mockSave = vi.fn()
+				.mockReturnValueOnce({ ok: true, data: undefined })
+				.mockReturnValueOnce({ ok: false, error: 'limit_reached' });
+
+			setupMockUsePatterns({ saveCurrentPattern: mockSave });
+
+			render(<EditorSidebar />);
+			await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
+
+			// 첫 번째 저장 성공 → 저장됨 표시
+			await userEvent.click(screen.getByRole('button', { name: /저장/ }));
+			expect(screen.getByText(/저장됨/)).toBeInTheDocument();
+
+			// 두 번째 저장 실패 → 에러 메시지 표시, 저장됨 텍스트 사라짐
+			await userEvent.click(screen.getByRole('button', { name: /저장/ }));
+			expect(screen.getByRole('alert')).toBeInTheDocument();
+			expect(screen.queryByText(/저장됨/)).not.toBeInTheDocument();
+		});
 	});
 });
