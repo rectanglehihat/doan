@@ -42,18 +42,38 @@ interface SaveStatusProps {
 function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
 	if (saveError !== null) {
 		return (
-			<p role="alert" className="text-xs text-red-600">
-				{saveError === 'limit_reached'
-					? '저장 한도(5개)에 도달했습니다.'
-					: '저장 중 오류가 발생했습니다.'}
-			</p>
+			<div role="alert" className="flex items-center gap-1.5 rounded-md bg-red-50 px-2.5 py-1.5">
+				<svg className="h-3.5 w-3.5 shrink-0 text-red-500" viewBox="0 0 16 16" fill="currentColor">
+					<path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 4a.75.75 0 0 0-1.5 0v3.25a.75.75 0 0 0 1.5 0V5zm-.75 6a.875.875 0 1 0 0-1.75A.875.875 0 0 0 7.25 11z" />
+				</svg>
+				<p className="text-xs text-red-600">
+					{saveError === 'limit_reached'
+						? '저장 한도(5개)에 도달했습니다.'
+						: '저장 중 오류가 발생했습니다.'}
+				</p>
+			</div>
 		);
 	}
 	if (isSaved) {
-		return <p className="text-xs text-green-600">저장됨 ✓</p>;
+		return (
+			<div className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5">
+				<svg className="h-3.5 w-3.5 shrink-0 text-green-500" viewBox="0 0 16 16" fill="currentColor">
+					<path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.78 4.97a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-2-2a.75.75 0 1 1 1.06-1.06l1.47 1.47 3.97-3.97a.75.75 0 0 1 1.06 0z" />
+				</svg>
+				<p className="text-xs font-medium text-green-700">저장됨</p>
+			</div>
+		);
 	}
 	if (isAutoSaving) {
-		return <p className="text-xs text-zinc-400">저장 중...</p>;
+		return (
+			<div className="flex items-center gap-1.5 px-2.5 py-1.5">
+				<svg className="h-3.5 w-3.5 shrink-0 animate-spin text-zinc-400" viewBox="0 0 16 16" fill="none">
+					<circle className="opacity-25" cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" />
+					<path className="opacity-75" fill="currentColor" d="M8 2a6 6 0 0 1 6 6h-2a4 4 0 0 0-4-4V2z" />
+				</svg>
+				<p className="text-xs text-zinc-400">저장 중...</p>
+			</div>
+		);
 	}
 	return null;
 }
