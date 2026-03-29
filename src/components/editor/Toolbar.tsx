@@ -188,15 +188,15 @@ export function Toolbar({
 				)}
 			</div>
 
-			{/* 초기화 */}
+			{/* 새 도안 */}
 			<div className="ml-auto">
 				<Button
 					variant="ghost"
 					size="sm"
 					onClick={handleReset}
-					aria-label="도안 초기화"
+					aria-label="새 도안"
 				>
-					초기화
+					새 도안
 				</Button>
 			</div>
 		</div>

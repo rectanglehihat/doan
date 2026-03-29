@@ -75,7 +75,7 @@ describe('EditorSidebar', () => {
 		expect(mockSave).toHaveBeenCalledWith('테스트 도안');
 	});
 
-	it('저장 성공 시 newPattern을 호출한다', async () => {
+	it('저장 성공 시 newPattern을 호출하지 않는다', async () => {
 		const mockNew = vi.fn();
 		setupMockUsePatterns({
 			saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
@@ -86,7 +86,7 @@ describe('EditorSidebar', () => {
 		await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
 		await userEvent.click(screen.getByRole('button', { name: /저장/ }));
 
-		expect(mockNew).toHaveBeenCalledTimes(1);
+		expect(mockNew).not.toHaveBeenCalled();
 	});
 
 	it('limit_reached 에러 시 에러 메시지를 표시한다', async () => {
