@@ -93,3 +93,20 @@ export interface PatternStorageEntry {
 	version: 1;
 	patterns: SavedPatternSnapshot[];
 }
+
+export type PdfPageSize = 'A4' | 'Letter';
+export type PdfOrientation = 'portrait' | 'landscape';
+
+export interface PdfOptions {
+	pageSize: PdfPageSize;
+	orientation: PdfOrientation;
+	includeHeader: boolean;
+	title: string;
+	difficulty: number;
+	materials: string;
+	patternType: PatternType;
+}
+
+export type PdfExportResult =
+	| { ok: true; fileName: string }
+	| { ok: false; error: 'canvas_not_ready' | 'render_failed' | 'unknown' };

@@ -98,14 +98,14 @@
 
 ### 1-7. PDF 내보내기
 
-- [ ] `pnpm add jspdf html2canvas` 패키지 설치
-- [ ] PDF 내보내기 유틸리티 (`src/lib/utils/export-pdf.ts`)
-  - [ ] 캔버스 → 이미지 변환
-  - [ ] A4 / Letter 크기 지원
-  - [ ] 도안 제목, 난이도, 실 종류 헤더 포함
-  - [ ] 다운로드 트리거
-- [ ] `PdfPreview` 컴포넌트 (`src/components/pdf/PdfPreview.tsx`)
-- [ ] `usePdfExport` 훅 (`src/hooks/usePdfExport.ts`) — `dynamic()` lazy import
+- [x] `pnpm add jspdf html2canvas` 패키지 설치
+- [x] PDF 내보내기 유틸리티 (`src/lib/utils/export-pdf.ts`)
+  - [x] 캔버스 → 이미지 변환 (Konva Stage.toDataURL)
+  - [x] A4 / Letter 크기 지원
+  - [x] 도안 제목, 난이도, 실 종류 헤더 포함
+  - [x] 다운로드 트리거
+- [x] `PdfPreview` 컴포넌트 (`src/components/pdf/PdfPreview.tsx`)
+- [x] `usePdfExport` 훅 (`src/hooks/usePdfExport.ts`) — `dynamic()` lazy import
 
 ---
 
@@ -161,7 +161,7 @@
 
 | 컴포넌트     | 상태   | 테스트 |
 | ------------ | ------ | ------ |
-| `PdfPreview` | 미구현 | -      |
+| `PdfPreview` | 완료   | 7개    |
 
 ---
 

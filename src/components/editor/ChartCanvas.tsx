@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 import { useUIStore } from '@/store/useUIStore';
 import { useChartStore } from '@/store/useChartStore';
+import type Konva from 'konva';
 import { RotationalMode } from '@/types/knitting';
 
 function mirrorStrokeHorizontal(stroke: number[], cols: number): number[] {
@@ -65,6 +66,7 @@ interface ChartCanvasProps {
 	onShapeGuideDrawEnd?: () => void;
 	onShapeGuideEraseStart?: () => void;
 	onShapeGuideEraseEnd?: () => void;
+	stageRef?: React.RefObject<Konva.Stage | null>;
 }
 
 export function ChartCanvas({
@@ -74,6 +76,7 @@ export function ChartCanvas({
 	onShapeGuideDrawEnd,
 	onShapeGuideEraseStart,
 	onShapeGuideEraseEnd,
+	stageRef,
 }: ChartCanvasProps) {
 	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint, copySelection, pasteClipboard } =
 		useChartEditor();
@@ -245,6 +248,7 @@ export function ChartCanvas({
 						onCollapsedBlockClick={handleCollapsedBlockClick}
 						collapsedColumnBlocks={collapsedColumnBlocks}
 						onCollapsedColumnBlockClick={handleCollapsedColumnBlockClick}
+						externalStageRef={stageRef}
 					/>
 
 					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}

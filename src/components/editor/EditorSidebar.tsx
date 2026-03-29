@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import type Konva from 'konva';
 import { KnittingSymbol, PatternType } from '@/types/knitting';
 import {
 	knittingSymbols,
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/atoms/Input';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { usePatterns } from '@/hooks/usePatterns';
+import { PdfPreview } from '@/components/pdf/PdfPreview';
 
 interface SidebarSectionProps {
 	title: string;
@@ -31,9 +33,16 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 	);
 }
 
-export function EditorSidebar() {
+interface EditorSidebarProps {
+	stageRef?: React.RefObject<Konva.Stage | null>;
+}
+
+export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [saveError, setSaveError] = useState<string | null>(null);
+	const fallbackRef = useRef<Konva.Stage | null>(null);
+	const resolvedStageRef = stageRef ?? fallbackRef;
+	const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
 	const { saveCurrentPattern, newPattern, currentPatternId } = usePatterns();
@@ -149,6 +158,14 @@ export function EditorSidebar() {
 	const handleLoadClick = useCallback(() => {
 		openLoadDialog();
 	}, [openLoadDialog]);
+
+	const handlePdfClick = useCallback(() => {
+		setIsPdfModalOpen(true);
+	}, []);
+
+	const handlePdfModalClose = useCallback(() => {
+		setIsPdfModalOpen(false);
+	}, []);
 
 	const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
 
@@ -293,10 +310,17 @@ export function EditorSidebar() {
 					variant="outline"
 					size="sm"
 					className="w-full"
+					disabled={patternTitle.trim() === ''}
+					onClick={handlePdfClick}
 				>
 					PDF 내보내기
 				</Button>
 			</div>
+			<PdfPreview
+				isOpen={isPdfModalOpen}
+				onClose={handlePdfModalClose}
+				stageRef={resolvedStageRef}
+			/>
 		</div>
 	);
 }

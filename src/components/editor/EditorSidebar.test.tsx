@@ -47,6 +47,17 @@ describe('EditorSidebar', () => {
 		expect(screen.getByRole('button', { name: /저장/ })).toBeDisabled();
 	});
 
+	it('도안명이 비어있으면 PDF 내보내기 버튼이 비활성화된다', () => {
+		render(<EditorSidebar />);
+		expect(screen.getByRole('button', { name: /PDF 내보내기/ })).toBeDisabled();
+	});
+
+	it('도안명을 입력하면 PDF 내보내기 버튼이 활성화된다', async () => {
+		render(<EditorSidebar />);
+		await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');
+		expect(screen.getByRole('button', { name: /PDF 내보내기/ })).not.toBeDisabled();
+	});
+
 	it('도안명을 입력하면 저장 버튼이 활성화된다', async () => {
 		render(<EditorSidebar />);
 		await userEvent.type(screen.getByPlaceholderText('도안 제목을 입력하세요'), '테스트 도안');

@@ -38,7 +38,7 @@ function resizeGridSymmetric(
 	);
 }
 
-interface ChartState {
+export interface ChartState {
 	cells: ChartCell[][];
 	gridSize: GridSize;
 	cellSize: number;
