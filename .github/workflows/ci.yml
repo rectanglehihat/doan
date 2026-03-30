@@ -45,6 +45,20 @@ jobs:
         env:
           NODE_ENV: production
 
+  auto-merge:
+    name: Auto Merge PR
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Auto merge PR
+        run: gh pr merge --squash --auto "${{ github.event.pull_request.html_url }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   deploy-preview:
     name: Deploy Preview
     needs: ci
