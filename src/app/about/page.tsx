@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
 	title: '도안 소개 — 무료 뜨개질 도안 에디터',
 	description:
 		'도안은 대바늘·코바늘 뜨개 기호를 그리드에 배치해 나만의 패턴을 만드는 무료 온라인 뜨개질 도안 에디터입니다. PDF 출력을 지원합니다.',
 	alternates: {
-		canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/about`,
+		canonical: `${SITE_URL}/about`,
 	},
 };
 
@@ -54,9 +56,40 @@ const FAQS = [
 	},
 ];
 
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: FAQS.map(({ question, answer }) => ({
+		'@type': 'Question',
+		name: question,
+		acceptedAnswer: {
+			'@type': 'Answer',
+			text: answer,
+		},
+	})),
+};
+
+const breadcrumbJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: '홈', item: SITE_URL },
+		{ '@type': 'ListItem', position: 2, name: '소개', item: `${SITE_URL}/about` },
+	],
+};
+
 export default function AboutPage() {
 	return (
 		<main className="max-w-2xl mx-auto px-6 py-12">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+			/>
+
 			<nav className="text-sm text-gray-500 mb-6">
 				<Link href="/" className="hover:underline">
 					홈
