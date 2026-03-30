@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+import { SITE_URL } from '@/constants/site';
 
 export const metadata: Metadata = {
 	title: '도안 소개 — 무료 뜨개질 도안 에디터',
