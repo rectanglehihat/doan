@@ -8,7 +8,6 @@ import {
 	crochetSymbols,
 	SYMBOL_CATEGORY_ORDER,
 	SYMBOL_CATEGORY_LABELS,
-	EMPTY_SYMBOL_ID,
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
@@ -143,11 +142,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
-			if (symbol.id === EMPTY_SYMBOL_ID) {
-				setSelectedSymbol(null);
-			} else {
-				setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
-			}
+			setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
 		},
 		[selectedSymbol, setSelectedSymbol],
 	);
@@ -311,7 +306,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 											<SymbolButton
 												key={symbol.id}
 												symbol={symbol}
-												isSelected={symbol.id === EMPTY_SYMBOL_ID ? selectedSymbol === null : selectedSymbol?.id === symbol.id}
+												isSelected={selectedSymbol?.id === symbol.id}
 												onSelect={handleSymbolSelect}
 											/>
 										))}

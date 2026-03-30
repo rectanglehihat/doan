@@ -28,7 +28,7 @@ export const SYMBOL_CATEGORY_ORDER: SymbolCategory[] = [
 
 export const knittingSymbols: KnittingSymbol[] = [
 	// 기초
-	{ id: '빈칸', abbr: '□', name: '빈 칸', category: 'basic-structure', patternType: 'knitting', icon: '' },
+	{ id: '빈칸', abbr: '', name: '빈 칸', category: 'basic-structure', patternType: 'knitting', icon: '' },
 	{ id: '감아코', abbr: '감아코', name: '감아코', category: 'basic-structure', patternType: 'knitting', icon: '' },
 	{ id: 'BO', abbr: 'BO', name: '코막기', category: 'basic-structure', patternType: 'knitting', icon: '' },
 	{ id: 'CO', abbr: 'CO', name: '코잡기', category: 'basic-structure', patternType: 'knitting', icon: '' },
@@ -69,7 +69,7 @@ export const knittingSymbols: KnittingSymbol[] = [
 
 export const crochetSymbols: KnittingSymbol[] = [
 	// 기초
-	{ id: '빈칸', abbr: '□', name: '빈 칸', category: 'basic-structure', patternType: 'crochet', icon: '' },
+	{ id: '빈칸', abbr: '', name: '빈 칸', category: 'basic-structure', patternType: 'crochet', icon: '' },
 	{ id: 'magic-ring', abbr: 'mr', name: '매직링', category: 'basic-structure', patternType: 'crochet', icon: '' },
 	{ id: 'ch', abbr: 'ch', name: '사슬뜨기', category: 'basic-structure', patternType: 'crochet', icon: '' },
 	{ id: 'ch2', abbr: 'ch2', name: '이중사슬뜨기', category: 'basic-structure', patternType: 'crochet', icon: '' },
