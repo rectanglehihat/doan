@@ -1,5 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
-import EditorPage from './page';
+import { EditorClient } from '@/components/editor/EditorClient';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 
@@ -18,7 +18,7 @@ beforeEach(() => {
 
 describe('EditorPage', () => {
 	it('페이지를 렌더링한다', () => {
-		render(<EditorPage />);
+		render(<EditorClient />);
 		// Toolbar가 렌더링됨
 		expect(screen.getByRole('button', { name: /실행 취소/i })).toBeInTheDocument();
 	});
@@ -27,13 +27,13 @@ describe('EditorPage', () => {
 		act(() => {
 			useChartStore.getState().addCollapsedBlock(2, 5);
 		});
-		render(<EditorPage />);
+		render(<EditorClient />);
 		// KonvaGrid mock 환경에서 중략 행 클릭 불가, 기본 렌더링만 확인
 		expect(screen.getByRole('button', { name: /실행 취소/i })).toBeInTheDocument();
 	});
 
 	it('초기 상태에서 collapsedBlocks가 비어있다', () => {
-		render(<EditorPage />);
+		render(<EditorClient />);
 		expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
 	});
 });

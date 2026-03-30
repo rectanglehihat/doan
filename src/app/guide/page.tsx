@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
 	title: '뜨개 도안 만들기 가이드',
 	description:
 		'도안 에디터로 뜨개질 도안을 만드는 방법을 단계별로 안내합니다. 그리드 설정부터 기호 배치, PDF 출력까지 10분이면 완성.',
 	alternates: {
-		canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/guide`,
+		canonical: `${SITE_URL}/guide`,
 	},
 };
 
@@ -44,9 +46,42 @@ const TIPS = [
 	'PDF 출력 시 A4 가로 방향을 선택하면 넓은 도안도 한 페이지에 담을 수 있습니다.',
 ];
 
+const howToJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'HowTo',
+	name: '뜨개 도안 만드는 방법',
+	description: '도안 에디터로 뜨개질 도안을 만드는 방법을 단계별로 안내합니다.',
+	totalTime: 'PT10M',
+	tool: [{ '@type': 'HowToTool', name: '도안 에디터' }],
+	step: STEPS.map(({ step, title, description }) => ({
+		'@type': 'HowToStep',
+		position: step,
+		name: title,
+		text: description,
+	})),
+};
+
+const breadcrumbJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: '홈', item: SITE_URL },
+		{ '@type': 'ListItem', position: 2, name: '가이드', item: `${SITE_URL}/guide` },
+	],
+};
+
 export default function GuidePage() {
 	return (
 		<main className="max-w-2xl mx-auto px-6 py-12">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+			/>
+
 			<nav className="text-sm text-gray-500 mb-6">
 				<Link href="/" className="hover:underline">
 					홈
