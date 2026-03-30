@@ -44,6 +44,7 @@ describe('useChartEditor', () => {
 			act(() => result.current.handleCellPaint(0, 0));
 			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
 		});
+
 	});
 
 	describe('clearCell', () => {
