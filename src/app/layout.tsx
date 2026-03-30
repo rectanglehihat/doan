@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { SITE_URL, SITE_DESCRIPTION as DESCRIPTION } from '@/constants/site';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -11,10 +12,6 @@ const geistMono = Geist_Mono({
 	variable: '--font-geist-mono',
 	subsets: ['latin'],
 });
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-const DESCRIPTION =
-	'뜨개질 도안을 간단하게 만들고 PDF로 출력하세요. 대바늘·코바늘 기호를 그리드에 배치해 나만의 뜨개 도안을 완성하는 무료 온라인 도안 에디터입니다.';
 
 const jsonLd = {
 	'@context': 'https://schema.org',
