@@ -9,7 +9,7 @@ import { GridSize, CellSelection } from '@/types/knitting';
 export function useChartEditor() {
 	const { cells, gridSize, cellSize, patternType, setCellSymbol, setCells, setGridSize, setCellSize, setPatternType, reset } =
 		useChartStore();
-	const { selectedSymbol, rotationalMode, clipboard, setClipboard } = useUIStore();
+	const { selectedSymbol, rotationalMode, isCellEraseMode, clipboard, setClipboard } = useUIStore();
 
 	const symbolsMap = useMemo<Record<string, string>>(() => {
 		const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
@@ -18,7 +18,7 @@ export function useChartEditor() {
 
 	const handleCellPaint = useCallback(
 		(row: number, col: number) => {
-			const symbolId = selectedSymbol?.id ?? null;
+			const symbolId = isCellEraseMode ? null : (selectedSymbol?.id ?? null);
 
 			if (rotationalMode === 'none') {
 				setCellSymbol(row, col, symbolId);
@@ -43,7 +43,7 @@ export function useChartEditor() {
 			);
 			setCells(newCells);
 		},
-		[setCellSymbol, setCells, cells, selectedSymbol, rotationalMode, gridSize],
+		[setCellSymbol, setCells, cells, selectedSymbol, isCellEraseMode, rotationalMode, gridSize],
 	);
 
 	const clearCell = useCallback(

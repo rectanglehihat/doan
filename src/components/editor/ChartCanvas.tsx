@@ -83,6 +83,7 @@ export function ChartCanvas({
 	const shapeGuide = useUIStore((state) => state.shapeGuide);
 	const isShapeGuideDrawMode = useUIStore((state) => state.isShapeGuideDrawMode);
 	const isShapeGuideEraseMode = useUIStore((state) => state.isShapeGuideEraseMode);
+	const isCellEraseMode = useUIStore((state) => state.isCellEraseMode);
 	const addShapeGuideStroke = useUIStore((state) => state.addShapeGuideStroke);
 	const removeShapeGuideStroke = useUIStore((state) => state.removeShapeGuideStroke);
 	const replaceShapeGuideStroke = useUIStore((state) => state.replaceShapeGuideStroke);
@@ -232,6 +233,7 @@ export function ChartCanvas({
 						shapeGuide={shapeGuide}
 						isShapeGuideDrawMode={isShapeGuideDrawMode}
 						isShapeGuideEraseMode={isShapeGuideEraseMode}
+					isCellEraseMode={isCellEraseMode}
 						onShapeGuideStrokeAdd={handleShapeGuideStrokeAdd}
 						onShapeGuideStrokeRemove={removeShapeGuideStroke}
 						onShapeGuideStrokeReplace={replaceShapeGuideStroke}

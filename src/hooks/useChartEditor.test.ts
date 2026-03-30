@@ -44,6 +44,27 @@ describe('useChartEditor', () => {
 			act(() => result.current.handleCellPaint(0, 0));
 			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
 		});
+
+		it('isCellEraseMode=true이면 기호가 선택되어 있어도 셀을 비운다 (null)', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			act(() => useUIStore.getState().setSelectedSymbol(kSymbol));
+			act(() => useUIStore.getState().setCellEraseMode(true));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+		});
+
+		it('isCellEraseMode=true + horizontal 모드에서 좌우 대칭 셀도 함께 비워진다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellSymbol(0, 19, 'k');
+			act(() => useUIStore.getState().setCellEraseMode(true));
+			act(() => useUIStore.getState().setRotationalMode('horizontal'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].symbolId).toBeNull();
+			expect(cells[0][19].symbolId).toBeNull();
+		});
 	});
 
 	describe('clearCell', () => {

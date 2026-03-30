@@ -24,9 +24,11 @@ export function EditorClient() {
 		shapeGuide,
 		isShapeGuideDrawMode,
 		isShapeGuideEraseMode,
+		isCellEraseMode,
 		setShapeGuide,
 		setShapeGuideDrawMode,
 		setShapeGuideEraseMode,
+		setCellEraseMode,
 		isSelectionMode,
 		setSelectionMode,
 		setCellSelection,
@@ -84,6 +86,13 @@ export function EditorClient() {
 		setShapeGuideEraseMode(false);
 	}, [setShapeGuide, setShapeGuideDrawMode, setShapeGuideEraseMode]);
 
+	const handleCellEraseModeChange = useCallback(
+		(active: boolean) => {
+			setCellEraseMode(active);
+		},
+		[setCellEraseMode],
+	);
+
 	const handleSelectionModeChange = useCallback(
 		(active: boolean) => {
 			setSelectionMode(active);
@@ -138,6 +147,8 @@ export function EditorClient() {
 					onShapeGuideEraseModeChange={handleShapeGuideEraseModeChange}
 					hasShapeGuide={(shapeGuide?.strokes.length ?? 0) > 0}
 					onShapeGuideClear={handleShapeGuideClear}
+					isCellEraseMode={isCellEraseMode}
+					onCellEraseModeChange={handleCellEraseModeChange}
 					isSelectionMode={isSelectionMode}
 					onSelectionModeChange={handleSelectionModeChange}
 					rotationalMode={rotationalMode}

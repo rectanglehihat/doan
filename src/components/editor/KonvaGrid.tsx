@@ -229,6 +229,7 @@ interface KonvaGridProps {
 	shapeGuide?: ShapeGuide | null;
 	isShapeGuideDrawMode?: boolean;
 	isShapeGuideEraseMode?: boolean;
+	isCellEraseMode?: boolean;
 	onShapeGuideStrokeAdd?: (stroke: number[]) => void;
 	onShapeGuideStrokeRemove?: (index: number) => void;
 	onShapeGuideStrokeReplace?: (index: number, newStrokes: number[][]) => void;
@@ -262,6 +263,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 	shapeGuide = null,
 	isShapeGuideDrawMode = false,
 	isShapeGuideEraseMode = false,
+	isCellEraseMode = false,
 	onShapeGuideStrokeAdd,
 	onShapeGuideStrokeRemove,
 	onShapeGuideStrokeReplace,
@@ -819,7 +821,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 
 	const cursor = isSpacePanning
 		? 'grab'
-		: isShapeGuideEraseMode
+		: isShapeGuideEraseMode || isCellEraseMode
 			? ERASER_CURSOR
 			: isSelectionMode
 				? 'default'
@@ -829,12 +831,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 
 	// IIFE 패턴 대신 조건 변수로 추출
 	const hoverCellVisualY =
-		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode
+		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isCellEraseMode && !isSelectionMode
 			? rowVisualYMap[hoverCell.row]
 			: undefined;
 
 	const hoverCellVisualX =
-		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isSelectionMode
+		hoverCell !== null && !isShapeGuideDrawMode && !isShapeGuideEraseMode && !isCellEraseMode && !isSelectionMode
 			? colVisualXMap[hoverCell.col]
 			: undefined;
 
