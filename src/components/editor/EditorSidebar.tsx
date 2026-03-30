@@ -8,6 +8,7 @@ import {
 	crochetSymbols,
 	SYMBOL_CATEGORY_ORDER,
 	SYMBOL_CATEGORY_LABELS,
+	SYMBOL_CATEGORY_COLORS,
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
@@ -114,6 +115,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const handleEmptyCellSelect = useCallback(() => {
 		setSelectedSymbol(null);
 	}, [setSelectedSymbol]);
+
 
 	const handlePatternTypeChange = useCallback(
 		(type: PatternType) => {
@@ -264,24 +266,36 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 
 				<SidebarSection title="기호 팔레트">
 					<div className="flex flex-col gap-3">
-						<button
-							onClick={handleEmptyCellSelect}
-							aria-label="빈 칸"
-							aria-pressed={selectedSymbol === null}
-							className={`w-full rounded border px-2 py-1.5 text-xs font-medium transition-colors ${
-								selectedSymbol === null
-									? 'border-zinc-800 bg-zinc-900 text-white'
-									: 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300'
-							}`}
-						>
-							빈 칸 (지우개)
-						</button>
 						{SYMBOL_CATEGORY_ORDER.map((category) => {
 							const categorySymbols = symbols.filter((s) => s.category === category);
+							const colors = SYMBOL_CATEGORY_COLORS[category];
 							return (
 								<div key={category}>
 									<p className="mb-1.5 text-[10px] font-medium text-zinc-400">{SYMBOL_CATEGORY_LABELS[category]}</p>
 									<div className="grid grid-cols-3 gap-1.5">
+										{category === 'basic-structure' && (
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleEmptyCellSelect}
+												aria-label="빈 칸"
+												aria-pressed={selectedSymbol === null}
+												className={[
+													'flex-col h-14 w-full gap-0.5 py-1.5 px-1',
+													colors.bg,
+													colors.border,
+													colors.text,
+													selectedSymbol === null
+														? 'ring-2 ring-offset-1 ring-zinc-800 border-zinc-800 shadow-sm'
+														: 'hover:brightness-95 hover:bg-inherit',
+												].join(' ')}
+											>
+												<span className="font-mono text-xs font-bold leading-none">□</span>
+												<span className="text-[9px] leading-tight text-center line-clamp-2 opacity-70 px-0.5">
+													빈 칸
+												</span>
+											</Button>
+										)}
 										{categorySymbols.map((symbol) => (
 											<SymbolButton
 												key={symbol.id}
