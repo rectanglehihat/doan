@@ -16,8 +16,6 @@ export const SYMBOL_CATEGORY_COLORS: Record<SymbolCategory, { bg: string; border
 	special: { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-800' },
 };
 
-export const EMPTY_SYMBOL_ID = '빈칸';
-
 export const SYMBOL_CATEGORY_ORDER: SymbolCategory[] = [
 	'basic-structure',
 	'basic-stitch',
