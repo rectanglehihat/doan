@@ -1,6 +1,6 @@
 ---
 name: tdd-component
-description: DOAN 새 컴포넌트 TDD 워크플로우 스킬. "새 컴포넌트 만들어", "컴포넌트 추가해줘", "새 Atom/Molecule/Organism 필요해" 같은 요청 시 사용. architect → test-writer → implementer → code-reviewer 순서로 에이전트를 호출한다.
+description: DOAN 새 컴포넌트 TDD 워크플로우 스킬. "새 컴포넌트 만들어", "컴포넌트 추가해줘", "새 Atom/Molecule/Organism 필요해" 같은 요청 시 사용. architect → test-writer → implementer → /verify → code-reviewer 순서로 에이전트를 호출한다.
 ---
 
 # 새 컴포넌트 TDD 워크플로우
@@ -50,14 +50,22 @@ test-writer 에이전트를 사용해서:
 3. 리팩터 (코드 정리, 중복 제거)
 ```
 
-### Step 4: 검증 (code-reviewer 에이전트)
+### Step 4: 검증 (/verify 스킬)
+
+`/verify` 스킬을 호출해서 전체 검증을 실행한다.
+
+```
+test → tsc → lint → build 순서로 통과 확인
+```
+
+### Step 5: 코드 리뷰 (code-reviewer 에이전트)
 
 ```
 code-reviewer 에이전트를 사용해서:
-1. CLAUDE.md 규칙 위반 확인
-2. pnpm tsc --noEmit
-3. pnpm lint
-4. 위반 사항 수정
+1. CLAUDE.md 절대 규칙 위반 확인 (export default, any, 계층 위반 등)
+2. Atomic Design 계층 규칙 준수 여부 확인
+3. 성능 최적화 누락 확인 (React.memo, useCallback, useMemo)
+4. 위반 사항 수정 후 /verify 재실행
 ```
 
 ## 완료 기준
@@ -66,4 +74,5 @@ code-reviewer 에이전트를 사용해서:
 - [ ] `pnpm test` 통과
 - [ ] `pnpm tsc --noEmit` 통과
 - [ ] `pnpm lint` 통과
+- [ ] `pnpm build` 통과
 - [ ] code-reviewer 위반 사항 없음
