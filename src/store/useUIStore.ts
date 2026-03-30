@@ -13,7 +13,6 @@ interface UIState {
 	shapeGuide: ShapeGuide | null;
 	isShapeGuideDrawMode: boolean;
 	isShapeGuideEraseMode: boolean;
-	isCellEraseMode: boolean;
 	rotationalMode: RotationalMode;
 	setSelectedSymbol: (symbol: KnittingSymbol | null) => void;
 	setSymmetryMode: (mode: SymmetryMode) => void;
@@ -29,7 +28,6 @@ interface UIState {
 	shiftShapeGuide: (colOffset: number, rowOffset: number) => void;
 	setShapeGuideDrawMode: (active: boolean) => void;
 	setShapeGuideEraseMode: (active: boolean) => void;
-	setCellEraseMode: (active: boolean) => void;
 	cellSelection: CellSelection | null;
 	clipboard: ChartCell[][] | null;
 	isSelectionMode: boolean;
@@ -51,7 +49,6 @@ export const useUIStore = create<UIState>((set) => ({
 	shapeGuide: null,
 	isShapeGuideDrawMode: false,
 	isShapeGuideEraseMode: false,
-	isCellEraseMode: false,
 	rotationalMode: 'none',
 	cellSelection: null,
 	clipboard: null,
@@ -60,7 +57,7 @@ export const useUIStore = create<UIState>((set) => ({
 	setSelectedSymbol: (symbol) =>
 		set(
 			symbol !== null
-				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isCellEraseMode: false, isSelectionMode: false, cellSelection: null }
+				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null }
 				: { selectedSymbol: null },
 		),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
@@ -101,12 +98,6 @@ export const useUIStore = create<UIState>((set) => ({
 		}),
 	setShapeGuideDrawMode: (active) => set({ isShapeGuideDrawMode: active }),
 	setShapeGuideEraseMode: (active) => set({ isShapeGuideEraseMode: active }),
-	setCellEraseMode: (active) =>
-		set(
-			active
-				? { isCellEraseMode: true, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null }
-				: { isCellEraseMode: false },
-		),
 	setRotationalMode: (mode) => set({ rotationalMode: mode }),
 	setCellSelection: (sel) => set({ cellSelection: sel }),
 	setClipboard: (cells) => set({ clipboard: cells }),
@@ -122,7 +113,6 @@ export const useUIStore = create<UIState>((set) => ({
 			shapeGuide: null,
 			isShapeGuideDrawMode: false,
 			isShapeGuideEraseMode: false,
-			isCellEraseMode: false,
 			cellSelection: null,
 			clipboard: null,
 			isSelectionMode: false,

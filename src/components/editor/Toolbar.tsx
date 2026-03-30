@@ -16,8 +16,6 @@ interface ToolbarProps {
 	onShapeGuideEraseModeChange: (active: boolean) => void;
 	hasShapeGuide: boolean;
 	onShapeGuideClear: () => void;
-	isCellEraseMode: boolean;
-	onCellEraseModeChange: (active: boolean) => void;
 	isSelectionMode: boolean;
 	onSelectionModeChange: (active: boolean) => void;
 	rotationalMode: RotationalMode;
@@ -36,8 +34,6 @@ export function Toolbar({
 	onShapeGuideEraseModeChange,
 	hasShapeGuide,
 	onShapeGuideClear,
-	isCellEraseMode,
-	onCellEraseModeChange,
 	isSelectionMode,
 	onSelectionModeChange,
 	rotationalMode,
@@ -66,10 +62,6 @@ export function Toolbar({
 	const handleShapeGuideClear = useCallback(() => {
 		onShapeGuideClear();
 	}, [onShapeGuideClear]);
-
-	const handleCellEraseToggle = useCallback(() => {
-		onCellEraseModeChange(!isCellEraseMode);
-	}, [onCellEraseModeChange, isCellEraseMode]);
 
 	const handleSelectionModeToggle = useCallback(() => {
 		onSelectionModeChange(!isSelectionMode);
@@ -142,21 +134,6 @@ export function Toolbar({
 					aria-pressed={rotationalMode === 'both'}
 				>
 					양방향
-				</Button>
-			</div>
-
-			<div className="h-5 w-px bg-zinc-200" />
-
-			{/* 기호 지우개 */}
-			<div className="flex items-center gap-1">
-				<Button
-					variant={isCellEraseMode ? 'default' : 'ghost'}
-					size="sm"
-					onClick={handleCellEraseToggle}
-					aria-label="기호 지우개"
-					aria-pressed={isCellEraseMode}
-				>
-					지우개
 				</Button>
 			</div>
 

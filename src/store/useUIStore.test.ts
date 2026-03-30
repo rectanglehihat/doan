@@ -180,41 +180,6 @@ describe('useUIStore', () => {
 		});
 	});
 
-	describe('isCellEraseMode', () => {
-		it('초기값은 false이다', () => {
-			expect(useUIStore.getState().isCellEraseMode).toBe(false);
-		});
-
-		it('setCellEraseMode(true) 호출 시 true가 된다', () => {
-			useUIStore.getState().setCellEraseMode(true);
-			expect(useUIStore.getState().isCellEraseMode).toBe(true);
-		});
-
-		it('setCellEraseMode(false) 호출 시 false가 된다', () => {
-			useUIStore.getState().setCellEraseMode(true);
-			useUIStore.getState().setCellEraseMode(false);
-			expect(useUIStore.getState().isCellEraseMode).toBe(false);
-		});
-
-		it('setCellEraseMode(true) 활성화 시 isShapeGuideDrawMode가 false가 된다', () => {
-			useUIStore.getState().setShapeGuideDrawMode(true);
-			useUIStore.getState().setCellEraseMode(true);
-			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
-		});
-
-		it('setCellEraseMode(true) 활성화 시 isShapeGuideEraseMode가 false가 된다', () => {
-			useUIStore.getState().setShapeGuideEraseMode(true);
-			useUIStore.getState().setCellEraseMode(true);
-			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
-		});
-
-		it('setCellEraseMode(true) 활성화 시 isSelectionMode가 false가 된다', () => {
-			useUIStore.getState().setSelectionMode(true);
-			useUIStore.getState().setCellEraseMode(true);
-			expect(useUIStore.getState().isSelectionMode).toBe(false);
-		});
-	});
-
 	describe('cellSelection', () => {
 		it('초기값은 null이다', () => {
 			expect(useUIStore.getState().cellSelection).toBeNull();
@@ -293,12 +258,6 @@ describe('useUIStore', () => {
 			expect(useUIStore.getState().cellSelection).toBeNull();
 		});
 
-		it('setSelectedSymbol(symbol) 호출 시 isCellEraseMode가 false가 된다', () => {
-			useUIStore.getState().setCellEraseMode(true);
-			useUIStore.getState().setSelectedSymbol(mockSymbol);
-			expect(useUIStore.getState().isCellEraseMode).toBe(false);
-		});
-
 		it('setSelectedSymbol(null) 호출 시 모드 상태에 영향을 주지 않는다', () => {
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().setSelectedSymbol(null);
@@ -358,7 +317,6 @@ describe('useUIStore', () => {
 			useUIStore.getState().setShapeGuide(mockShapeGuide);
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().setShapeGuideEraseMode(true);
-			useUIStore.getState().setCellEraseMode(true);
 			useUIStore.getState().setCellSelection({ startRow: 1, startCol: 1, endRow: 3, endCol: 3 });
 			useUIStore.getState().setClipboard([[{ symbolId: 'k' }]]);
 			useUIStore.getState().setSelectionMode(true);
@@ -366,14 +324,13 @@ describe('useUIStore', () => {
 			useUIStore.getState().setSymmetryMode('horizontal');
 			useUIStore.getState().reset();
 
-			const { selectedSymbol, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, isCellEraseMode, cellSelection, clipboard, isSelectionMode, rotationalMode, symmetryMode } =
+			const { selectedSymbol, isLoadDialogOpen, shapeGuide, isShapeGuideDrawMode, isShapeGuideEraseMode, cellSelection, clipboard, isSelectionMode, rotationalMode, symmetryMode } =
 				useUIStore.getState();
 			expect(selectedSymbol).toBeNull();
 			expect(isLoadDialogOpen).toBe(false);
 			expect(shapeGuide).toBeNull();
 			expect(isShapeGuideDrawMode).toBe(false);
 			expect(isShapeGuideEraseMode).toBe(false);
-			expect(isCellEraseMode).toBe(false);
 			expect(cellSelection).toBeNull();
 			expect(clipboard).toBeNull();
 			expect(isSelectionMode).toBe(false);

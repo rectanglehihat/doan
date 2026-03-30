@@ -111,6 +111,10 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 		[selectedSymbol, setSelectedSymbol],
 	);
 
+	const handleEmptyCellSelect = useCallback(() => {
+		setSelectedSymbol(null);
+	}, [setSelectedSymbol]);
+
 	const handlePatternTypeChange = useCallback(
 		(type: PatternType) => {
 			setPatternType(type);
@@ -260,6 +264,18 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 
 				<SidebarSection title="기호 팔레트">
 					<div className="flex flex-col gap-3">
+						<button
+							onClick={handleEmptyCellSelect}
+							aria-label="빈 칸"
+							aria-pressed={selectedSymbol === null}
+							className={`w-full rounded border px-2 py-1.5 text-xs font-medium transition-colors ${
+								selectedSymbol === null
+									? 'border-zinc-800 bg-zinc-900 text-white'
+									: 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300'
+							}`}
+						>
+							빈 칸 (지우개)
+						</button>
 						{SYMBOL_CATEGORY_ORDER.map((category) => {
 							const categorySymbols = symbols.filter((s) => s.category === category);
 							return (

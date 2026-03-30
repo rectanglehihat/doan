@@ -14,8 +14,6 @@ const defaultProps = {
 	onShapeGuideEraseModeChange: vi.fn(),
 	hasShapeGuide: false,
 	onShapeGuideClear: vi.fn(),
-	isCellEraseMode: false,
-	onCellEraseModeChange: vi.fn(),
 	isSelectionMode: false,
 	onSelectionModeChange: vi.fn(),
 	rotationalMode: 'none' as const,
