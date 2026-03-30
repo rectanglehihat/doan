@@ -8,7 +8,7 @@ import {
 	crochetSymbols,
 	SYMBOL_CATEGORY_ORDER,
 	SYMBOL_CATEGORY_LABELS,
-	SYMBOL_CATEGORY_COLORS,
+	EMPTY_SYMBOL_ID,
 } from '@/constants/knitting-symbols';
 import { SymbolButton } from '@/components/ui/molecules/SymbolButton';
 import { DifficultyStars } from '@/components/ui/molecules/DifficultyStars';
@@ -43,14 +43,19 @@ interface SaveStatusProps {
 function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
 	if (saveError !== null) {
 		return (
-			<div role="alert" className="flex items-center gap-1.5 rounded-md bg-red-50 px-2.5 py-1.5">
-				<svg className="h-3.5 w-3.5 shrink-0 text-red-500" viewBox="0 0 16 16" fill="currentColor">
+			<div
+				role="alert"
+				className="flex items-center gap-1.5 rounded-md bg-red-50 px-2.5 py-1.5"
+			>
+				<svg
+					className="h-3.5 w-3.5 shrink-0 text-red-500"
+					viewBox="0 0 16 16"
+					fill="currentColor"
+				>
 					<path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 4a.75.75 0 0 0-1.5 0v3.25a.75.75 0 0 0 1.5 0V5zm-.75 6a.875.875 0 1 0 0-1.75A.875.875 0 0 0 7.25 11z" />
 				</svg>
 				<p className="text-xs text-red-600">
-					{saveError === 'limit_reached'
-						? '저장 한도(5개)에 도달했습니다.'
-						: '저장 중 오류가 발생했습니다.'}
+					{saveError === 'limit_reached' ? '저장 한도(5개)에 도달했습니다.' : '저장 중 오류가 발생했습니다.'}
 				</p>
 			</div>
 		);
@@ -58,7 +63,11 @@ function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
 	if (isSaved) {
 		return (
 			<div className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5">
-				<svg className="h-3.5 w-3.5 shrink-0 text-green-500" viewBox="0 0 16 16" fill="currentColor">
+				<svg
+					className="h-3.5 w-3.5 shrink-0 text-green-500"
+					viewBox="0 0 16 16"
+					fill="currentColor"
+				>
 					<path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.78 4.97a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-2-2a.75.75 0 1 1 1.06-1.06l1.47 1.47 3.97-3.97a.75.75 0 0 1 1.06 0z" />
 				</svg>
 				<p className="text-xs font-medium text-green-700">저장됨</p>
@@ -68,9 +77,24 @@ function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
 	if (isAutoSaving) {
 		return (
 			<div className="flex items-center gap-1.5 px-2.5 py-1.5">
-				<svg className="h-3.5 w-3.5 shrink-0 animate-spin text-zinc-400" viewBox="0 0 16 16" fill="none">
-					<circle className="opacity-25" cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" />
-					<path className="opacity-75" fill="currentColor" d="M8 2a6 6 0 0 1 6 6h-2a4 4 0 0 0-4-4V2z" />
+				<svg
+					className="h-3.5 w-3.5 shrink-0 animate-spin text-zinc-400"
+					viewBox="0 0 16 16"
+					fill="none"
+				>
+					<circle
+						className="opacity-25"
+						cx="8"
+						cy="8"
+						r="6"
+						stroke="currentColor"
+						strokeWidth="2"
+					/>
+					<path
+						className="opacity-75"
+						fill="currentColor"
+						d="M8 2a6 6 0 0 1 6 6h-2a4 4 0 0 0-4-4V2z"
+					/>
 				</svg>
 				<p className="text-xs text-zinc-400">저장 중...</p>
 			</div>
@@ -91,7 +115,19 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 	const fallbackRef = useRef<Konva.Stage | null>(null);
 	const resolvedStageRef = stageRef ?? fallbackRef;
 	const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-	const { gridSize, setGridSize, setGridSizeSymmetric, cellSize, setCellSize, patternTitle, setPatternTitle, difficulty, setDifficulty, materials, setMaterials } = useChartStore();
+	const {
+		gridSize,
+		setGridSize,
+		setGridSizeSymmetric,
+		cellSize,
+		setCellSize,
+		patternTitle,
+		setPatternTitle,
+		difficulty,
+		setDifficulty,
+		materials,
+		setMaterials,
+	} = useChartStore();
 	const { selectedSymbol, setSelectedSymbol, rotationalMode, shiftShapeGuide, openLoadDialog } = useUIStore();
 	const { saveCurrentPattern, currentPatternId, isAutoSaving } = usePatterns();
 
@@ -107,15 +143,14 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 
 	const handleSymbolSelect = useCallback(
 		(symbol: KnittingSymbol) => {
-			setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
+			if (symbol.id === EMPTY_SYMBOL_ID) {
+				setSelectedSymbol(null);
+			} else {
+				setSelectedSymbol(selectedSymbol?.id === symbol.id ? null : symbol);
+			}
 		},
 		[selectedSymbol, setSelectedSymbol],
 	);
-
-	const handleEmptyCellSelect = useCallback(() => {
-		setSelectedSymbol(null);
-	}, [setSelectedSymbol]);
-
 
 	const handlePatternTypeChange = useCallback(
 		(type: PatternType) => {
@@ -268,39 +303,15 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 					<div className="flex flex-col gap-3">
 						{SYMBOL_CATEGORY_ORDER.map((category) => {
 							const categorySymbols = symbols.filter((s) => s.category === category);
-							const colors = SYMBOL_CATEGORY_COLORS[category];
 							return (
 								<div key={category}>
 									<p className="mb-1.5 text-[10px] font-medium text-zinc-400">{SYMBOL_CATEGORY_LABELS[category]}</p>
 									<div className="grid grid-cols-3 gap-1.5">
-										{category === 'basic-structure' && (
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={handleEmptyCellSelect}
-												aria-label="빈 칸"
-												aria-pressed={selectedSymbol === null}
-												className={[
-													'flex-col h-14 w-full gap-0.5 py-1.5 px-1',
-													colors.bg,
-													colors.border,
-													colors.text,
-													selectedSymbol === null
-														? 'ring-2 ring-offset-1 ring-zinc-800 border-zinc-800 shadow-sm'
-														: 'hover:brightness-95 hover:bg-inherit',
-												].join(' ')}
-											>
-												<span className="font-mono text-xs font-bold leading-none">□</span>
-												<span className="text-[9px] leading-tight text-center line-clamp-2 opacity-70 px-0.5">
-													빈 칸
-												</span>
-											</Button>
-										)}
 										{categorySymbols.map((symbol) => (
 											<SymbolButton
 												key={symbol.id}
 												symbol={symbol}
-												isSelected={selectedSymbol?.id === symbol.id}
+												isSelected={symbol.id === EMPTY_SYMBOL_ID ? selectedSymbol === null : selectedSymbol?.id === symbol.id}
 												onSelect={handleSymbolSelect}
 											/>
 										))}
@@ -373,7 +384,11 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 			</div>
 
 			<div className="flex flex-col gap-2 border-t border-zinc-200 px-4 py-4">
-				<SaveStatus saveError={saveError} isSaved={isSaved} isAutoSaving={isAutoSaving} />
+				<SaveStatus
+					saveError={saveError}
+					isSaved={isSaved}
+					isAutoSaving={isAutoSaving}
+				/>
 				<Button
 					variant="default"
 					size="sm"
