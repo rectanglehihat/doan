@@ -25,92 +25,34 @@ description: DOAN TDD Red 단계 에이전트. 구현 전 실패하는 테스트
 
 ## 레이어별 테스트 전략
 
+자세한 코드 예제는 `docs/TDD.md` 참조.
+
 ### Atom (`ui/atoms/`)
-```tsx
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { ComponentName } from './ComponentName';
-
-describe('ComponentName', () => {
-  it('children을 렌더링한다', () => {
-    render(<ComponentName>텍스트</ComponentName>);
-    expect(screen.getByText('텍스트')).toBeInTheDocument();
-  });
-
-  it('variant=default일 때 기본 스타일 클래스를 가진다', () => { ... });
-  it('disabled 상태일 때 클릭 이벤트가 발생하지 않는다', async () => { ... });
-  it('onClick 핸들러를 호출한다', async () => { ... });
-});
-```
-
-**체크리스트:**
 - 기본 렌더링 (children, role, accessible name)
-- 각 variant/size별 클래스
-- disabled 상태
+- 각 variant/size별 클래스 적용 여부
+- disabled 상태 동작
 - 이벤트 핸들러 전달
 
 ### Molecule (`ui/molecules/`)
-```tsx
-describe('MoleculeName', () => {
-  it('구성 Atom들이 올바르게 렌더링된다', () => { ... });
-  it('선택 상태일 때 시각적 변화가 적용된다', () => { ... });
-  it('클릭 시 콜백에 올바른 값을 전달한다', async () => { ... });
-});
-```
+- 구성 Atom들 렌더링 확인
+- 상태 변화 시각적 반영
+- 콜백에 올바른 값 전달
 
 ### Organism (`editor/`, `pdf/`)
-```tsx
-describe('OrganismName', () => {
-  it('초기 상태를 렌더링한다', () => { ... });
-  it('핵심 사용자 인터랙션 1', async () => { ... });
-  it('핵심 사용자 인터랙션 2', async () => { ... });
-  it('에러 상태를 처리한다', () => { ... });
-});
-```
+- 초기 상태 렌더링
+- 핵심 사용자 인터랙션 1~3개
+- 에러 상태 처리
 
 ### Custom Hook (`hooks/`)
-```ts
-import { renderHook, act } from '@testing-library/react';
-import { useHookName } from './useHookName';
-
-describe('useHookName', () => {
-  it('초기 반환값을 검증한다', () => {
-    const { result } = renderHook(() => useHookName());
-    expect(result.current.value).toBe(initialValue);
-  });
-
-  it('action 호출 후 상태가 변경된다', () => {
-    const { result } = renderHook(() => useHookName());
-    act(() => { result.current.action(param); });
-    expect(result.current.value).toBe(newValue);
-  });
-});
-```
+- `renderHook` 사용, 초기 반환값 검증
+- 각 action 호출 후 상태 변화 확인
 
 ### Zustand Store (`store/`)
-```ts
-import { useStoreName } from './useStoreName';
-
-beforeEach(() => {
-  useStoreName.getState().reset(); // 테스트 간 격리 필수
-});
-
-describe('useStoreName', () => {
-  it('초기 상태를 반환한다', () => { ... });
-  it('action 호출 시 상태가 업데이트된다', () => { ... });
-});
-```
+- `beforeEach`에서 `reset()` 호출 (테스트 간 격리)
+- 각 action의 상태 변화 검증
 
 ### Util (`lib/utils/`)
-```ts
-import { utilFunction } from './util-file';
-
-describe('utilFunction', () => {
-  it('입력 A에 대해 출력 B를 반환한다', () => {
-    expect(utilFunction(inputA)).toBe(outputB);
-  });
-});
-```
+- 입력 → 출력 매핑 검증
 
 ## 테스트 작성 후
 

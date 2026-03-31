@@ -69,26 +69,7 @@ src/
 
 ## 3. 빌드/테스트
 
-### 개발 명령어
-
-```bash
-pnpm dev          # 개발 서버 실행
-pnpm build        # 프로덕션 빌드
-pnpm start        # 프로덕션 서버 실행
-pnpm lint         # ESLint 검사
-pnpm tsc --noEmit # 타입체크 (빌드 없이)
-pnpm test         # 단위·통합 테스트 실행
-```
-
-### 코드 변경 후 검증 순서
-
-구현 완료 후 pnpm 명령어를 직접 실행하지 않는다. 반드시 `/verify` 스킬을 호출해 통합 검증한다.
-
-```
-/verify  →  test → tsc → lint → build 순차 실행
-```
-
-- TDD 전략 및 레이어별 테스트 작성 방법 → @docs/TDD.md
+구현 완료 후 pnpm 명령어를 직접 실행하지 않는다. 반드시 `/verify` 스킬을 호출해 통합 검증한다 (`test → tsc → lint → build`). TDD 전략 → @docs/TDD.md
 
 ---
 
@@ -117,79 +98,19 @@ pnpm test         # 단위·통합 테스트 실행
 
 ### 네이밍
 
-| 대상               | 규칙                               | 예시                                                   |
-| ------------------ | ---------------------------------- | ------------------------------------------------------ |
-| 컴포넌트 파일·함수 | PascalCase                         | `KnittingChart.tsx`, `export function KnittingChart()` |
-| 훅                 | camelCase + `use` prefix           | `useChartEditor.ts`                                    |
-| 유틸·API 파일      | kebab-case                         | `export-pdf.ts`, `chart-api.ts`                        |
-| Zustand 스토어     | camelCase + `use` + `Store` suffix | `useChartStore.ts`                                     |
-| 타입·인터페이스    | PascalCase, 설명적 접미사          | `ChartCell`, `KnittingPattern`, `PdfOptions`           |
-| 상수 (원시값)      | SCREAMING_SNAKE_CASE               | `MAX_GRID_SIZE`, `DEFAULT_CELL_SIZE`                   |
-| 상수 (객체·배열)   | camelCase                          | `knittingSymbols`, `defaultChartConfig`                |
-| 이벤트 핸들러 prop | `on` prefix                        | `onCellClick`, `onExportPdf`                           |
-| 이벤트 핸들러 함수 | `handle` prefix                    | `handleCellClick`, `handleExportPdf`                   |
+- 컴포넌트 파일·함수: PascalCase (`KnittingChart.tsx`)
+- 훅: `use` prefix camelCase (`useChartEditor.ts`)
+- 유틸·API 파일: kebab-case (`export-pdf.ts`)
+- Zustand 스토어: `use` + `Store` suffix (`useChartStore.ts`)
+- 타입·인터페이스: PascalCase (`ChartCell`, `KnittingPattern`)
+- 상수(원시값): SCREAMING_SNAKE_CASE / 상수(객체·배열): camelCase
+- 이벤트 핸들러 prop: `on` prefix / 함수: `handle` prefix
 
-### TypeScript
+### TypeScript + 성능
 
-- `strict: true` 필수
-- 공통 타입은 `src/types/`에 정의
-- 모든 함수는 입력/출력 타입 명시
+- `strict: true`, 공통 타입은 `src/types/`, 모든 함수 타입 명시
+- Konva.js 컴포넌트: `React.memo` 필수 + `dynamic()` + `ssr: false`
+- 셀 핸들러: `useCallback` 필수 / 그리드 데이터 가공: `useMemo`
+- 큰 상수 배열 모듈 최상단 정의, `<img>` 대신 `next/image`
+- 코드 작성 전 관련 파일을 읽고 기존 패턴 파악 후 구현
 
-### 성능 최적화
-
-- Konva.js 캔버스 컴포넌트: `React.memo` 래핑 필수
-- 셀 클릭·드래그 핸들러: `useCallback` 필수
-- 그리드 데이터 가공(필터, 정렬, 변환): `useMemo` 적용
-- PDF 라이브러리(jsPDF, html2canvas): `dynamic()` lazy import
-- `<img>` 태그 직접 사용 금지 → Next.js `Image` 컴포넌트 사용
-- 큰 상수 배열(기호 목록 등): 모듈 최상단에 정의, 렌더 중 생성 금지
-- Suspense / streaming 적극 활용
-
-### AI 작업 가이드
-
-- 코드 작성 전 반드시 관련 파일을 읽고 기존 패턴 파악
-- 새로운 파일 생성 시 폴더 구조 규칙 준수
-- 불필요한 추상화·의존성 추가 금지
-- Next.js 16 변경사항은 `node_modules/next/dist/docs/`에서 확인 후 작성
-
----
-
-## 6. 에이전트 & 스킬 시스템
-
-모든 코드 작업은 역할별 에이전트와 스킬을 통해 실행한다.
-
-### 서브에이전트 (`.claude/agents/`)
-
-| 에이전트 | 역할 | 사용 시점 |
-|----------|------|-----------|
-| `architect` | 구조 설계, 계층 결정, 타입 설계 | 구현 전 설계 단계 |
-| `atom-implementer` | Atom/Molecule 컴포넌트 구현 | `ui/atoms/`, `ui/molecules/` 파일 작성 |
-| `editor-implementer` | Editor/PDF Organism 구현 | `editor/`, `pdf/` 파일 작성, Konva.js 포함 |
-| `store-hook-implementer` | Zustand 스토어, 커스텀 훅 구현 | `store/`, `hooks/` 파일 작성 |
-| `test-writer` | TDD Red 단계 테스트 먼저 작성 | 모든 구현 전 테스트 파일 선행 작성 |
-| `code-reviewer` | 코드 품질 검토, 규칙 위반 확인 | 구현 완료 후 검증 |
-
-### 스킬 (`.agents/skills/` + `~/.claude/skills/`)
-
-| 스킬 | 트리거 | 설명 |
-|------|--------|------|
-| `/tdd-component` | "새 컴포넌트 만들어" | architect → test-writer → implementer → reviewer 전체 워크플로우 |
-| `/tdd-hook` | "새 훅/스토어 만들어" | architect → test-writer → store-hook-implementer → reviewer |
-| `/modify-component` | "컴포넌트 수정해", "버그 고쳐줘", "리팩터해줘" | 기존 컴포넌트 영향 분석 → 테스트 업데이트 → 수정 → 검증 |
-| `/modify-store` | "스토어 수정해", "훅에 기능 추가해" | 기존 스토어/훅 분석 → 테스트 업데이트 → 수정 → 검증 |
-| `/verify` | "검증해", "테스트 돌려" | test → tsc → lint → build 순차 실행 |
-| `/new-feature` | "기능 구현해", "TODO 항목 구현" | 설계부터 검증까지 전체 사이클 |
-| `/auto-commit` | "커밋해" | 변경사항 분석 후 한국어 커밋 메시지 생성 |
-
-### 권장 작업 흐름
-
-```
-새 기능 요청
-  → /new-feature 스킬
-    → architect 에이전트 (설계)
-    → test-writer 에이전트 (Red)
-    → 구현 에이전트 (Green)
-    → /verify 스킬 (검증)
-    → code-reviewer 에이전트 (리뷰)
-    → /auto-commit 스킬 (커밋)
-```

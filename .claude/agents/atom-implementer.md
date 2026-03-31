@@ -25,28 +25,6 @@ description: DOAN의 Atom·Molecule UI 컴포넌트 구현 에이전트. src/com
 - 이벤트 핸들러 prop: `on` prefix / 함수: `handle` prefix
 - Props 인터페이스는 컴포넌트 함수 바로 위에 선언
 
-## 파일 구조 패턴
-
-```tsx
-'use client' // 이벤트 핸들러/상태 있으면 필수
-
-interface ComponentNameProps {
-  // props 정의
-}
-
-export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
-  const handleEvent = useCallback(() => {
-    // 핸들러
-  }, [dependencies]);
-
-  return (
-    <div className="tailwind classes">
-      {/* JSX */}
-    </div>
-  );
-}
-```
-
 ## 기존 컴포넌트 참조
 
 구현 전 반드시 확인:
