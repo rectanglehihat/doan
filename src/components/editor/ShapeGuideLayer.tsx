@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Layer, Line } from 'react-konva';
-import { CollapsedBlock, ShapeGuide } from '@/types/knitting';
+import { CollapsedBlock, CollapsedColumnBlock, ShapeGuide } from '@/types/knitting';
 
 interface Transform {
 	x: number;
@@ -20,6 +20,7 @@ interface ShapeGuideLayerProps {
 	onStrokeClick?: (index: number) => void;
 	isDrawMode?: boolean;
 	collapsedBlocks?: CollapsedBlock[];
+	collapsedColumnBlocks?: CollapsedColumnBlock[];
 }
 
 // grid 좌표계의 row를 중략 반영한 시각적 Y 픽셀 좌표로 변환
@@ -38,11 +39,28 @@ function getVisualRowY(
 	return (row - skippedRows) * cellSize;
 }
 
-// stroke [col0,row0,col1,row1,...] 를 중략 반영한 visible segment 배열로 변환
+// grid 좌표계의 col을 중략 반영한 시각적 X 픽셀 좌표로 변환
+// col이 중략 범위 내이면 null 반환
+function getVisualColX(
+	col: number,
+	sortedColumnBlocks: CollapsedColumnBlock[],
+	cellSize: number,
+): number | null {
+	let skippedCols = 0;
+	for (const block of sortedColumnBlocks) {
+		if (block.startCol > col) break;
+		if (col >= block.startCol && col <= block.endCol) return null;
+		skippedCols += block.endCol - block.startCol;
+	}
+	return (col - skippedCols) * cellSize;
+}
+
+// stroke [col0,row0,col1,row1,...] 를 행/열 중략 반영한 visible segment 배열로 변환
 // 각 segment는 픽셀 좌표. 2점 미만(4coords 미만)인 segment는 제외됨.
 function buildVisibleSegments(
 	stroke: number[],
-	sortedBlocks: CollapsedBlock[],
+	sortedRowBlocks: CollapsedBlock[],
+	sortedColBlocks: CollapsedColumnBlock[],
 	cellSize: number,
 ): number[][] {
 	const segments: number[][] = [];
@@ -51,13 +69,14 @@ function buildVisibleSegments(
 	for (let i = 0; i < stroke.length; i += 2) {
 		const col = stroke[i];
 		const row = stroke[i + 1];
-		const visualY = getVisualRowY(row, sortedBlocks, cellSize);
+		const visualY = getVisualRowY(row, sortedRowBlocks, cellSize);
+		const visualX = getVisualColX(col, sortedColBlocks, cellSize);
 
-		if (visualY === null) {
+		if (visualY === null || visualX === null) {
 			if (current.length >= 4) segments.push(current);
 			current = [];
 		} else {
-			current.push(col * cellSize, visualY);
+			current.push(visualX, visualY);
 		}
 	}
 
@@ -75,48 +94,48 @@ export function ShapeGuideLayer({
 	onStrokeClick,
 	isDrawMode = false,
 	collapsedBlocks = [],
+	collapsedColumnBlocks = [],
 }: ShapeGuideLayerProps) {
 	const sortedBlocks = useMemo(
 		() => [...collapsedBlocks].sort((a, b) => a.startRow - b.startRow),
 		[collapsedBlocks],
 	);
 
+	const sortedColumnBlocks = useMemo(
+		() => [...collapsedColumnBlocks].sort((a, b) => a.startCol - b.startCol),
+		[collapsedColumnBlocks],
+	);
+
+	const hasCollapsed = sortedBlocks.length > 0 || sortedColumnBlocks.length > 0;
+
 	// shapeGuide.strokes → visible segments with originalIndex
 	const visibleStrokes = useMemo(() => {
 		const result: { points: number[]; originalIndex: number }[] = [];
 		for (let i = 0; i < shapeGuide.strokes.length; i++) {
-			const segments =
-				sortedBlocks.length === 0
-					? [shapeGuide.strokes[i].map((v) => v * cellSize)]
-					: buildVisibleSegments(shapeGuide.strokes[i], sortedBlocks, cellSize);
+			const segments = hasCollapsed
+				? buildVisibleSegments(shapeGuide.strokes[i], sortedBlocks, sortedColumnBlocks, cellSize)
+				: [shapeGuide.strokes[i].map((v) => v * cellSize)];
 			for (const pts of segments) {
 				result.push({ points: pts, originalIndex: i });
 			}
 		}
 		return result;
-	}, [shapeGuide.strokes, sortedBlocks, cellSize]);
+	}, [shapeGuide.strokes, sortedBlocks, sortedColumnBlocks, hasCollapsed, cellSize]);
 
 	// currentStroke → visible segments (픽셀 좌표)
-	const visibleCurrentSegments = useMemo(
-		() =>
-			sortedBlocks.length === 0
-				? currentStroke.length >= 4
-					? [currentStroke.map((v) => v * cellSize)]
-					: []
-				: buildVisibleSegments(currentStroke, sortedBlocks, cellSize),
-		[currentStroke, sortedBlocks, cellSize],
-	);
+	const visibleCurrentSegments = useMemo(() => {
+		if (!hasCollapsed) {
+			return currentStroke.length >= 4 ? [currentStroke.map((v) => v * cellSize)] : [];
+		}
+		return buildVisibleSegments(currentStroke, sortedBlocks, sortedColumnBlocks, cellSize);
+	}, [currentStroke, sortedBlocks, sortedColumnBlocks, hasCollapsed, cellSize]);
 
 	// eraseStroke → visible segments (픽셀 좌표)
-	const visibleEraseSegments = useMemo(
-		() =>
-			eraseStroke && eraseStroke.length >= 4
-				? sortedBlocks.length === 0
-					? [eraseStroke.map((v) => v * cellSize)]
-					: buildVisibleSegments(eraseStroke, sortedBlocks, cellSize)
-				: [],
-		[eraseStroke, sortedBlocks, cellSize],
-	);
+	const visibleEraseSegments = useMemo(() => {
+		if (!eraseStroke || eraseStroke.length < 4) return [];
+		if (!hasCollapsed) return [eraseStroke.map((v) => v * cellSize)];
+		return buildVisibleSegments(eraseStroke, sortedBlocks, sortedColumnBlocks, cellSize);
+	}, [eraseStroke, sortedBlocks, sortedColumnBlocks, hasCollapsed, cellSize]);
 
 	return (
 		<Layer

@@ -1055,6 +1055,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					onStrokeClick={handleStrokeClick}
 					isDrawMode={isShapeGuideDrawMode}
 					collapsedBlocks={collapsedBlocks ?? []}
+				collapsedColumnBlocks={collapsedColumnBlocks ?? []}
 				/>
 			)}
 		</Stage>
