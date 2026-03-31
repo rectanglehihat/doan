@@ -653,9 +653,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 						setCurrentEraseStroke(init);
 					}
 				} else if (isShapeGuideDrawMode) {
-					if (e.target.name() === 'shapeGuideStroke') {
-						return;
-					}
 					setSelectedStrokeIndex(null);
 					const pt = getGridPointer();
 					if (pt) {
