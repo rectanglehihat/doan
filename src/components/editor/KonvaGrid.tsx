@@ -653,9 +653,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 						setCurrentEraseStroke(init);
 					}
 				} else if (isShapeGuideDrawMode) {
-					if (e.target.name() === 'shapeGuideStroke') {
-						return;
-					}
 					setSelectedStrokeIndex(null);
 					const pt = getGridPointer();
 					if (pt) {
@@ -1058,6 +1055,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					onStrokeClick={handleStrokeClick}
 					isDrawMode={isShapeGuideDrawMode}
 					collapsedBlocks={collapsedBlocks ?? []}
+				collapsedColumnBlocks={collapsedColumnBlocks ?? []}
 				/>
 			)}
 		</Stage>
