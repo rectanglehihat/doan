@@ -32,8 +32,8 @@ function getVisualRowY(
 ): number | null {
 	let skippedRows = 0;
 	for (const block of sortedBlocks) {
-		if (block.startRow > row) break;
-		if (row >= block.startRow && row <= block.endRow) return null;
+		if (block.startRow >= row) break;
+		if (row > block.startRow && row < block.endRow + 1) return null;
 		skippedRows += block.endRow - block.startRow;
 	}
 	return (row - skippedRows) * cellSize;
@@ -48,8 +48,8 @@ function getVisualColX(
 ): number | null {
 	let skippedCols = 0;
 	for (const block of sortedColumnBlocks) {
-		if (block.startCol > col) break;
-		if (col >= block.startCol && col <= block.endCol) return null;
+		if (block.startCol >= col) break;
+		if (col > block.startCol && col < block.endCol + 1) return null;
 		skippedCols += block.endCol - block.startCol;
 	}
 	return (col - skippedCols) * cellSize;

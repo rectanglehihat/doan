@@ -107,6 +107,7 @@ describe('ShapeGuideLayer', () => {
 		);
 		expect(getAllByTestId('konva-line')).toHaveLength(2);
 	});
+
 });
 
 describe('ShapeGuideLayer with collapsedBlocks', () => {
@@ -201,5 +202,43 @@ describe('ShapeGuideLayer with collapsedBlocks', () => {
 			/>,
 		);
 		expect(getAllByTestId('konva-line')).toHaveLength(2);
+	});
+
+	it('stroke 점이 중략 startRow 경계에 있으면 중략 전 segment에 포함된다', () => {
+		// row=4는 collapsedBlocks startRow → 바로 위 격자의 하단 경계이므로 visible
+		const shapeGuide: ShapeGuide = { strokes: [[0, 2, 0, 4]] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedBlocks={collapsedBlocks}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(1);
+	});
+});
+
+describe('ShapeGuideLayer with collapsedColumnBlocks', () => {
+	const collapsedColumnBlocks: import('@/types/knitting').CollapsedColumnBlock[] = [
+		{ id: 'c1', startCol: 4, endCol: 6 },
+	];
+	const cellSize = 15;
+	const transform = { x: 0, y: 0, scale: 1 };
+
+	it('stroke 점이 중략 startCol 경계에 있으면 중략 전 segment에 포함된다', () => {
+		// col=4는 collapsedColumnBlocks startCol → 바로 왼쪽 격자의 우측 경계이므로 visible
+		const shapeGuide: ShapeGuide = { strokes: [[2, 0, 4, 0]] };
+		const { getAllByTestId } = render(
+			<ShapeGuideLayer
+				shapeGuide={shapeGuide}
+				currentStroke={[]}
+				cellSize={cellSize}
+				transform={transform}
+				collapsedColumnBlocks={collapsedColumnBlocks}
+			/>,
+		);
+		expect(getAllByTestId('konva-line')).toHaveLength(1);
 	});
 });
