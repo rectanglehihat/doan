@@ -70,7 +70,7 @@
   - [x] `Ctrl+S`: 저장
 - [x] 그리드 크기 변경 시 기존 셀 데이터 유지 로직 (`useChartStore.setGridSize` 내 처리)
 - [x] 도안 초기화 기능 (`ConfirmDialog` 컴포넌트 + `useUIStore.isResetDialogOpen`)
-- [x] 대칭 모드 (점대칭/회전 대칭)
+- [x] 대칭 모드
   - `useUIStore`에 `isRotationalMode: boolean` 상태 추가
   - 캔버스를 절반으로 분할 — 편집 가능 영역(절반) + 수정 불가 미리보기 영역(나머지 절반)
   - 미리보기 영역: 편집 영역을 중심점 기준 180° 회전한 결과를 반투명 오버레이로 실시간 표시
@@ -83,6 +83,10 @@
   - `replaceShapeGuideStroke` 액션으로 스트로크 분할 교체
   - `splitStrokeByErasePath` / `splitStrokeByPoint` 헬퍼 함수로 세그먼트 분리
   - `currentEraseStrokeRef`로 stale closure 없이 최신 erase 경로 참조
+- [ ] 셀에 색상 추가 기능
+  - 컬러 피커를 제공해 사용자 정의 색상 지원
+  - 툴바 위치
+  - 컬러 피커 선택 시 마우스는 붓 모양으로 변환
 
 ### 1-6. 저장 및 불러오기
 
@@ -148,20 +152,20 @@
 
 ### Organisms (`src/components/editor/`)
 
-| 컴포넌트          | 상태   | 테스트 |
-| ----------------- | ------ | ------ |
-| `ChartCanvas`     | 완료   | 미작성 |
-| `KonvaGrid`       | 완료   | 미작성 |
-| `EditorSidebar`   | 완료   | 2개    |
-| `ShapeGuideLayer` | 완료   | 7개    |
-| `Toolbar`         | 완료   | 23개   |
-| `LoadDialog`      | 완료   | 미작성 |
+| 컴포넌트          | 상태 | 테스트 |
+| ----------------- | ---- | ------ |
+| `ChartCanvas`     | 완료 | 미작성 |
+| `KonvaGrid`       | 완료 | 미작성 |
+| `EditorSidebar`   | 완료 | 2개    |
+| `ShapeGuideLayer` | 완료 | 7개    |
+| `Toolbar`         | 완료 | 23개   |
+| `LoadDialog`      | 완료 | 미작성 |
 
 ### Organisms (`src/components/pdf/`)
 
-| 컴포넌트     | 상태   | 테스트 |
-| ------------ | ------ | ------ |
-| `PdfPreview` | 완료   | 7개    |
+| 컴포넌트     | 상태 | 테스트 |
+| ------------ | ---- | ------ |
+| `PdfPreview` | 완료 | 7개    |
 
 ---
 
