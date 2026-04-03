@@ -143,7 +143,7 @@ export function EditorClient() {
 					rotationalMode={rotationalMode}
 					onRotationalModeChange={handleRotationalModeChange}
 				/>
-				<div className="flex-1 overflow-auto p-8">
+				<div className="flex-1 overflow-auto">
 					<ChartCanvas
 						onPaintStart={beginBatch}
 						onPaintEnd={endBatch}
