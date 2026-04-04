@@ -34,7 +34,6 @@ export function EditorClient() {
 		rotationalMode,
 		setRotationalMode,
 		selectedColor,
-		isColorMode,
 		setSelectedColor,
 		recentColors,
 		addRecentColor,
@@ -149,7 +148,6 @@ export function EditorClient() {
 					onShapeGuideDrawModeChange={handleShapeGuideDrawModeChange}
 					isShapeGuideEraseMode={isShapeGuideEraseMode}
 					onShapeGuideEraseModeChange={handleShapeGuideEraseModeChange}
-					hasShapeGuide={(shapeGuide?.strokes.length ?? 0) > 0}
 					onShapeGuideClear={handleShapeGuideClear}
 					isSelectionMode={isSelectionMode}
 					onSelectionModeChange={handleSelectionModeChange}
@@ -157,7 +155,6 @@ export function EditorClient() {
 					onRotationalModeChange={handleRotationalModeChange}
 					selectedColor={selectedColor}
 					onColorChange={handleColorChange}
-					isColorMode={isColorMode}
 					recentColors={recentColors}
 				/>
 				<div className="flex-1 overflow-auto">

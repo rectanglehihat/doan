@@ -15,7 +15,6 @@ interface ToolbarProps {
 	onShapeGuideDrawModeChange: (active: boolean) => void;
 	isShapeGuideEraseMode: boolean;
 	onShapeGuideEraseModeChange: (active: boolean) => void;
-	hasShapeGuide: boolean;
 	onShapeGuideClear: () => void;
 	isSelectionMode: boolean;
 	onSelectionModeChange: (active: boolean) => void;
@@ -23,7 +22,6 @@ interface ToolbarProps {
 	onRotationalModeChange: (mode: RotationalMode) => void;
 	selectedColor: string | null;
 	onColorChange: (color: string | null) => void;
-	isColorMode: boolean;
 	recentColors: string[];
 }
 
@@ -37,7 +35,6 @@ export function Toolbar({
 	onShapeGuideDrawModeChange,
 	isShapeGuideEraseMode,
 	onShapeGuideEraseModeChange,
-	hasShapeGuide,
 	onShapeGuideClear,
 	isSelectionMode,
 	onSelectionModeChange,
@@ -45,7 +42,6 @@ export function Toolbar({
 	onRotationalModeChange,
 	selectedColor,
 	onColorChange,
-	isColorMode,
 	recentColors,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
@@ -178,27 +174,23 @@ export function Toolbar({
 				>
 					형태선 그리기
 				</Button>
-				{hasShapeGuide && (
-					<>
-						<Button
-							variant={isShapeGuideEraseMode ? 'default' : 'ghost'}
-							size="sm"
-							onClick={handleShapeGuideEraseToggle}
-							aria-label="형태선 지우개"
-							aria-pressed={isShapeGuideEraseMode}
-						>
-							지우개
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleShapeGuideClear}
-							aria-label="형태선 전체 지우기"
-						>
-							전체 지우기
-						</Button>
-					</>
-				)}
+				<Button
+					variant={isShapeGuideEraseMode ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleShapeGuideEraseToggle}
+					aria-label="형태선 지우개"
+					aria-pressed={isShapeGuideEraseMode}
+				>
+					지우개
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={handleShapeGuideClear}
+					aria-label="형태선 전체 지우기"
+				>
+					전체 지우기
+				</Button>
 			</div>
 
 			<div className="h-5 w-px bg-zinc-200" />
@@ -210,16 +202,14 @@ export function Toolbar({
 					onColorChange={onColorChange}
 					recentColors={recentColors}
 				/>
-				{isColorMode && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleColorClear}
-						aria-label="색상 지우기"
-					>
-						지우기
-					</Button>
-				)}
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={handleColorClear}
+					aria-label="색상 지우기"
+				>
+					지우기
+				</Button>
 			</div>
 
 			{/* 새 도안 */}

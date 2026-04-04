@@ -12,7 +12,6 @@ const defaultProps = {
 	onShapeGuideDrawModeChange: vi.fn(),
 	isShapeGuideEraseMode: false,
 	onShapeGuideEraseModeChange: vi.fn(),
-	hasShapeGuide: false,
 	onShapeGuideClear: vi.fn(),
 	isSelectionMode: false,
 	onSelectionModeChange: vi.fn(),
@@ -20,7 +19,6 @@ const defaultProps = {
 	onRotationalModeChange: vi.fn(),
 	selectedColor: null,
 	onColorChange: vi.fn(),
-	isColorMode: false,
 	recentColors: [],
 };
 
@@ -101,19 +99,13 @@ describe('Toolbar', () => {
 			expect(screen.getByRole('button', { name: '형태선 그리기' })).toBeInTheDocument();
 		});
 
-		it('hasShapeGuide=false이면 지우개, 전체 지우기 버튼이 없다', () => {
-			render(<Toolbar {...defaultProps} hasShapeGuide={false} />);
-			expect(screen.queryByRole('button', { name: '형태선 지우개' })).not.toBeInTheDocument();
-			expect(screen.queryByRole('button', { name: '형태선 전체 지우기' })).not.toBeInTheDocument();
-		});
-
-		it('hasShapeGuide=true이면 지우개 버튼이 표시된다', () => {
-			render(<Toolbar {...defaultProps} hasShapeGuide={true} />);
+		it('지우개 버튼을 항상 표시한다', () => {
+			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByRole('button', { name: '형태선 지우개' })).toBeInTheDocument();
 		});
 
-		it('hasShapeGuide=true이면 전체 지우기 버튼이 표시된다', () => {
-			render(<Toolbar {...defaultProps} hasShapeGuide={true} />);
+		it('전체 지우기 버튼을 항상 표시한다', () => {
+			render(<Toolbar {...defaultProps} />);
 			expect(screen.getByRole('button', { name: '형태선 전체 지우기' })).toBeInTheDocument();
 		});
 
@@ -131,19 +123,19 @@ describe('Toolbar', () => {
 
 		it('형태선 지우개 버튼 클릭 시 onShapeGuideEraseModeChange를 호출한다', async () => {
 			const handleEraseModeChange = vi.fn();
-			render(<Toolbar {...defaultProps} hasShapeGuide={true} isShapeGuideEraseMode={false} onShapeGuideEraseModeChange={handleEraseModeChange} />);
+			render(<Toolbar {...defaultProps} isShapeGuideEraseMode={false} onShapeGuideEraseModeChange={handleEraseModeChange} />);
 			await userEvent.click(screen.getByRole('button', { name: '형태선 지우개' }));
 			expect(handleEraseModeChange).toHaveBeenCalledWith(true);
 		});
 
 		it('isShapeGuideEraseMode=true이면 지우개 버튼이 활성(aria-pressed) 상태이다', () => {
-			render(<Toolbar {...defaultProps} hasShapeGuide={true} isShapeGuideEraseMode={true} />);
+			render(<Toolbar {...defaultProps} isShapeGuideEraseMode={true} />);
 			expect(screen.getByRole('button', { name: '형태선 지우개' })).toHaveAttribute('aria-pressed', 'true');
 		});
 
 		it('전체 지우기 버튼 클릭 시 onShapeGuideClear를 호출한다', async () => {
 			const handleClear = vi.fn();
-			render(<Toolbar {...defaultProps} hasShapeGuide={true} onShapeGuideClear={handleClear} />);
+			render(<Toolbar {...defaultProps} onShapeGuideClear={handleClear} />);
 			await userEvent.click(screen.getByRole('button', { name: '형태선 전체 지우기' }));
 			expect(handleClear).toHaveBeenCalledTimes(1);
 		});
