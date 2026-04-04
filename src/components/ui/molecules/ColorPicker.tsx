@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { hexToHsv, hsvToHex, isValidHex } from '@/lib/utils/color-utils';
+import { Button } from '@/components/ui/atoms/Button';
+import { Input } from '@/components/ui/atoms/Input';
 
 interface ColorPickerProps {
 	selectedColor: string | null;
@@ -178,16 +180,14 @@ export function ColorPicker({
 			className={cn('relative inline-block', className)}
 		>
 			{/* Trigger Button */}
-			<button
+			<Button
 				type="button"
 				aria-label="색상 선택"
 				disabled={disabled}
 				onClick={handleTriggerClick}
-				className={cn(
-					'flex items-center gap-1.5 h-8 px-2 rounded bg-white hover:bg-zinc-50 text-xs text-zinc-700 transition-colors',
-					'disabled:pointer-events-none disabled:opacity-50',
-					isOpen && 'ring-2 ring-zinc-900 ring-offset-1',
-				)}
+				variant="ghost"
+				size="sm"
+				className={cn('gap-1.5 bg-white text-zinc-700 ', isOpen && 'ring-2 ring-zinc-900 ring-offset-1')}
 			>
 				<span
 					className="w-4 h-4 rounded-sm border border-zinc-300 shrink-0"
@@ -195,7 +195,7 @@ export function ColorPicker({
 					aria-hidden="true"
 				/>
 				색상
-			</button>
+			</Button>
 
 			{/* Popup */}
 			{isOpen && (
@@ -247,12 +247,12 @@ export function ColorPicker({
 					<div>
 						<div className="text-[10px] font-medium text-zinc-400 mb-1.5 tracking-widest">HEX</div>
 						<div className="flex items-center gap-2">
-							<input
+							<Input
 								type="text"
 								value={hexInput}
 								onChange={handleHexChange}
 								onBlur={handleHexBlur}
-								className="flex-1 h-10 px-3 border border-zinc-200 rounded bg-zinc-50 text-sm font-mono outline-none focus:ring-2 focus:ring-zinc-400"
+								className="flex-1 bg-zinc-50 font-mono border-zinc-200 focus-visible:ring-zinc-400"
 								maxLength={7}
 							/>
 							<div
@@ -269,13 +269,14 @@ export function ColorPicker({
 							<div className="text-[10px] font-medium text-zinc-400 mb-1.5 tracking-widest">RECENT COLORS</div>
 							<div className="flex gap-1 flex-wrap">
 								{recentColors.map((color) => (
-									<button
+									<Button
 										key={color}
 										type="button"
+										variant="ghost"
 										aria-label={`최근 색상 ${color}`}
 										data-color={color}
 										onClick={handleRecentColorClick}
-										className="w-8 h-8 rounded border border-zinc-200 hover:ring-2 hover:ring-zinc-400 transition-all"
+										className="w-8 h-8 p-0 rounded border border-zinc-200 hover:ring-2 hover:ring-zinc-400 transition-all"
 										style={{ backgroundColor: color }}
 									/>
 								))}
