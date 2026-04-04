@@ -16,6 +16,7 @@ export function EditorClient() {
 	const stageRef = useRef<Konva.Stage | null>(null);
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
 	const reset = useChartStore((state) => state.reset);
+	const clearAllColors = useChartStore((state) => state.clearAllColors);
 	const {
 		isResetDialogOpen,
 		openResetDialog,
@@ -117,6 +118,10 @@ export function EditorClient() {
 		[setSelectedColor, addRecentColor],
 	);
 
+	const handleColorClear = useCallback(() => {
+		clearAllColors();
+	}, [clearAllColors]);
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -155,6 +160,7 @@ export function EditorClient() {
 					onRotationalModeChange={handleRotationalModeChange}
 					selectedColor={selectedColor}
 					onColorChange={handleColorChange}
+					onColorClear={handleColorClear}
 					recentColors={recentColors}
 				/>
 				<div className="flex-1 overflow-auto">

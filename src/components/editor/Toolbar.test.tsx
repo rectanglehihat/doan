@@ -19,6 +19,7 @@ const defaultProps = {
 	onRotationalModeChange: vi.fn(),
 	selectedColor: null,
 	onColorChange: vi.fn(),
+	onColorClear: vi.fn(),
 	recentColors: [],
 };
 
@@ -138,6 +139,13 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} onShapeGuideClear={handleClear} />);
 			await userEvent.click(screen.getByRole('button', { name: '형태선 전체 지우기' }));
 			expect(handleClear).toHaveBeenCalledTimes(1);
+		});
+
+		it('색상 전체 지우기 버튼 클릭 시 onColorClear를 호출한다', async () => {
+			const handleColorClear = vi.fn();
+			render(<Toolbar {...defaultProps} onColorClear={handleColorClear} />);
+			await userEvent.click(screen.getByRole('button', { name: '색상 전체 지우기' }));
+			expect(handleColorClear).toHaveBeenCalledTimes(1);
 		});
 
 		it('선택 버튼을 렌더링한다', () => {

@@ -300,6 +300,27 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('clearAllColors', () => {
+		it('모든 셀의 color를 null로 변경한다', () => {
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			useChartStore.getState().setCellColor(1, 1, '#00FF00');
+			useChartStore.getState().clearAllColors();
+			const { cells } = useChartStore.getState();
+			cells.forEach((row) => {
+				row.forEach((cell) => {
+					expect(cell.color).toBeNull();
+				});
+			});
+		});
+
+		it('clearAllColors 호출 시 symbolId는 변경되지 않는다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			useChartStore.getState().clearAllColors();
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+		});
+	});
+
 	describe('setCellColor', () => {
 		it('setCellColor(0, 0, "#FF0000") 호출 시 해당 셀의 color가 "#FF0000"로 변경된다', () => {
 			useChartStore.getState().setCellColor(0, 0, '#FF0000');
