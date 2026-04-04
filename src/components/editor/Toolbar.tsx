@@ -88,6 +88,10 @@ export function Toolbar({
 		onRotationalModeChange(rotationalMode === 'both' ? 'none' : 'both');
 	}, [onRotationalModeChange, rotationalMode]);
 
+	const handleColorClear = useCallback(() => {
+		onColorChange(null);
+	}, [onColorChange]);
+
 	return (
 		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
 			{/* 실행 취소 / 다시 실행 */}
@@ -200,11 +204,23 @@ export function Toolbar({
 			<div className="h-5 w-px bg-zinc-200" />
 
 			{/* 색상 */}
-			<ColorPicker
-				selectedColor={selectedColor}
-				onColorChange={onColorChange}
-				recentColors={recentColors}
-			/>
+			<div className="flex items-center gap-1">
+				<ColorPicker
+					selectedColor={selectedColor}
+					onColorChange={onColorChange}
+					recentColors={recentColors}
+				/>
+				{isColorMode && (
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={handleColorClear}
+						aria-label="색상 지우기"
+					>
+						지우기
+					</Button>
+				)}
+			</div>
 
 			{/* 새 도안 */}
 			<div className="ml-auto">
