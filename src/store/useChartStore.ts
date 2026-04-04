@@ -5,12 +5,12 @@ const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
 const DEFAULT_CELL_SIZE = 15;
 
 function createEmptyGrid(rows: number, cols: number): ChartCell[][] {
-	return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ symbolId: null })));
+	return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ symbolId: null, color: null })));
 }
 
 function resizeGrid(prevCells: ChartCell[][], rows: number, cols: number): ChartCell[][] {
 	return Array.from({ length: rows }, (_, rowIdx) =>
-		Array.from({ length: cols }, (_, colIdx) => prevCells[rowIdx]?.[colIdx] ?? { symbolId: null }),
+		Array.from({ length: cols }, (_, colIdx) => prevCells[rowIdx]?.[colIdx] ?? { symbolId: null, color: null }),
 	);
 }
 
@@ -33,7 +33,7 @@ function resizeGridSymmetric(
 		Array.from({ length: cols }, (_, colIdx) => {
 			const srcRow = rowIdx - rowOffset;
 			const srcCol = colIdx - colOffset;
-			return prevCells[srcRow]?.[srcCol] ?? { symbolId: null };
+			return prevCells[srcRow]?.[srcCol] ?? { symbolId: null, color: null };
 		}),
 	);
 }
@@ -47,6 +47,7 @@ export interface ChartState {
 	collapsedBlocks: CollapsedBlock[];
 	collapsedColumnBlocks: CollapsedColumnBlock[];
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
+	setCellColor: (row: number, col: number, color: string | null) => void;
 	setCells: (cells: ChartCell[][]) => void;
 	setGridSize: (gridSize: GridSize) => void;
 	setGridSizeSymmetric: (gridSize: GridSize, mode: RotationalMode) => void;
@@ -95,7 +96,15 @@ export const useChartStore = create<ChartState>((set, get) => ({
 	setCellSymbol: (row, col, symbolId) =>
 		set((state) => {
 			const cells = state.cells.map((r, rIdx) =>
-				r.map((cell, cIdx) => (rIdx === row && cIdx === col ? { symbolId } : cell)),
+				r.map((cell, cIdx) => (rIdx === row && cIdx === col ? { ...cell, symbolId } : cell)),
+			);
+			return { cells };
+		}),
+
+	setCellColor: (row, col, color) =>
+		set((state) => {
+			const cells = state.cells.map((r, rIdx) =>
+				r.map((cell, cIdx) => (rIdx === row && cIdx === col ? { ...cell, color } : cell)),
 			);
 			return { cells };
 		}),

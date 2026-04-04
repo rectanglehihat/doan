@@ -14,7 +14,7 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 		patternType: 'knitting',
 		gridSize: { rows: 10, cols: 10 },
 		cells: Array.from({ length: 10 }, () =>
-			Array.from({ length: 10 }, () => ({ symbolId: null })),
+			Array.from({ length: 10 }, () => ({ symbolId: null, color: null })),
 		),
 		collapsedBlocks: [],
 		collapsedColumnBlocks: [],

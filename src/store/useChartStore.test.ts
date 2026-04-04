@@ -42,6 +42,15 @@ describe('useChartStore', () => {
 				});
 			});
 		});
+
+		it('초기 그리드의 모든 셀에 color: null이 포함된다', () => {
+			const { cells } = useChartStore.getState();
+			cells.forEach((row) => {
+				row.forEach((cell) => {
+					expect(cell.color).toBeNull();
+				});
+			});
+		});
 	});
 
 	describe('setCellSymbol', () => {
@@ -288,6 +297,37 @@ describe('useChartStore', () => {
 
 			expect(useChartStore.getState().difficulty).toBe(2);
 			expect(useChartStore.getState().materials).toBe('대바늘 3mm');
+		});
+	});
+
+	describe('setCellColor', () => {
+		it('setCellColor(0, 0, "#FF0000") 호출 시 해당 셀의 color가 "#FF0000"로 변경된다', () => {
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			expect(useChartStore.getState().cells[0][0].color).toBe('#FF0000');
+		});
+
+		it('setCellColor(0, 0, null) 호출 시 해당 셀의 color가 null로 변경된다', () => {
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			useChartStore.getState().setCellColor(0, 0, null);
+			expect(useChartStore.getState().cells[0][0].color).toBeNull();
+		});
+
+		it('setCellColor 호출 시 symbolId는 변경되지 않는다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+		});
+
+		it('reset() 후 모든 셀의 color가 null이다', () => {
+			useChartStore.getState().setCellColor(0, 0, '#FF0000');
+			useChartStore.getState().setCellColor(1, 1, '#00FF00');
+			useChartStore.getState().reset();
+			const { cells } = useChartStore.getState();
+			cells.forEach((row) => {
+				row.forEach((cell) => {
+					expect(cell.color).toBeNull();
+				});
+			});
 		});
 	});
 

@@ -1,4 +1,4 @@
-import type { PatternStorageEntry, SavedPatternSnapshot } from '@/types/knitting';
+import type { ChartCell, PatternStorageEntry, SavedPatternSnapshot } from '@/types/knitting';
 
 const STORAGE_KEY = 'doan_patterns';
 const MAX_PATTERNS = 5;
@@ -60,10 +60,18 @@ function writeStorage(entry: PatternStorageEntry): StorageResult<void> {
 	}
 }
 
+function migrateCells(cells: ChartCell[][]): ChartCell[][] {
+	return cells.map((row) => row.map((cell) => ({ ...cell, color: cell.color ?? null })));
+}
+
+function migrateSnapshot(snapshot: SavedPatternSnapshot): SavedPatternSnapshot {
+	return { ...snapshot, cells: migrateCells(snapshot.cells) };
+}
+
 export function loadAllPatterns(): StorageResult<SavedPatternSnapshot[]> {
 	const result = readStorage();
 	if (!result.ok) return result;
-	return { ok: true, data: result.data.patterns };
+	return { ok: true, data: result.data.patterns.map(migrateSnapshot) };
 }
 
 export function savePattern(snapshot: SavedPatternSnapshot): StorageResult<void> {
@@ -111,5 +119,5 @@ export function loadPattern(id: string): StorageResult<SavedPatternSnapshot> {
 		return { ok: false, error: 'not_found' };
 	}
 
-	return { ok: true, data: found };
+	return { ok: true, data: migrateSnapshot(found) };
 }

@@ -3,6 +3,8 @@ import { KnittingSymbol, ShapeGuide, SymmetryMode, RotationalMode, CellSelection
 
 interface UIState {
 	selectedSymbol: KnittingSymbol | null;
+	selectedColor: string | null;
+	isColorMode: boolean;
 	symmetryMode: SymmetryMode;
 	isLoadDialogOpen: boolean;
 	isResetDialogOpen: boolean;
@@ -15,6 +17,7 @@ interface UIState {
 	isShapeGuideEraseMode: boolean;
 	rotationalMode: RotationalMode;
 	setSelectedSymbol: (symbol: KnittingSymbol | null) => void;
+	setSelectedColor: (color: string | null) => void;
 	setSymmetryMode: (mode: SymmetryMode) => void;
 	setRotationalMode: (mode: RotationalMode) => void;
 	openLoadDialog: () => void;
@@ -31,14 +34,18 @@ interface UIState {
 	cellSelection: CellSelection | null;
 	clipboard: ChartCell[][] | null;
 	isSelectionMode: boolean;
+	recentColors: string[];
 	setCellSelection: (sel: CellSelection | null) => void;
 	setClipboard: (cells: ChartCell[][] | null) => void;
 	setSelectionMode: (active: boolean) => void;
+	addRecentColor: (color: string) => void;
 	reset: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
 	selectedSymbol: null,
+	selectedColor: null,
+	isColorMode: false,
 	symmetryMode: 'none',
 	isLoadDialogOpen: false,
 	isResetDialogOpen: false,
@@ -53,12 +60,19 @@ export const useUIStore = create<UIState>((set) => ({
 	cellSelection: null,
 	clipboard: null,
 	isSelectionMode: false,
+	recentColors: [],
 
 	setSelectedSymbol: (symbol) =>
 		set(
 			symbol !== null
 				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null }
 				: { selectedSymbol: null },
+		),
+	setSelectedColor: (color) =>
+		set(
+			color !== null
+				? { selectedColor: color, isColorMode: true, selectedSymbol: null, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false }
+				: { selectedColor: null, isColorMode: false },
 		),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
 	openLoadDialog: () => set({ isLoadDialogOpen: true }),
@@ -102,10 +116,16 @@ export const useUIStore = create<UIState>((set) => ({
 	setCellSelection: (sel) => set({ cellSelection: sel }),
 	setClipboard: (cells) => set({ clipboard: cells }),
 	setSelectionMode: (active) => set({ isSelectionMode: active }),
+	addRecentColor: (color) =>
+		set((state) => ({
+			recentColors: [color, ...state.recentColors.filter((c) => c !== color)].slice(0, 6),
+		})),
 
 	reset: () =>
 		set({
 			selectedSymbol: null,
+			selectedColor: null,
+			isColorMode: false,
 			symmetryMode: 'none',
 			isLoadDialogOpen: false,
 			isResetDialogOpen: false,
@@ -118,5 +138,6 @@ export const useUIStore = create<UIState>((set) => ({
 			isSelectionMode: false,
 			rotationalMode: 'none',
 			historyResetToken: 0,
+			recentColors: [],
 		}),
 }));

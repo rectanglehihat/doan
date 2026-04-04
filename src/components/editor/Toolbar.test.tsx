@@ -18,6 +18,10 @@ const defaultProps = {
 	onSelectionModeChange: vi.fn(),
 	rotationalMode: 'none' as const,
 	onRotationalModeChange: vi.fn(),
+	selectedColor: null,
+	onColorChange: vi.fn(),
+	isColorMode: false,
+	recentColors: [],
 };
 
 describe('Toolbar', () => {

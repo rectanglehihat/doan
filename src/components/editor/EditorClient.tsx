@@ -33,6 +33,11 @@ export function EditorClient() {
 		setSelectedSymbol,
 		rotationalMode,
 		setRotationalMode,
+		selectedColor,
+		isColorMode,
+		setSelectedColor,
+		recentColors,
+		addRecentColor,
 	} = useUIStore();
 
 	const handleUndo = useCallback(() => {
@@ -105,6 +110,14 @@ export function EditorClient() {
 		[setRotationalMode],
 	);
 
+	const handleColorChange = useCallback(
+		(color: string | null) => {
+			setSelectedColor(color);
+			if (color !== null) addRecentColor(color);
+		},
+		[setSelectedColor, addRecentColor],
+	);
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -142,6 +155,10 @@ export function EditorClient() {
 					onSelectionModeChange={handleSelectionModeChange}
 					rotationalMode={rotationalMode}
 					onRotationalModeChange={handleRotationalModeChange}
+					selectedColor={selectedColor}
+					onColorChange={handleColorChange}
+					isColorMode={isColorMode}
+					recentColors={recentColors}
 				/>
 				<div className="flex-1 overflow-auto">
 					<ChartCanvas
