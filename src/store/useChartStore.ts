@@ -48,6 +48,7 @@ export interface ChartState {
 	collapsedColumnBlocks: CollapsedColumnBlock[];
 	setCellSymbol: (row: number, col: number, symbolId: string | null) => void;
 	setCellColor: (row: number, col: number, color: string | null) => void;
+	clearAllColors: () => void;
 	setCells: (cells: ChartCell[][]) => void;
 	setGridSize: (gridSize: GridSize) => void;
 	setGridSizeSymmetric: (gridSize: GridSize, mode: RotationalMode) => void;
@@ -108,6 +109,11 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			);
 			return { cells };
 		}),
+
+	clearAllColors: () =>
+		set((state) => ({
+			cells: state.cells.map((row) => row.map((cell) => ({ ...cell, color: null }))),
+		})),
 
 	setCells: (cells) => set({ cells }),
 

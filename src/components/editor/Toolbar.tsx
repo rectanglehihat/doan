@@ -22,6 +22,7 @@ interface ToolbarProps {
 	onRotationalModeChange: (mode: RotationalMode) => void;
 	selectedColor: string | null;
 	onColorChange: (color: string | null) => void;
+	onColorClear: () => void;
 	recentColors: string[];
 }
 
@@ -42,6 +43,7 @@ export function Toolbar({
 	onRotationalModeChange,
 	selectedColor,
 	onColorChange,
+	onColorClear,
 	recentColors,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
@@ -85,8 +87,8 @@ export function Toolbar({
 	}, [onRotationalModeChange, rotationalMode]);
 
 	const handleColorClear = useCallback(() => {
-		onColorChange(null);
-	}, [onColorChange]);
+		onColorClear();
+	}, [onColorClear]);
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
@@ -206,9 +208,9 @@ export function Toolbar({
 					variant="ghost"
 					size="sm"
 					onClick={handleColorClear}
-					aria-label="색상 지우기"
+					aria-label="색상 전체 지우기"
 				>
-					지우기
+					전체 지우기
 				</Button>
 			</div>
 
