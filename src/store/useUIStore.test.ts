@@ -161,6 +161,25 @@ describe('useUIStore', () => {
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(true);
 		});
+
+		it('setShapeGuideDrawMode(true) 호출 시 selectedColor가 null이 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
+
+		it('setShapeGuideDrawMode(true) 호출 시 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('setShapeGuideDrawMode(false) 호출 시 색상 상태에 영향을 주지 않는다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideDrawMode(false);
+			expect(useUIStore.getState().selectedColor).toBe('#FF0000');
+			expect(useUIStore.getState().isColorMode).toBe(true);
+		});
 	});
 
 	describe('isShapeGuideEraseMode', () => {
@@ -177,6 +196,25 @@ describe('useUIStore', () => {
 			useUIStore.getState().setShapeGuideEraseMode(true);
 			useUIStore.getState().setShapeGuideEraseMode(false);
 			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+
+		it('setShapeGuideEraseMode(true) 호출 시 selectedColor가 null이 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
+
+		it('setShapeGuideEraseMode(true) 호출 시 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('setShapeGuideEraseMode(false) 호출 시 색상 상태에 영향을 주지 않는다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setShapeGuideEraseMode(false);
+			expect(useUIStore.getState().selectedColor).toBe('#FF0000');
+			expect(useUIStore.getState().isColorMode).toBe(true);
 		});
 	});
 
