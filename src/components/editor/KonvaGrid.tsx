@@ -246,6 +246,9 @@ interface KonvaGridProps {
 	collapsedColumnBlocks?: CollapsedColumnBlock[];
 	onCollapsedColumnBlockClick?: (blockId: string) => void;
 	externalStageRef?: React.RefObject<Konva.Stage | null>;
+	isColorMode?: boolean;
+	selectedColor?: string | null;
+	onCellColorPaint?: (row: number, col: number, color: string | null) => void;
 }
 
 export const KonvaGrid = memo(function KonvaGrid({
@@ -279,6 +282,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 	collapsedColumnBlocks = [],
 	onCollapsedColumnBlockClick,
 	externalStageRef,
+	isColorMode = false,
+	selectedColor = null,
+	onCellColorPaint,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -493,6 +499,21 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[cells, rowVisualYMap, colVisualXMap],
 	);
 
+	const coloredCells = useMemo(
+		() =>
+			cells.flatMap((row, rowIdx) => {
+				const visualY = rowVisualYMap[rowIdx];
+				if (visualY === null) return [];
+				return row.flatMap((cell, colIdx) => {
+					if (cell.color === null) return [];
+					const visualX = colVisualXMap[colIdx];
+					if (visualX === null) return [];
+					return [{ color: cell.color, rowIdx, colIdx, visualY, visualX }];
+				});
+			}),
+		[cells, rowVisualYMap, colVisualXMap],
+	);
+
 	// 시각적 행 인덱스(0-based) → 실제 데이터 행 인덱스 역매핑
 	const visualToDataRowMap = useMemo(() => {
 		const map: number[] = [];
@@ -643,6 +664,11 @@ export const KonvaGrid = memo(function KonvaGrid({
 						selectionAnchorRef.current = cell;
 						onSelectionChange?.({ startRow: cell.row, startCol: cell.col, endRow: cell.row, endCol: cell.col });
 					}
+				} else if (isColorMode) {
+					isPainting.current = true;
+					onPaintStart?.();
+					const cell = getCellFromPointer();
+					if (cell) onCellColorPaint?.(cell.row, cell.col, selectedColor);
 				} else if (isShapeGuideEraseMode) {
 					const pt = getGridPointer();
 					if (pt) {
@@ -671,14 +697,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 			getCellFromPointer,
 			getGridPointer,
 			onCellPaint,
+			onCellColorPaint,
 			onPaintStart,
 			onShapeGuideEraseStart,
 			startMousePan,
 			isInSpacePanMode,
+			isColorMode,
 			isShapeGuideDrawMode,
 			isShapeGuideEraseMode,
 			isSelectionMode,
 			onSelectionChange,
+			selectedColor,
 		],
 	);
 
@@ -719,6 +748,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 						});
 					}
 				}
+			} else if (isColorMode) {
+				const cell = getCellFromPointer();
+				setHoverCell(cell);
+				if (isPainting.current && cell) {
+					onCellColorPaint?.(cell.row, cell.col, selectedColor);
+				}
 			} else {
 				const cell = getCellFromPointer();
 				setHoverCell(cell);
@@ -731,12 +766,15 @@ export const KonvaGrid = memo(function KonvaGrid({
 			getCellFromPointer,
 			getGridPointer,
 			onCellPaint,
+			onCellColorPaint,
 			updateMousePan,
+			isColorMode,
 			isShapeGuideDrawMode,
 			isShapeGuideEraseMode,
 			erasePartialStrokes,
 			isSelectionMode,
 			onSelectionChange,
+			selectedColor,
 		],
 	);
 
@@ -820,7 +858,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 			? ERASER_CURSOR
 			: isSelectionMode
 				? 'default'
-				: 'crosshair';
+				: isColorMode
+					? 'crosshair'
+					: 'crosshair';
 
 	const hasShapeGuide = shapeGuide && shapeGuide.strokes.length > 0;
 
@@ -879,6 +919,18 @@ export const KonvaGrid = memo(function KonvaGrid({
 					height={totalHeight}
 					fill="white"
 				/>
+
+				{coloredCells.map(({ color, rowIdx, colIdx, visualY, visualX }) => (
+					<Rect
+						key={`color-${rowIdx}-${colIdx}`}
+						x={visualX}
+						y={visualY}
+						width={cellSize}
+						height={cellSize}
+						fill={color}
+						listening={false}
+					/>
+				))}
 
 				{gridLines.map(({ key, points }) => (
 					<Line

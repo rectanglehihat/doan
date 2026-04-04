@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/atoms/Button';
+import { ColorPicker } from '@/components/ui/molecules/ColorPicker';
 import { RotationalMode } from '@/types/knitting';
 
 interface ToolbarProps {
@@ -20,6 +21,10 @@ interface ToolbarProps {
 	onSelectionModeChange: (active: boolean) => void;
 	rotationalMode: RotationalMode;
 	onRotationalModeChange: (mode: RotationalMode) => void;
+	selectedColor: string | null;
+	onColorChange: (color: string | null) => void;
+	isColorMode: boolean;
+	recentColors: string[];
 }
 
 export function Toolbar({
@@ -38,6 +43,10 @@ export function Toolbar({
 	onSelectionModeChange,
 	rotationalMode,
 	onRotationalModeChange,
+	selectedColor,
+	onColorChange,
+	isColorMode,
+	recentColors,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -187,6 +196,15 @@ export function Toolbar({
 					</>
 				)}
 			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 색상 */}
+			<ColorPicker
+				selectedColor={selectedColor}
+				onColorChange={onColorChange}
+				recentColors={recentColors}
+			/>
 
 			{/* 새 도안 */}
 			<div className="ml-auto">

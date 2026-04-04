@@ -265,6 +265,60 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('selectedColor / isColorMode', () => {
+		it('초기 selectedColor는 null이다', () => {
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
+
+		it('초기 isColorMode는 false이다', () => {
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('setSelectedColor("#FF0000") 호출 시 selectedColor가 "#FF0000"이고 isColorMode가 true가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().selectedColor).toBe('#FF0000');
+			expect(useUIStore.getState().isColorMode).toBe(true);
+		});
+
+		it('setSelectedColor(null) 호출 시 selectedColor가 null이고 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setSelectedColor(null);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('색상 선택 시 selectedSymbol이 null로 해제된다', () => {
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().selectedSymbol).toBeNull();
+		});
+
+		it('색상 선택 시 isShapeGuideDrawMode가 false로 해제된다', () => {
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
+		});
+
+		it('색상 선택 시 isShapeGuideEraseMode가 false로 해제된다', () => {
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+
+		it('색상 선택 시 isSelectionMode가 false로 해제된다', () => {
+			useUIStore.getState().setSelectionMode(true);
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+
+		it('reset() 후 selectedColor는 null이고 isColorMode는 false이다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().selectedColor).toBeNull();
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+	});
+
 	describe('rotationalMode', () => {
 		it('초기값은 none이다', () => {
 			expect(useUIStore.getState().rotationalMode).toBe('none');
@@ -307,6 +361,52 @@ describe('useUIStore', () => {
 			useUIStore.getState().triggerHistoryClear();
 			useUIStore.getState().triggerHistoryClear();
 			expect(useUIStore.getState().historyResetToken).toBe(3);
+		});
+	});
+
+	describe('recentColors / addRecentColor', () => {
+		it('초기 recentColors는 []이다', () => {
+			expect(useUIStore.getState().recentColors).toEqual([]);
+		});
+
+		it('addRecentColor("#ff0000") 호출 시 recentColors에 ["#ff0000"]이 된다', () => {
+			useUIStore.getState().addRecentColor('#ff0000');
+			expect(useUIStore.getState().recentColors).toEqual(['#ff0000']);
+		});
+
+		it('여러 색상 추가 시 최신 색상이 맨 앞에 위치한다', () => {
+			useUIStore.getState().addRecentColor('#ff0000');
+			useUIStore.getState().addRecentColor('#00ff00');
+			useUIStore.getState().addRecentColor('#0000ff');
+			expect(useUIStore.getState().recentColors[0]).toBe('#0000ff');
+			expect(useUIStore.getState().recentColors[1]).toBe('#00ff00');
+			expect(useUIStore.getState().recentColors[2]).toBe('#ff0000');
+		});
+
+		it('중복 색상 추가 시 기존 항목을 제거하고 맨 앞으로 이동한다 (배열 길이 유지)', () => {
+			useUIStore.getState().addRecentColor('#ff0000');
+			useUIStore.getState().addRecentColor('#00ff00');
+			useUIStore.getState().addRecentColor('#ff0000');
+			const colors = useUIStore.getState().recentColors;
+			expect(colors[0]).toBe('#ff0000');
+			expect(colors).toHaveLength(2);
+		});
+
+		it('6개 초과 추가 시 7번째부터 잘린다 (최대 6개)', () => {
+			useUIStore.getState().addRecentColor('#111111');
+			useUIStore.getState().addRecentColor('#222222');
+			useUIStore.getState().addRecentColor('#333333');
+			useUIStore.getState().addRecentColor('#444444');
+			useUIStore.getState().addRecentColor('#555555');
+			useUIStore.getState().addRecentColor('#666666');
+			useUIStore.getState().addRecentColor('#777777');
+			expect(useUIStore.getState().recentColors).toHaveLength(6);
+		});
+
+		it('reset() 후 recentColors는 []이다', () => {
+			useUIStore.getState().addRecentColor('#ff0000');
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().recentColors).toEqual([]);
 		});
 	});
 

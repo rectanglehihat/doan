@@ -17,6 +17,7 @@ export interface KnittingSymbol {
 
 export interface ChartCell {
 	symbolId: string | null;
+	color?: string | null;
 }
 
 export interface GridSize {

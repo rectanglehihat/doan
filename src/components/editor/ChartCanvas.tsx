@@ -91,6 +91,10 @@ export function ChartCanvas({
 	const cellSelection = useUIStore((state) => state.cellSelection);
 	const clipboard = useUIStore((state) => state.clipboard);
 	const setCellSelection = useUIStore((state) => state.setCellSelection);
+	const selectedColor = useUIStore((state) => state.selectedColor);
+	const isColorMode = useUIStore((state) => state.isColorMode);
+
+	const setCellColor = useChartStore((state) => state.setCellColor);
 
 	const collapsedBlocks = useChartStore((state) => state.collapsedBlocks);
 	const addCollapsedBlock = useChartStore((state) => state.addCollapsedBlock);
@@ -99,6 +103,13 @@ export function ChartCanvas({
 
 	const [selectedCollapsedBlockId, setSelectedCollapsedBlockId] = useState<string | null>(null);
 	const [selectedCollapsedColumnBlockId, setSelectedCollapsedColumnBlockId] = useState<string | null>(null);
+
+	const handleCellColorPaint = useCallback(
+		(row: number, col: number, color: string | null) => {
+			setCellColor(row, col, color);
+		},
+		[setCellColor],
+	);
 
 	const handleShapeGuideStrokeAdd = useCallback(
 		(stroke: number[]) => {
@@ -249,6 +260,9 @@ export function ChartCanvas({
 						collapsedColumnBlocks={collapsedColumnBlocks}
 						onCollapsedColumnBlockClick={handleCollapsedColumnBlockClick}
 						externalStageRef={stageRef}
+						isColorMode={isColorMode}
+						selectedColor={selectedColor}
+						onCellColorPaint={handleCellColorPaint}
 					/>
 
 					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}
