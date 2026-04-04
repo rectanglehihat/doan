@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { KnittingSymbol, ShapeGuide, SymmetryMode, RotationalMode, CellSelection, ChartCell } from '@/types/knitting';
 
+const COLOR_MODE_RESET = { selectedColor: null, isColorMode: false };
+
 interface UIState {
 	selectedSymbol: KnittingSymbol | null;
 	selectedColor: string | null;
@@ -110,8 +112,10 @@ export const useUIStore = create<UIState>((set) => ({
 				},
 			};
 		}),
-	setShapeGuideDrawMode: (active) => set({ isShapeGuideDrawMode: active }),
-	setShapeGuideEraseMode: (active) => set({ isShapeGuideEraseMode: active }),
+	setShapeGuideDrawMode: (active) =>
+		set(active ? { isShapeGuideDrawMode: true, ...COLOR_MODE_RESET } : { isShapeGuideDrawMode: false }),
+	setShapeGuideEraseMode: (active) =>
+		set(active ? { isShapeGuideEraseMode: true, ...COLOR_MODE_RESET } : { isShapeGuideEraseMode: false }),
 	setRotationalMode: (mode) => set({ rotationalMode: mode }),
 	setCellSelection: (sel) => set({ cellSelection: sel }),
 	setClipboard: (cells) => set({ clipboard: cells }),
