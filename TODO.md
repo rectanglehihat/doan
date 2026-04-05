@@ -158,13 +158,15 @@
 | 컴포넌트                | 상태 | 테스트 |
 | ----------------------- | ---- | ------ |
 | `ChartCanvas`           | 완료 | 6개    |
-| `KonvaGrid`             | 완료 | 미작성 |
+| `KonvaGrid`             | 완료 | 4개    |
 | `EditorClient`          | 완료 | 6개    |
 | `EditorSidebar`         | 완료 | 14개   |
 | `ShapeGuideLayer`       | 완료 | 15개   |
 | `Toolbar`               | 완료 | 35개   |
 | `LoadDialog`            | 완료 | 20개   |
 | `CollapsedBlockPopover` | 완료 | 5개    |
+| `CollapsedRow`          | 완료 | 4개    |
+| `CollapsedColumn`       | 완료 | 4개    |
 
 ### Organisms (`src/components/pdf/`)
 
@@ -187,7 +189,7 @@
 | Molecule — `ColorPicker`           | `ColorPicker.test.tsx`           | 80%           | 16개 작성 |
 | Molecule — `ConfirmDialog`         | `ConfirmDialog.test.tsx`         | 80%           | 8개 작성  |
 | Molecule — `SymbolButton`          | `SymbolButton.test.tsx`          | 80%           | 23개 작성 |
-| Organism — `EditorClient`          | `EditorClient.test.tsx`          | 60%           | 24개 작성 |
+| Organism — `EditorClient`          | `EditorClient.test.tsx`          | 60%           | 6개 작성  |
 | Organism — `EditorSidebar`         | `EditorSidebar.test.tsx`         | 60%           | 14개 작성 |
 | Organism — `ShapeGuideLayer`       | `ShapeGuideLayer.test.tsx`       | 60%           | 15개 작성 |
 | Organism — `Toolbar`               | `Toolbar.test.tsx`               | 60%           | 35개 작성 |
@@ -207,6 +209,13 @@
 | Util — `collapsed-rows`            | `collapsed-rows.test.ts`         | 95%           | 20개 작성 |
 | Util — `collapsed-cols`            | `collapsed-cols.test.ts`         | 95%           | 20개 작성 |
 | Util — `color-utils`               | `color-utils.test.ts`            | 95%           | 16개 작성 |
+| Util — `geometry`                  | `geometry.test.ts`               | 95%           | 17개 작성 |
+| Util — `eraser`                    | `eraser.test.ts`                 | 95%           | 7개 작성  |
+| Hook — `useVisualCoordinates`      | `useVisualCoordinates.test.ts`   | 85%           | 10개 작성 |
+| Hook — `useEditorShortcuts`        | `useEditorShortcuts.test.ts`     | 85%           | 7개 작성  |
+| Organism — `CollapsedRow`          | `CollapsedRow.test.tsx`          | 60%           | 4개 작성  |
+| Organism — `CollapsedColumn`       | `CollapsedColumn.test.tsx`       | 60%           | 4개 작성  |
+| Organism — `KonvaGrid`             | `KonvaGrid.test.tsx`             | 60%           | 4개 작성  |
 | Page — `app/page`                  | `page.test.tsx`                  | 60%           | 3개 작성  |
 
 ---
