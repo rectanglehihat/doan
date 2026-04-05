@@ -136,7 +136,7 @@
 
 | 컴포넌트 | 상태   | 테스트 |
 | -------- | ------ | ------ |
-| `Button` | 완료   | 27개   |
+| `Button` | 완료   | 21개   |
 | `Input`  | 완료   | 15개   |
 | `Option` | 완료   | 10개   |
 | `Icon`   | 미구현 | -      |
@@ -144,56 +144,70 @@
 
 ### Molecules (`src/components/ui/molecules/`)
 
-| 컴포넌트          | 상태   | 테스트 |
-| ----------------- | ------ | ------ |
-| `SymbolButton`    | 완료   | 미작성 |
-| `Select`          | 완료   | 15개   |
-| `GridSizeInput`   | 완료   | 8개    |
-| `DifficultyStars` | 완료   | 4개    |
-| `ColorPicker`     | 미구현 | -      |
-| `ConfirmDialog`   | 완료   | 7개    |
+| 컴포넌트          | 상태 | 테스트 |
+| ----------------- | ---- | ------ |
+| `SymbolButton`    | 완료 | 10개   |
+| `Select`          | 완료 | 15개   |
+| `GridSizeInput`   | 완료 | 8개    |
+| `DifficultyStars` | 완료 | 4개    |
+| `ColorPicker`     | 완료 | 16개   |
+| `ConfirmDialog`   | 완료 | 8개    |
 
 ### Organisms (`src/components/editor/`)
 
-| 컴포넌트          | 상태 | 테스트 |
-| ----------------- | ---- | ------ |
-| `ChartCanvas`     | 완료 | 미작성 |
-| `KonvaGrid`       | 완료 | 미작성 |
-| `EditorSidebar`   | 완료 | 2개    |
-| `ShapeGuideLayer` | 완료 | 7개    |
-| `Toolbar`         | 완료 | 23개   |
-| `LoadDialog`      | 완료 | 미작성 |
+| 컴포넌트                | 상태 | 테스트 |
+| ----------------------- | ---- | ------ |
+| `ChartCanvas`           | 완료 | 6개    |
+| `KonvaGrid`             | 완료 | 미작성 |
+| `EditorClient`          | 완료 | 6개    |
+| `EditorSidebar`         | 완료 | 14개   |
+| `ShapeGuideLayer`       | 완료 | 15개   |
+| `Toolbar`               | 완료 | 35개   |
+| `LoadDialog`            | 완료 | 20개   |
+| `CollapsedBlockPopover` | 완료 | 5개    |
 
 ### Organisms (`src/components/pdf/`)
 
 | 컴포넌트     | 상태 | 테스트 |
 | ------------ | ---- | ------ |
-| `PdfPreview` | 완료 | 7개    |
+| `PdfPreview` | 완료 | 10개   |
 
 ---
 
 ## 테스트 현황
 
-| 레이어                         | 파일                            | 목표 커버리지 | 현재      |
-| ------------------------------ | ------------------------------- | ------------- | --------- |
-| Atom — `Button`                | `Button.test.tsx`               | 90%           | 27개 작성 |
-| Atom — `Input`                 | `Input.test.tsx`                | 90%           | 15개 작성 |
-| Atom — `Option`                | `Option.test.tsx`               | 90%           | 10개 작성 |
-| Molecule — `Select`            | `Select.test.tsx`               | 80%           | 15개 작성 |
-| Molecule — `GridSizeInput`     | `GridSizeInput.test.tsx`        | 80%           | 8개 작성  |
-| Molecule — `DifficultyStars`   | `DifficultyStars.test.tsx`      | 80%           | 4개 작성  |
-| Molecule — `SymbolButton`      | `SymbolButton.test.tsx`         | 80%           | 미작성    |
-| Organism — `EditorSidebar`     | `EditorSidebar.test.tsx`        | 60%           | 2개 작성  |
-| Organism — `ShapeGuideLayer`   | `ShapeGuideLayer.test.tsx`      | 60%           | 7개 작성  |
-| Organism — `Toolbar`           | `Toolbar.test.tsx`              | 60%           | 23개 작성 |
-| Organism — `ChartCanvas`       | `ChartCanvas.test.tsx`          | 60%           | 미작성    |
-| Hook — `useChartEditor`        | `useChartEditor.test.ts`        | 85%           | 7개 작성  |
-| Hook — `useHistory`            | `useHistory.test.ts`            | 85%           | 11개 작성 |
-| Hook — `usePatterns`           | `usePatterns.test.ts`           | 85%           | 미작성    |
-| Store — `useChartStore`        | `useChartStore.test.ts`         | 80%           | 10개 작성 |
-| Store — `useUIStore`           | `useUIStore.test.ts`            | 80%           | 26개 작성 |
-| Util — `local-storage-service` | `local-storage-service.test.ts` | 95%           | 미작성    |
-| Util — `export-pdf`            | `export-pdf.test.ts`            | 70%           | 미작성    |
+| 레이어                             | 파일                             | 목표 커버리지 | 현재      |
+| ---------------------------------- | -------------------------------- | ------------- | --------- |
+| Atom — `Button`                    | `Button.test.tsx`                | 90%           | 21개 작성 |
+| Atom — `Input`                     | `Input.test.tsx`                 | 90%           | 15개 작성 |
+| Atom — `Option`                    | `Option.test.tsx`                | 90%           | 10개 작성 |
+| Molecule — `Select`                | `Select.test.tsx`                | 80%           | 15개 작성 |
+| Molecule — `GridSizeInput`         | `GridSizeInput.test.tsx`         | 80%           | 8개 작성  |
+| Molecule — `DifficultyStars`       | `DifficultyStars.test.tsx`       | 80%           | 4개 작성  |
+| Molecule — `ColorPicker`           | `ColorPicker.test.tsx`           | 80%           | 16개 작성 |
+| Molecule — `ConfirmDialog`         | `ConfirmDialog.test.tsx`         | 80%           | 8개 작성  |
+| Molecule — `SymbolButton`          | `SymbolButton.test.tsx`          | 80%           | 23개 작성 |
+| Organism — `EditorClient`          | `EditorClient.test.tsx`          | 60%           | 24개 작성 |
+| Organism — `EditorSidebar`         | `EditorSidebar.test.tsx`         | 60%           | 14개 작성 |
+| Organism — `ShapeGuideLayer`       | `ShapeGuideLayer.test.tsx`       | 60%           | 15개 작성 |
+| Organism — `Toolbar`               | `Toolbar.test.tsx`               | 60%           | 35개 작성 |
+| Organism — `ChartCanvas`           | `ChartCanvas.test.tsx`           | 60%           | 6개 작성  |
+| Organism — `LoadDialog`            | `LoadDialog.test.tsx`            | 60%           | 20개 작성 |
+| Organism — `CollapsedBlockPopover` | `CollapsedBlockPopover.test.tsx` | 60%           | 5개 작성  |
+| Hook — `useEditorActions`          | `useEditorActions.test.ts`       | 85%           | 78개 작성 |
+| Hook — `useChartEditor`            | `useChartEditor.test.ts`         | 85%           | 19개 작성 |
+| Hook — `useHistory`                | `useHistory.test.ts`             | 85%           | 32개 작성 |
+| Hook — `usePatterns`               | `usePatterns.test.ts`            | 85%           | 27개 작성 |
+| Hook — `usePdfExport`              | `usePdfExport.test.ts`           | 85%           | 8개 작성  |
+| Hook — `useCanvasNavigation`       | `useCanvasNavigation.test.ts`    | 85%           | 5개 작성  |
+| Store — `useChartStore`            | `useChartStore.test.ts`          | 80%           | 48개 작성 |
+| Store — `useUIStore`               | `useUIStore.test.ts`             | 80%           | 70개 작성 |
+| Util — `local-storage-service`     | `local-storage-service.test.ts`  | 95%           | 22개 작성 |
+| Util — `export-pdf`                | `export-pdf.test.ts`             | 70%           | 12개 작성 |
+| Util — `collapsed-rows`            | `collapsed-rows.test.ts`         | 95%           | 20개 작성 |
+| Util — `collapsed-cols`            | `collapsed-cols.test.ts`         | 95%           | 20개 작성 |
+| Util — `color-utils`               | `color-utils.test.ts`            | 95%           | 16개 작성 |
+| Page — `app/page`                  | `page.test.tsx`                  | 60%           | 3개 작성  |
 
 ---
 
