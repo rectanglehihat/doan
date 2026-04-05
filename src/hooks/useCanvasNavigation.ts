@@ -154,6 +154,20 @@ export function useCanvasNavigation(stageRef: { current: Konva.Stage | null }) {
 		isMousePanning.current = false;
 	}, []);
 
+	const fitToScreen = useCallback(
+		(stageWidth: number, stageHeight: number, gridWidth: number, gridHeight: number) => {
+			const padding = 0.9;
+			const scaleX = (stageWidth * padding) / gridWidth;
+			const scaleY = (stageHeight * padding) / gridHeight;
+			const rawScale = Math.min(scaleX, scaleY);
+			const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, rawScale));
+			const newX = (stageWidth - gridWidth * newScale) / 2;
+			const newY = (stageHeight - gridHeight * newScale) / 2;
+			setTransform({ scale: newScale, x: newX, y: newY });
+		},
+		[],
+	);
+
 	return {
 		transform,
 		isSpacePanning,
@@ -165,5 +179,6 @@ export function useCanvasNavigation(stageRef: { current: Konva.Stage | null }) {
 		startMousePan,
 		updateMousePan,
 		endMousePan,
+		fitToScreen,
 	};
 }

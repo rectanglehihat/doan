@@ -326,7 +326,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 		startMousePan,
 		updateMousePan,
 		endMousePan,
+		fitToScreen,
 	} = useCanvasNavigation(stageRef);
+
+	// 'doan:fit-to-screen' 커스텀 이벤트 — Toolbar 버튼 및 외부에서 fitToScreen 호출
+	useEffect(() => {
+		const handleFitToScreenEvent = () => {
+			fitToScreen(stageWidth, stageHeight, gridSize.cols * cellSize, gridSize.rows * cellSize);
+		};
+		window.addEventListener('doan:fit-to-screen', handleFitToScreenEvent);
+		return () => window.removeEventListener('doan:fit-to-screen', handleFitToScreenEvent);
+	}, [fitToScreen, stageWidth, stageHeight, gridSize, cellSize]);
 
 	const [hoverCell, setHoverCell] = useState<{ row: number; col: number } | null>(null);
 	const [selectedStrokeIndex, setSelectedStrokeIndex] = useState<number | null>(null);
@@ -356,6 +366,19 @@ export const KonvaGrid = memo(function KonvaGrid({
 		},
 		[onCollapsedColumnBlockClick],
 	);
+
+	// F키 단축키: 화면에 맞추기
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+			if (e.key === 'f' || e.key === 'F') {
+				e.preventDefault();
+				fitToScreen(stageWidth, stageHeight, gridSize.cols * cellSize, gridSize.rows * cellSize);
+			}
+		};
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [fitToScreen, stageWidth, stageHeight, gridSize, cellSize]);
 
 	useEffect(() => {
 		if (!isShapeGuideDrawMode) return;

@@ -21,6 +21,7 @@ const defaultProps = {
 	onColorChange: vi.fn(),
 	onColorClear: vi.fn(),
 	recentColors: [],
+	onFitToScreen: vi.fn(),
 };
 
 describe('Toolbar', () => {
@@ -223,6 +224,25 @@ describe('Toolbar', () => {
 			render(<Toolbar {...defaultProps} rotationalMode="none" onRotationalModeChange={handleChange} />);
 			await userEvent.click(screen.getByRole('button', { name: '대칭 모드 양방향' }));
 			expect(handleChange).toHaveBeenCalledWith('both');
+		});
+
+		it('onFitToScreen prop이 있을 때 "화면에 맞추기" 버튼을 렌더링한다', () => {
+			render(<Toolbar {...defaultProps} onFitToScreen={vi.fn()} />);
+			expect(screen.getByRole('button', { name: '화면에 맞추기' })).toBeInTheDocument();
+		});
+
+		it('"화면에 맞추기" 버튼 클릭 시 onFitToScreen을 호출한다', async () => {
+			const handleFitToScreen = vi.fn();
+			render(<Toolbar {...defaultProps} onFitToScreen={handleFitToScreen} />);
+			await userEvent.click(screen.getByRole('button', { name: '화면에 맞추기' }));
+			expect(handleFitToScreen).toHaveBeenCalledTimes(1);
+		});
+
+		it('onFitToScreen prop이 없을 때 "화면에 맞추기" 버튼을 렌더링하지 않는다', () => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { onFitToScreen, ...propsWithoutFitToScreen } = defaultProps;
+			render(<Toolbar {...propsWithoutFitToScreen} />);
+			expect(screen.queryByRole('button', { name: '화면에 맞추기' })).not.toBeInTheDocument();
 		});
 	});
 });
