@@ -24,6 +24,7 @@ interface ToolbarProps {
 	onColorChange: (color: string | null) => void;
 	onColorClear: () => void;
 	recentColors: string[];
+	onFitToScreen?: () => void;
 }
 
 export function Toolbar({
@@ -45,6 +46,7 @@ export function Toolbar({
 	onColorChange,
 	onColorClear,
 	recentColors,
+	onFitToScreen,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -89,6 +91,10 @@ export function Toolbar({
 	const handleColorClear = useCallback(() => {
 		onColorClear();
 	}, [onColorClear]);
+
+	const handleFitToScreen = useCallback(() => {
+		onFitToScreen?.();
+	}, [onFitToScreen]);
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
@@ -213,6 +219,23 @@ export function Toolbar({
 					전체 지우기
 				</Button>
 			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 화면 맞추기 */}
+			{onFitToScreen && (
+				<div className="flex items-center gap-1">
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={handleFitToScreen}
+						aria-label="화면에 맞추기"
+						title="화면에 맞추기 (F)"
+					>
+						화면 맞추기
+					</Button>
+				</div>
+			)}
 
 			{/* 새 도안 */}
 			<div className="ml-auto">

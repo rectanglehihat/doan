@@ -83,9 +83,12 @@
   - `replaceShapeGuideStroke` 액션으로 스트로크 분할 교체
   - `splitStrokeByErasePath` / `splitStrokeByPoint` 헬퍼 함수로 세그먼트 분리
   - `currentEraseStrokeRef`로 stale closure 없이 최신 erase 경로 참조
-- [ ] 셀에 색상 추가 기능
+- [x] 셀에 색상 추가 기능
   - 컬러 피커를 제공해 사용자 정의 색상 지원
   - 툴바에 위치
+- [x] 화면 맞추기
+  - 캔버스가 화면 밖으로 벗어났을 때 화면으로 이동시키기
+  - F키 단축키 적용
 
 ### 1-6. 저장 및 불러오기
 

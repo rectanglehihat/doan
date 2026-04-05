@@ -14,6 +14,10 @@ import { RotationalMode } from '@/types/knitting';
 
 export function EditorClient() {
 	const stageRef = useRef<Konva.Stage | null>(null);
+
+	const handleFitToScreen = useCallback(() => {
+		window.dispatchEvent(new Event('doan:fit-to-screen'));
+	}, []);
 	const { undo, redo, canUndo, canRedo, beginBatch, endBatch } = useHistory();
 	const reset = useChartStore((state) => state.reset);
 	const clearAllColors = useChartStore((state) => state.clearAllColors);
@@ -162,6 +166,7 @@ export function EditorClient() {
 					onColorChange={handleColorChange}
 					onColorClear={handleColorClear}
 					recentColors={recentColors}
+					onFitToScreen={handleFitToScreen}
 				/>
 				<div className="flex-1 overflow-auto">
 					<ChartCanvas
