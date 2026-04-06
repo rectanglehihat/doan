@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SITE_URL } from '@/constants/site';
+import { stringifyJsonLd } from '@/lib/utils/json-ld';
 
 export const metadata: Metadata = {
 	title: '뜨개 도안 만들기 가이드',
@@ -74,11 +75,11 @@ export default function GuidePage() {
 		<main className="max-w-2xl mx-auto px-6 py-12">
 			<script
 				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
+				dangerouslySetInnerHTML={{ __html: stringifyJsonLd(howToJsonLd) }}
 			/>
 			<script
 				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+				dangerouslySetInnerHTML={{ __html: stringifyJsonLd(breadcrumbJsonLd) }}
 			/>
 
 			<nav className="text-sm text-gray-500 mb-6">

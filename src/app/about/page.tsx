@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SITE_URL } from '@/constants/site';
+import { stringifyJsonLd } from '@/lib/utils/json-ld';
 
 export const metadata: Metadata = {
 	title: '도안 소개 — 무료 뜨개질 도안 에디터',
@@ -82,11 +83,11 @@ export default function AboutPage() {
 		<main className="max-w-2xl mx-auto px-6 py-12">
 			<script
 				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+				dangerouslySetInnerHTML={{ __html: stringifyJsonLd(faqJsonLd) }}
 			/>
 			<script
 				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+				dangerouslySetInnerHTML={{ __html: stringifyJsonLd(breadcrumbJsonLd) }}
 			/>
 
 			<nav className="text-sm text-gray-500 mb-6">
