@@ -2,7 +2,8 @@
 
 ## 컴포넌트 설계 원칙
 
-- 디자인 시스템은 Figma MCP 서버로 연결된 피그마 파일 기준 — 생성 전 Figma 스펙 확인, 변수명은 레이어명과 일치
+- 디자인 시스템은 shadcn/ui 기반
+- 변수명은 레이어명과 일치
 - 단일 책임, Props 인터페이스는 컴포넌트 함수 바로 위에 `{ComponentName}Props` 이름으로 선언
 - JSX 인라인 함수 금지 → `useCallback`으로 분리
 - 조건부 렌더링 3개 이상이면 별도 컴포넌트로 추출
@@ -22,12 +23,12 @@ components/
 
 ## Atomic Design 계층 규칙
 
-| 계층 | 설명 | 위치 | 예시 |
-|------|------|------|------|
-| **Atom** | 최소 UI 단위. 자체 상태 없음 | `ui/atoms/` | `Button`, `Input`, `Icon` |
-| **Molecule** | Atom 2~3개 조합 | `ui/molecules/` | `SymbolButton`, `GridSizeInput` |
-| **Organism** | 독립 기능 블록. 비즈니스 로직 포함 가능 | `editor/`, `pdf/` | `ChartGrid`, `Toolbar` |
-| **Template/Page** | 레이아웃 구조 | `app/` | `layout.tsx`, `page.tsx` |
+| 계층              | 설명                                    | 위치              | 예시                            |
+| ----------------- | --------------------------------------- | ----------------- | ------------------------------- |
+| **Atom**          | 최소 UI 단위. 자체 상태 없음            | `ui/atoms/`       | `Button`, `Input`, `Icon`       |
+| **Molecule**      | Atom 2~3개 조합                         | `ui/molecules/`   | `SymbolButton`, `GridSizeInput` |
+| **Organism**      | 독립 기능 블록. 비즈니스 로직 포함 가능 | `editor/`, `pdf/` | `ChartGrid`, `Toolbar`          |
+| **Template/Page** | 레이아웃 구조                           | `app/`            | `layout.tsx`, `page.tsx`        |
 
 - Atom·Molecule은 store 직접 참조 금지 — props로만 동작
 - Organism부터 hooks/store 접근 가능
@@ -55,6 +56,7 @@ components/
 Organism이 내부 서브컴포넌트 간 상태를 공유해야 할 때만 사용.
 
 **원칙:**
+
 1. Atom·Molecule은 Compound Component로 만들지 않는다
 2. 내부 구조가 외부에 노출될 필요 없으면 단일 컴포넌트로 유지
 3. 서브컴포넌트는 Atom·Molecule로 구성 (계층 건너뛰기 금지)

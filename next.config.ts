@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
+          // CSP는 proxy.ts에서 nonce 기반으로 동적 설정
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-XSS-Protection", value: "1; mode=block" },

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { SITE_URL, SITE_DESCRIPTION as DESCRIPTION } from '@/constants/site';
+import { stringifyJsonLd } from '@/lib/utils/json-ld';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -94,11 +95,12 @@ export default function RootLayout({
 		<html
 			lang="ko"
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+			suppressHydrationWarning
 		>
 			<body className="min-h-full flex flex-col">
 				<script
 					type="application/ld+json"
-					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+					dangerouslySetInnerHTML={{ __html: stringifyJsonLd(jsonLd) }}
 				/>
 				{children}
 			</body>
