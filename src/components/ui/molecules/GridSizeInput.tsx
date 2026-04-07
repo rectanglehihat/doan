@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { Input } from '@/components/ui/atoms/Input';
 
 const DEFAULT_MIN = 1;
-const DEFAULT_MAX = 200;
+const DEFAULT_MAX = 400;
 
 interface GridSizeInputProps {
 	rows: number;

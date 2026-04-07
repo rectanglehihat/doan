@@ -363,6 +363,67 @@ describe('useHistory', () => {
 		});
 	});
 
+	describe('diff 기반 undo/redo', () => {
+		it('셀 변경 후 undo 시 이전 cells 상태로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+		});
+
+		it('undo 후 redo 시 변경 후 cells 상태로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			act(() => {
+				result.current.redo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+		});
+
+		it('gridSize가 변경되면 snapshot 방식으로 저장되고 undo로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			const originalRows = useChartStore.getState().gridSize.rows;
+			act(() => {
+				useChartStore.getState().setGridSize({ rows: originalRows + 5, cols: useChartStore.getState().gridSize.cols });
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().gridSize.rows).toBe(originalRows);
+		});
+
+		it('beginBatch/endBatch 구간의 여러 셀 변경이 하나의 히스토리 항목으로 undo된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				result.current.beginBatch();
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+				useChartStore.getState().setCellSymbol(0, 1, 'p');
+				useChartStore.getState().setCellSymbol(0, 2, 'yo');
+				result.current.endBatch();
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+			expect(useChartStore.getState().cells[0][1].symbolId).toBeNull();
+			expect(useChartStore.getState().cells[0][2].symbolId).toBeNull();
+			expect(result.current.canUndo).toBe(false);
+		});
+	});
+
 	describe('redo', () => {
 		it('undo 후 redo 호출 시 원래 상태로 복원된다', async () => {
 			const { result } = renderHook(() => useHistory());

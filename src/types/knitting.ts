@@ -111,3 +111,10 @@ export interface PdfOptions {
 export type PdfExportResult =
 	| { ok: true; fileName: string }
 	| { ok: false; error: 'canvas_not_ready' | 'render_failed' | 'unknown' };
+
+export interface CellDiff {
+	row: number;
+	col: number;
+	prev: ChartCell;
+	next: ChartCell;
+}
