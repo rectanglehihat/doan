@@ -152,26 +152,43 @@ export const KonvaGrid = memo(function KonvaGrid({
 		hoverCellRef,
 	});
 
+	// 뷰포트에 보이는 그리드 픽셀 범위 (3셀 버퍼 포함)
+	const visibleRange = useMemo(() => {
+		const bufferPx = cellSize * 3;
+		return {
+			minX: (0 - transform.x) / transform.scale - bufferPx,
+			maxX: (stageWidth - transform.x) / transform.scale + bufferPx,
+			minY: (0 - transform.y) / transform.scale - bufferPx,
+			maxY: (stageHeight - transform.y) / transform.scale + bufferPx,
+		};
+	}, [transform, stageWidth, stageHeight, cellSize]);
+
 	const gridLines = useMemo(() => {
 		const lines: { key: string; points: number[] }[] = [];
 		for (let i = 0; i <= visualColCount; i++) {
-			lines.push({ key: `v${i}`, points: [i * cellSize, 0, i * cellSize, totalHeight] });
+			const x = i * cellSize;
+			if (x < visibleRange.minX || x > visibleRange.maxX) continue;
+			lines.push({ key: `v${i}`, points: [x, 0, x, totalHeight] });
 		}
 		for (let i = 0; i <= visualRowCount; i++) {
-			lines.push({ key: `h${i}`, points: [0, i * cellSize, totalWidth, i * cellSize] });
+			const y = i * cellSize;
+			if (y < visibleRange.minY || y > visibleRange.maxY) continue;
+			lines.push({ key: `h${i}`, points: [0, y, totalWidth, y] });
 		}
 		return lines;
-	}, [visualColCount, cellSize, totalHeight, totalWidth, visualRowCount]);
+	}, [visualColCount, cellSize, totalHeight, totalWidth, visualRowCount, visibleRange]);
 
 	const nonEmptyCells = useMemo(
 		() =>
 			cells.flatMap((row, rowIdx) => {
 				const visualY = rowVisualYMap[rowIdx];
 				if (visualY === null) return [];
+				if (visualY < visibleRange.minY || visualY > visibleRange.maxY) return [];
 				return row
 					.flatMap((cell, colIdx) => {
 						const visualX = colVisualXMap[colIdx];
 						if (visualX === null) return [];
+						if (visualX < visibleRange.minX || visualX > visibleRange.maxX) return [];
 						return [{ cell, rowIdx, colIdx, visualY, visualX }];
 					})
 					.filter(
@@ -179,7 +196,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 							x.cell.symbolId !== null,
 					);
 			}),
-		[cells, rowVisualYMap, colVisualXMap],
+		[cells, rowVisualYMap, colVisualXMap, visibleRange],
 	);
 
 	const coloredCells = useMemo(
@@ -187,14 +204,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 			cells.flatMap((row, rowIdx) => {
 				const visualY = rowVisualYMap[rowIdx];
 				if (visualY === null) return [];
+				if (visualY < visibleRange.minY || visualY > visibleRange.maxY) return [];
 				return row.flatMap((cell, colIdx) => {
 					if (cell.color === null) return [];
 					const visualX = colVisualXMap[colIdx];
 					if (visualX === null) return [];
+					if (visualX < visibleRange.minX || visualX > visibleRange.maxX) return [];
 					return [{ color: cell.color, rowIdx, colIdx, visualY, visualX }];
 				});
 			}),
-		[cells, rowVisualYMap, colVisualXMap],
+		[cells, rowVisualYMap, colVisualXMap, visibleRange],
 	);
 
 	// 드래그 지우기

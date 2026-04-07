@@ -58,7 +58,7 @@ export interface ChartState {
 	difficulty: number;
 	materials: string;
 	setCollapsedBlocks: (blocks: CollapsedBlock[]) => void;
-	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[], columnBlocks?: CollapsedColumnBlock[]) => void;
+	setCellsAndBlocks: (cells: ChartCell[][], blocks: CollapsedBlock[], columnBlocks?: CollapsedColumnBlock[], gridSize?: GridSize) => void;
 	addCollapsedBlock: (startRow: number, endRow: number) => void;
 	removeCollapsedBlock: (id: string) => void;
 	addCollapsedColumnBlock: (startCol: number, endCol: number) => void;
@@ -137,8 +137,13 @@ export const useChartStore = create<ChartState>((set, get) => ({
 
 	setCollapsedBlocks: (blocks) => set({ collapsedBlocks: blocks }),
 
-	setCellsAndBlocks: (cells, blocks, columnBlocks) =>
-		set({ cells, collapsedBlocks: blocks, ...(columnBlocks !== undefined ? { collapsedColumnBlocks: columnBlocks } : {}) }),
+	setCellsAndBlocks: (cells, blocks, columnBlocks, gridSize) =>
+		set({
+			cells,
+			collapsedBlocks: blocks,
+			...(columnBlocks !== undefined ? { collapsedColumnBlocks: columnBlocks } : {}),
+			...(gridSize !== undefined ? { gridSize } : {}),
+		}),
 
 	addCollapsedBlock: (startRow, endRow) => {
 		if (startRow >= endRow) {

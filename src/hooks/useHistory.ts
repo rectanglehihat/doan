@@ -1,14 +1,20 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChartCell, CollapsedBlock, CollapsedColumnBlock, ShapeGuide } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, ShapeGuide } from '@/types/knitting';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { calcCellDiffs, applyDiffs, reverseDiffs } from '@/lib/utils/history-utils';
 
 const MAX_HISTORY = 50;
 
+type CellsEntry =
+	| { kind: 'snapshot'; cells: ChartCell[][] }
+	| { kind: 'diff'; diffs: ReturnType<typeof calcCellDiffs> };
+
 interface HistoryEntry {
-	cells: ChartCell[][];
+	cellsEntry: CellsEntry;
+	gridSize: GridSize;
 	shapeGuide: ShapeGuide | null;
 	collapsedBlocks: CollapsedBlock[];
 	collapsedColumnBlocks: CollapsedColumnBlock[];
@@ -26,6 +32,7 @@ export function useHistory() {
 	);
 	const prevShapeGuideRef = useRef<ShapeGuide | null>(useUIStore.getState().shapeGuide);
 	const prevHistoryResetTokenRef = useRef<number>(useUIStore.getState().historyResetToken);
+	const prevGridSizeRef = useRef<GridSize>(useChartStore.getState().gridSize);
 	const isBatchingRef = useRef(false);
 	const batchStartRef = useRef<HistoryEntry | null>(null);
 
@@ -38,13 +45,14 @@ export function useHistory() {
 	// cells + collapsedBlocks + collapsedColumnBlocks 변경 감지 (단일 subscriber로 통합)
 	useEffect(() => {
 		const unsubscribe = useChartStore.subscribe((state) => {
-			const { cells, collapsedBlocks, collapsedColumnBlocks } = state;
+			const { cells, collapsedBlocks, collapsedColumnBlocks, gridSize } = state;
 
 			if (isApplyingChartStoreRef.current) {
 				isApplyingChartStoreRef.current = false;
 				prevCellsRef.current = cells;
 				prevCollapsedBlocksRef.current = collapsedBlocks;
 				prevCollapsedColumnBlocksRef.current = collapsedColumnBlocks;
+				prevGridSizeRef.current = gridSize;
 				return;
 			}
 
@@ -57,20 +65,32 @@ export function useHistory() {
 				prevCellsRef.current = cells;
 				prevCollapsedBlocksRef.current = collapsedBlocks;
 				prevCollapsedColumnBlocksRef.current = collapsedColumnBlocks;
+				prevGridSizeRef.current = gridSize;
 				return;
 			}
 
+			const gridSizeChanged =
+				gridSize.rows !== prevGridSizeRef.current.rows ||
+				gridSize.cols !== prevGridSizeRef.current.cols;
+
+			const cellsEntry: CellsEntry = gridSizeChanged
+				? { kind: 'snapshot', cells: prevCellsRef.current }
+				: { kind: 'diff', diffs: calcCellDiffs(prevCellsRef.current, cells) };
+
 			const entry: HistoryEntry = {
-				cells: prevCellsRef.current,
+				cellsEntry,
+				gridSize: prevGridSizeRef.current,
 				shapeGuide: prevShapeGuideRef.current,
 				collapsedBlocks: prevCollapsedBlocksRef.current,
 				collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 			};
+
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
 			futureRef.current = [];
 			prevCellsRef.current = cells;
 			prevCollapsedBlocksRef.current = collapsedBlocks;
 			prevCollapsedColumnBlocksRef.current = collapsedColumnBlocks;
+			prevGridSizeRef.current = gridSize;
 			setCanUndo(true);
 			setCanRedo(false);
 		});
@@ -87,6 +107,7 @@ export function useHistory() {
 			prevCellsRef.current = useChartStore.getState().cells;
 			prevCollapsedBlocksRef.current = useChartStore.getState().collapsedBlocks;
 			prevCollapsedColumnBlocksRef.current = useChartStore.getState().collapsedColumnBlocks;
+			prevGridSizeRef.current = useChartStore.getState().gridSize;
 			prevShapeGuideRef.current = state.shapeGuide;
 			setCanUndo(false);
 			setCanRedo(false);
@@ -113,7 +134,8 @@ export function useHistory() {
 			}
 
 			const entry: HistoryEntry = {
-				cells: prevCellsRef.current,
+				cellsEntry: { kind: 'diff', diffs: [] },
+				gridSize: prevGridSizeRef.current,
 				shapeGuide: prevShapeGuideRef.current,
 				collapsedBlocks: prevCollapsedBlocksRef.current,
 				collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
@@ -130,21 +152,35 @@ export function useHistory() {
 	const undo = useCallback(() => {
 		if (pastRef.current.length === 0) return;
 		const previous = pastRef.current[pastRef.current.length - 1];
+
 		const currentEntry: HistoryEntry = {
-			cells: prevCellsRef.current,
+			cellsEntry: { kind: 'snapshot', cells: prevCellsRef.current },
+			gridSize: prevGridSizeRef.current,
 			shapeGuide: prevShapeGuideRef.current,
 			collapsedBlocks: prevCollapsedBlocksRef.current,
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 		};
 		futureRef.current = [currentEntry, ...futureRef.current];
 		pastRef.current = pastRef.current.slice(0, -1);
+
+		const cellsToRestore =
+			previous.cellsEntry.kind === 'snapshot'
+				? previous.cellsEntry.cells
+				: applyDiffs(prevCellsRef.current, reverseDiffs(previous.cellsEntry.diffs));
+
 		isApplyingChartStoreRef.current = true;
 		isApplyingShapeGuideRef.current = true;
-		prevCellsRef.current = previous.cells;
+		prevCellsRef.current = cellsToRestore;
 		prevCollapsedBlocksRef.current = previous.collapsedBlocks;
 		prevCollapsedColumnBlocksRef.current = previous.collapsedColumnBlocks;
 		prevShapeGuideRef.current = previous.shapeGuide;
-		setCellsAndBlocks(previous.cells, previous.collapsedBlocks, previous.collapsedColumnBlocks);
+		prevGridSizeRef.current = previous.gridSize;
+		setCellsAndBlocks(
+			cellsToRestore,
+			previous.collapsedBlocks,
+			previous.collapsedColumnBlocks,
+			previous.gridSize,
+		);
 		setShapeGuide(previous.shapeGuide);
 		setCanUndo(pastRef.current.length > 0);
 		setCanRedo(true);
@@ -153,21 +189,35 @@ export function useHistory() {
 	const redo = useCallback(() => {
 		if (futureRef.current.length === 0) return;
 		const next = futureRef.current[0];
+
 		const currentEntry: HistoryEntry = {
-			cells: prevCellsRef.current,
+			cellsEntry: { kind: 'snapshot', cells: prevCellsRef.current },
+			gridSize: prevGridSizeRef.current,
 			shapeGuide: prevShapeGuideRef.current,
 			collapsedBlocks: prevCollapsedBlocksRef.current,
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 		};
 		pastRef.current = [...pastRef.current, currentEntry];
 		futureRef.current = futureRef.current.slice(1);
+
+		const cellsToRestore =
+			next.cellsEntry.kind === 'snapshot'
+				? next.cellsEntry.cells
+				: applyDiffs(prevCellsRef.current, next.cellsEntry.diffs);
+
 		isApplyingChartStoreRef.current = true;
 		isApplyingShapeGuideRef.current = true;
-		prevCellsRef.current = next.cells;
+		prevCellsRef.current = cellsToRestore;
 		prevCollapsedBlocksRef.current = next.collapsedBlocks;
 		prevCollapsedColumnBlocksRef.current = next.collapsedColumnBlocks;
 		prevShapeGuideRef.current = next.shapeGuide;
-		setCellsAndBlocks(next.cells, next.collapsedBlocks, next.collapsedColumnBlocks);
+		prevGridSizeRef.current = next.gridSize;
+		setCellsAndBlocks(
+			cellsToRestore,
+			next.collapsedBlocks,
+			next.collapsedColumnBlocks,
+			next.gridSize,
+		);
 		setShapeGuide(next.shapeGuide);
 		setCanUndo(true);
 		setCanRedo(futureRef.current.length > 0);
@@ -176,7 +226,8 @@ export function useHistory() {
 	const beginBatch = useCallback(() => {
 		isBatchingRef.current = true;
 		batchStartRef.current = {
-			cells: prevCellsRef.current,
+			cellsEntry: { kind: 'snapshot', cells: prevCellsRef.current },
+			gridSize: prevGridSizeRef.current,
 			shapeGuide: prevShapeGuideRef.current,
 			collapsedBlocks: prevCollapsedBlocksRef.current,
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
@@ -188,22 +239,43 @@ export function useHistory() {
 		isBatchingRef.current = false;
 		const batchStart = batchStartRef.current;
 		batchStartRef.current = null;
-		const currentCells = prevCellsRef.current;
+
+		if (batchStart === null) return;
+
+		const currentCells = useChartStore.getState().cells;
+		const currentGridSize = useChartStore.getState().gridSize;
 		const currentShapeGuide = prevShapeGuideRef.current;
 		const currentCollapsedBlocks = prevCollapsedBlocksRef.current;
 		const currentCollapsedColumnBlocks = prevCollapsedColumnBlocksRef.current;
-		if (
-			batchStart !== null &&
-			(batchStart.cells !== currentCells ||
-				batchStart.shapeGuide !== currentShapeGuide ||
-				batchStart.collapsedBlocks !== currentCollapsedBlocks ||
-				batchStart.collapsedColumnBlocks !== currentCollapsedColumnBlocks)
-		) {
-			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), batchStart];
-			futureRef.current = [];
-			setCanUndo(true);
-			setCanRedo(false);
-		}
+
+		const batchStartCells =
+			batchStart.cellsEntry.kind === 'snapshot'
+				? batchStart.cellsEntry.cells
+				: prevCellsRef.current;
+
+		const unchanged =
+			batchStartCells === currentCells &&
+			batchStart.shapeGuide === currentShapeGuide &&
+			batchStart.collapsedBlocks === currentCollapsedBlocks &&
+			batchStart.collapsedColumnBlocks === currentCollapsedColumnBlocks;
+
+		if (unchanged) return;
+
+		const gridSizeChanged =
+			currentGridSize.rows !== batchStart.gridSize.rows ||
+			currentGridSize.cols !== batchStart.gridSize.cols;
+
+		const cellsEntry: CellsEntry = gridSizeChanged
+			? { kind: 'snapshot', cells: batchStartCells }
+			: { kind: 'diff', diffs: calcCellDiffs(batchStartCells, currentCells) };
+
+		pastRef.current = [
+			...pastRef.current.slice(-(MAX_HISTORY - 1)),
+			{ ...batchStart, cellsEntry },
+		];
+		futureRef.current = [];
+		setCanUndo(true);
+		setCanRedo(false);
 	}, []);
 
 	return { undo, redo, canUndo, canRedo, beginBatch, endBatch };

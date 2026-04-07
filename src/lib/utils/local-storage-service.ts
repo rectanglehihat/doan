@@ -1,7 +1,9 @@
 import type { ChartCell, PatternStorageEntry, SavedPatternSnapshot } from '@/types/knitting';
+import { compressString, decompressString } from '@/lib/utils/lz-compress';
 
 const STORAGE_KEY = 'doan_patterns';
 const MAX_PATTERNS = 5;
+const COMPRESSED_PREFIX = 'lz:';
 
 export type StorageResult<T> =
 	| { ok: true; data: T }
@@ -27,10 +29,22 @@ function readStorage(): StorageResult<PatternStorageEntry> {
 	}
 
 	let parsed: unknown;
-	try {
-		parsed = JSON.parse(raw);
-	} catch {
-		return { ok: false, error: 'parse_error' };
+	if (raw.startsWith(COMPRESSED_PREFIX)) {
+		const decompressed = decompressString(raw.slice(COMPRESSED_PREFIX.length));
+		if (decompressed === null) {
+			return { ok: false, error: 'parse_error' };
+		}
+		try {
+			parsed = JSON.parse(decompressed);
+		} catch {
+			return { ok: false, error: 'parse_error' };
+		}
+	} else {
+		try {
+			parsed = JSON.parse(raw);
+		} catch {
+			return { ok: false, error: 'parse_error' };
+		}
 	}
 
 	if (
@@ -50,7 +64,9 @@ function writeStorage(entry: PatternStorageEntry): StorageResult<void> {
 	}
 
 	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+		const json = JSON.stringify(entry);
+		const compressed = COMPRESSED_PREFIX + compressString(json);
+		localStorage.setItem(STORAGE_KEY, compressed);
 		return { ok: true, data: undefined };
 	} catch (err) {
 		if (err instanceof DOMException && err.name === 'QuotaExceededError') {

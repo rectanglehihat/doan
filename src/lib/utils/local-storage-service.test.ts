@@ -91,9 +91,12 @@ describe('savePattern', () => {
 		const result = savePattern(snapshot);
 
 		expect(result).toEqual({ ok: true, data: undefined });
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.patterns).toHaveLength(1);
-		expect(stored.patterns[0].id).toBe('test-id-1');
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
+		if (loaded.ok) {
+			expect(loaded.data).toHaveLength(1);
+			expect(loaded.data[0].id).toBe('test-id-1');
+		}
 	});
 
 	it('기존 패턴 목록에 새 패턴을 추가한다', () => {
@@ -106,8 +109,11 @@ describe('savePattern', () => {
 		const newSnapshot = makeSnapshot({ id: 'new-id', title: '새 도안' });
 		savePattern(newSnapshot);
 
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.patterns).toHaveLength(2);
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
+		if (loaded.ok) {
+			expect(loaded.data).toHaveLength(2);
+		}
 	});
 
 	it('같은 id의 패턴이 존재하면 덮어쓴다', () => {
@@ -120,9 +126,12 @@ describe('savePattern', () => {
 		const updated = makeSnapshot({ title: '수정된 제목' });
 		savePattern(updated);
 
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.patterns).toHaveLength(1);
-		expect(stored.patterns[0].title).toBe('수정된 제목');
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
+		if (loaded.ok) {
+			expect(loaded.data).toHaveLength(1);
+			expect(loaded.data[0].title).toBe('수정된 제목');
+		}
 	});
 
 	it('패턴 수가 MAX_PATTERNS(5)에 도달하면 새 id의 패턴 저장 시 limit_reached를 반환한다', () => {
@@ -176,8 +185,8 @@ describe('savePattern', () => {
 	it('저장된 데이터에 version: 1이 포함된다', () => {
 		savePattern(makeSnapshot());
 
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.version).toBe(1);
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
 	});
 });
 
@@ -192,8 +201,11 @@ describe('deletePattern', () => {
 		const result = deletePattern('to-delete');
 
 		expect(result).toEqual({ ok: true, data: undefined });
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.patterns).toHaveLength(0);
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
+		if (loaded.ok) {
+			expect(loaded.data).toHaveLength(0);
+		}
 	});
 
 	it('여러 패턴 중 지정한 id만 삭제한다', () => {
@@ -208,9 +220,12 @@ describe('deletePattern', () => {
 
 		deletePattern('id-1');
 
-		const stored = JSON.parse(localStorage.getItem('doan_patterns') ?? '{}');
-		expect(stored.patterns).toHaveLength(1);
-		expect(stored.patterns[0].id).toBe('id-2');
+		const loaded = loadAllPatterns();
+		expect(loaded.ok).toBe(true);
+		if (loaded.ok) {
+			expect(loaded.data).toHaveLength(1);
+			expect(loaded.data[0].id).toBe('id-2');
+		}
 	});
 
 	it('존재하지 않는 id를 삭제하면 not_found를 반환한다', () => {
@@ -230,6 +245,49 @@ describe('deletePattern', () => {
 
 		const result = deletePattern('some-id');
 		expect(result).toEqual({ ok: false, error: 'storage_unavailable' });
+	});
+});
+
+describe('압축 저장/읽기', () => {
+	it('savePattern 후 localStorage에 저장된 raw 값이 "lz:" prefix로 시작한다', () => {
+		const snapshot = makeSnapshot();
+		savePattern(snapshot);
+
+		const raw = localStorage.getItem('doan_patterns');
+		expect(raw).not.toBeNull();
+		expect(raw).toMatch(/^lz:/);
+	});
+
+	it('savePattern 후 loadAllPatterns로 동일한 데이터를 복원한다', () => {
+		const snapshot = makeSnapshot({ id: 'compress-test', title: '압축 테스트 도안' });
+		savePattern(snapshot);
+
+		const result = loadAllPatterns();
+
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.data).toHaveLength(1);
+			expect(result.data[0].id).toBe('compress-test');
+			expect(result.data[0].title).toBe('압축 테스트 도안');
+		}
+	});
+});
+
+describe('하위 호환 — 비압축 JSON 읽기', () => {
+	it('localStorage에 비압축 JSON(기존 포맷)이 있을 때 loadAllPatterns가 정상적으로 읽는다', () => {
+		const snapshot = makeSnapshot({ id: 'legacy-id', title: '레거시 도안' });
+		localStorage.setItem(
+			'doan_patterns',
+			JSON.stringify({ version: 1, patterns: [snapshot] }),
+		);
+
+		const result = loadAllPatterns();
+
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.data).toHaveLength(1);
+			expect(result.data[0].id).toBe('legacy-id');
+		}
 	});
 });
 
