@@ -217,12 +217,3 @@
 | Organism — `CollapsedColumn`       | `CollapsedColumn.test.tsx`       | 60%           | 4개 작성  |
 | Organism — `KonvaGrid`             | `KonvaGrid.test.tsx`             | 60%           | 4개 작성  |
 | Page — `app/page`                  | `page.test.tsx`                  | 60%           | 3개 작성  |
-
----
-
-## 설치 필요 패키지
-
-```bash
-pnpm add jspdf html2canvas
-pnpm add react-hook-form zod
-```
