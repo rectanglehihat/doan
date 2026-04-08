@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AnnotationSide, RowAnnotation } from '@/types/annotation';
+import { AnnotationSide, RangeAnnotation, RowAnnotation } from '@/types/annotation';
 import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
@@ -71,6 +71,10 @@ export interface ChartState {
 	addRowAnnotation: (rowIndex: number, label: string, side: AnnotationSide) => void;
 	updateRowAnnotation: (id: string, label: string) => void;
 	removeRowAnnotation: (id: string) => void;
+	rangeAnnotations: RangeAnnotation[];
+	addRangeAnnotation: (startRow: number, endRow: number, text: string) => void;
+	updateRangeAnnotation: (id: string, text: string) => void;
+	removeRangeAnnotation: (id: string) => void;
 	restoreSnapshot: (
 		cells: ChartCell[][],
 		gridSize: GridSize,
@@ -81,6 +85,7 @@ export interface ChartState {
 		materials: string,
 		collapsedColumnBlocks?: CollapsedColumnBlock[],
 		rowAnnotations?: RowAnnotation[],
+		rangeAnnotations?: RangeAnnotation[],
 	) => void;
 	reset: () => void;
 }
@@ -96,6 +101,7 @@ const initialState = {
 	difficulty: 0,
 	materials: '',
 	rowAnnotations: [],
+	rangeAnnotations: [],
 } satisfies {
 	cells: ChartCell[][];
 	gridSize: GridSize;
@@ -107,6 +113,7 @@ const initialState = {
 	difficulty: number;
 	materials: string;
 	rowAnnotations: RowAnnotation[];
+	rangeAnnotations: RangeAnnotation[];
 };
 
 export const useChartStore = create<ChartState>((set, get) => ({
@@ -239,8 +246,30 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			rowAnnotations: state.rowAnnotations.filter((annotation) => annotation.id !== id),
 		})),
 
-	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations) =>
-		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [] }),
+	addRangeAnnotation: (startRow, endRow, text) => {
+		const newAnnotation: RangeAnnotation = {
+			id: crypto.randomUUID(),
+			startRow,
+			endRow,
+			text,
+		};
+		set((state) => ({ rangeAnnotations: [...state.rangeAnnotations, newAnnotation] }));
+	},
+
+	updateRangeAnnotation: (id, text) =>
+		set((state) => ({
+			rangeAnnotations: state.rangeAnnotations.map((annotation) =>
+				annotation.id === id ? { ...annotation, text } : annotation,
+			),
+		})),
+
+	removeRangeAnnotation: (id) =>
+		set((state) => ({
+			rangeAnnotations: state.rangeAnnotations.filter((annotation) => annotation.id !== id),
+		})),
+
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations, rangeAnnotations) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [], rangeAnnotations: rangeAnnotations ?? [] }),
 
 	reset: () =>
 		set({
@@ -254,5 +283,6 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			difficulty: 0,
 			materials: '',
 			rowAnnotations: [],
+			rangeAnnotations: [],
 		}),
 }));

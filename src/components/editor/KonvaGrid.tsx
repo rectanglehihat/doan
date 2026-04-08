@@ -61,6 +61,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 	isAnnotationMode = false,
 	annotationSideWidth = 80,
 	onAnnotationAreaClick,
+	rangeAnnotations = [],
+	rangeAnnotationDraft = null,
+	onRangeBracketClick,
+	onRangeDragStart,
+	onRangeDragMove,
+	onRangeDragEnd,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -274,6 +280,16 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[rowAnnotations, onAnnotationAreaClick],
 	);
 
+	// Stage Y 좌표를 논리 rowIndex로 변환 (0 ~ rows-1 클램핑)
+	const getRowIndexFromStageY = useCallback(
+		(stageY: number): number => {
+			const paddingTop = 0;
+			const rawIndex = Math.floor((stageY - paddingTop) / cellSize);
+			return Math.max(0, Math.min(gridSize.rows - 1, rawIndex));
+		},
+		[cellSize, gridSize.rows],
+	);
+
 	const handleMouseDown = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
 			if (e.evt.button === 1 || (e.evt.button === 0 && isInSpacePanMode())) {
@@ -355,6 +371,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 	const handleMouseMove = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
 			if (updateMousePan(e.evt.clientX, e.evt.clientY)) return;
+			if (isAnnotationMode && onRangeDragMove) {
+				const stage = stageRef.current;
+				if (stage) {
+					const pointer = stage.getPointerPosition();
+					if (pointer) {
+						const layerY = (pointer.y - transform.y) / transform.scale;
+						const rowIndex = getRowIndexFromStageY(layerY);
+						onRangeDragMove(rowIndex);
+					}
+				}
+			}
 			if (isSelectionMode) {
 				const cell = getCellFromPointer();
 				setHoverCell(cell);
@@ -415,29 +442,51 @@ export const KonvaGrid = memo(function KonvaGrid({
 			erasePartialStrokes,
 			isSelectionMode,
 			onSelectionChange,
+			isAnnotationMode,
+			onRangeDragMove,
+			transform,
+			getRowIndexFromStageY,
 		],
 	);
 
-	const handleMouseUp = useCallback(() => {
-		if (isSelectionMode) {
-			isSelectingRef.current = false;
-			selectionAnchorRef.current = null;
-		} else if (isShapeGuideEraseMode) {
-			finishEraseGesture();
-		} else if (isShapeGuideDrawMode) {
-			if (isDrawingGuide.current && currentStroke.length >= 4) {
-				onShapeGuideStrokeAdd?.(currentStroke);
+	const handleMouseUp = useCallback(
+		(e: KonvaEventObject<MouseEvent>) => {
+			if (isAnnotationMode && onRangeDragEnd) {
+				const nativeEvt: MouseEvent | undefined = e.evt;
+				onRangeDragEnd(nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
 			}
-			isDrawingGuide.current = false;
-			setCurrentStroke([]);
-		} else {
-			if (isPainting.current) {
-				onPaintEnd?.();
+			if (isSelectionMode) {
+				isSelectingRef.current = false;
+				selectionAnchorRef.current = null;
+			} else if (isShapeGuideEraseMode) {
+				finishEraseGesture();
+			} else if (isShapeGuideDrawMode) {
+				if (isDrawingGuide.current && currentStroke.length >= 4) {
+					onShapeGuideStrokeAdd?.(currentStroke);
+				}
+				isDrawingGuide.current = false;
+				setCurrentStroke([]);
+			} else {
+				if (isPainting.current) {
+					onPaintEnd?.();
+				}
+				isPainting.current = false;
 			}
-			isPainting.current = false;
-		}
-		endMousePan();
-	}, [endMousePan, onPaintEnd, onShapeGuideStrokeAdd, isShapeGuideDrawMode, isShapeGuideEraseMode, currentStroke, finishEraseGesture, isSelectionMode]);
+			endMousePan();
+		},
+		[
+			endMousePan,
+			onPaintEnd,
+			onShapeGuideStrokeAdd,
+			isShapeGuideDrawMode,
+			isShapeGuideEraseMode,
+			currentStroke,
+			finishEraseGesture,
+			isSelectionMode,
+			isAnnotationMode,
+			onRangeDragEnd,
+		],
+	);
 
 	const handleMouseLeave = useCallback(() => {
 		setHoverCell(null);
@@ -708,7 +757,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				))}
 			</Layer>
 
-			{/* Layer 4: 주석 레이어 — 행 주석 마커, 클릭 히트 영역 */}
+			{/* Layer 4: 주석 레이어 — 행 주석 마커, 클릭 히트 영역, 범위 브라켓 */}
 			<AnnotationLayer
 				rowAnnotations={rowAnnotations}
 				rowVisualYMap={rowVisualYMap}
@@ -720,6 +769,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 				transform={transform}
 				onMarkerClick={handleAnnotationMarkerClick}
 				onSideAreaClick={handleAnnotationSideAreaClick}
+				rangeAnnotations={rangeAnnotations}
+				rangeAnnotationDraft={rangeAnnotationDraft}
+				onRangeBracketClick={onRangeBracketClick}
+				onRangeDragStart={onRangeDragStart}
 			/>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (

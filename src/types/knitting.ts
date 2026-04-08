@@ -1,6 +1,6 @@
-import type { RowAnnotation } from './annotation';
+import type { RowAnnotation, RangeAnnotation } from './annotation';
 
-export type { RowAnnotation };
+export type { RowAnnotation, RangeAnnotation };
 
 export type SymbolCategory = 'basic-structure' | 'basic-stitch' | 'increase' | 'decrease' | 'special';
 
@@ -93,6 +93,7 @@ export interface SavedPatternSnapshot {
 	difficulty: number; // 0~5
 	materials: string;
 	rowAnnotations?: RowAnnotation[];
+	rangeAnnotations?: RangeAnnotation[];
 }
 
 export interface PatternStorageEntry {

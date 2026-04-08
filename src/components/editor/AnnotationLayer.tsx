@@ -3,7 +3,8 @@
 import { memo, useCallback, useMemo } from 'react';
 import { Layer, Group, Line, Text, Rect, Circle } from 'react-konva';
 import type Konva from 'konva';
-import type { RowAnnotation } from '@/types/annotation';
+import type { RangeAnnotation, RowAnnotation } from '@/types/annotation';
+import { RangeBracketItem } from './RangeBracketItem';
 
 export interface AnnotationLayerTransform {
 	x: number;
@@ -22,10 +23,20 @@ export interface AnnotationLayerProps {
 	transform?: AnnotationLayerTransform;
 	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
 	onSideAreaClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
+	rangeAnnotations?: RangeAnnotation[];
+	rangeAnnotationDraft?: { startRow: number; endRow: number } | null;
+	onRangeBracketClick?: (id: string, anchorX: number, anchorY: number) => void;
+	onRangeDragStart?: (rowIndex: number) => void;
+	onRangeDragMove?: (rowIndex: number) => void;
+	onRangeDragEnd?: (anchorX: number, anchorY: number) => void;
 }
 
 const FONT_SIZE = 11;
 const MARKER_RADIUS = 6;
+
+function noopMarkerClick(): void {
+	// no-op default handler
+}
 const LINE_EXTEND = 8;
 const TEXT_OFFSET_X = 12;
 
@@ -101,6 +112,7 @@ interface SideHitAreaProps {
 	cellSize: number;
 	annotationSideWidth: number;
 	onSideAreaClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
+	onRangeDragStart?: (rowIndex: number) => void;
 }
 
 const SideHitArea = memo(function SideHitAreaInner({
@@ -110,6 +122,7 @@ const SideHitArea = memo(function SideHitAreaInner({
 	cellSize,
 	annotationSideWidth,
 	onSideAreaClick,
+	onRangeDragStart,
 }: SideHitAreaProps) {
 	const handleClick = useCallback(
 		(e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -118,6 +131,13 @@ const SideHitArea = memo(function SideHitAreaInner({
 			onSideAreaClick(rowIndex, nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
 		},
 		[rowIndex, onSideAreaClick],
+	);
+
+	const handleMouseDown = useCallback(
+		() => {
+			onRangeDragStart?.(rowIndex);
+		},
+		[rowIndex, onRangeDragStart],
 	);
 
 	return (
@@ -129,9 +149,15 @@ const SideHitArea = memo(function SideHitAreaInner({
 			fill="transparent"
 			listening={true}
 			onClick={handleClick}
+			onMouseDown={handleMouseDown}
 		/>
 	);
 });
+
+const DRAFT_BRACKET_COLOR = '#2563EB';
+const DRAFT_BRACKET_OFFSET = 4;
+const DRAFT_CAP_LENGTH = 8;
+const DRAFT_STROKE_WIDTH = 1.5;
 
 export const AnnotationLayer = memo(function AnnotationLayerInner({
 	rowAnnotations,
@@ -144,6 +170,10 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 	transform,
 	onMarkerClick,
 	onSideAreaClick,
+	rangeAnnotations = [],
+	rangeAnnotationDraft = null,
+	onRangeBracketClick,
+	onRangeDragStart,
 }: AnnotationLayerProps) {
 	// annotation이 있는 rowIndex Set
 	const annotatedRowIndices = useMemo(
@@ -199,8 +229,67 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 					cellSize={cellSize}
 					annotationSideWidth={annotationSideWidth}
 					onSideAreaClick={onSideAreaClick}
+					onRangeDragStart={onRangeDragStart}
 				/>
 			))}
+
+			{/* 범위 주석 브라켓 목록 */}
+			{rangeAnnotations.map((annotation) => {
+				const startY = rowVisualYMap[annotation.startRow];
+				const endRowY = rowVisualYMap[annotation.endRow];
+				if (startY === null || startY === undefined) return null;
+				if (endRowY === null || endRowY === undefined) return null;
+				const endY = endRowY + cellSize;
+				return (
+					<RangeBracketItem
+						key={annotation.id}
+						annotation={annotation}
+						startY={startY}
+						endY={endY}
+						totalWidth={totalWidth}
+						cellSize={cellSize}
+						annotationSideWidth={annotationSideWidth}
+						isAnnotationMode={isAnnotationMode}
+						totalRows={totalRows}
+						onMarkerClick={onRangeBracketClick ?? noopMarkerClick}
+					/>
+				);
+			})}
+
+			{/* 드래그 중 draft 브라켓 (점선, listening=false) */}
+			{rangeAnnotationDraft !== null && (() => {
+				const draftStartY = rowVisualYMap[rangeAnnotationDraft.startRow];
+				const draftEndRowY = rowVisualYMap[rangeAnnotationDraft.endRow];
+				if (draftStartY === null || draftStartY === undefined) return null;
+				if (draftEndRowY === null || draftEndRowY === undefined) return null;
+				const draftEndY = draftEndRowY + cellSize;
+				const bracketX = totalWidth + DRAFT_BRACKET_OFFSET;
+				return (
+					<Group listening={false}>
+						<Line
+							points={[bracketX, draftStartY, bracketX, draftEndY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+						<Line
+							points={[bracketX, draftStartY, bracketX - DRAFT_CAP_LENGTH, draftStartY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+						<Line
+							points={[bracketX, draftEndY, bracketX - DRAFT_CAP_LENGTH, draftEndY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+					</Group>
+				);
+			})()}
 		</Layer>
 	);
 });

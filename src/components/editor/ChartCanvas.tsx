@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 import { useUIStore } from '@/store/useUIStore';
 import { useChartStore } from '@/store/useChartStore';
+import { useRangeAnnotationDrag } from '@/hooks/useRangeAnnotationDrag';
 import { AnnotationPopover } from '@/components/ui/molecules/AnnotationPopover';
 import type Konva from 'konva';
 import { RotationalMode } from '@/types/knitting';
@@ -104,6 +105,15 @@ export function ChartCanvas({
 	const updateRowAnnotation = useChartStore((state) => state.updateRowAnnotation);
 	const removeRowAnnotation = useChartStore((state) => state.removeRowAnnotation);
 
+	const rangeAnnotations = useChartStore((state) => state.rangeAnnotations);
+	const addRangeAnnotation = useChartStore((state) => state.addRangeAnnotation);
+	const updateRangeAnnotation = useChartStore((state) => state.updateRangeAnnotation);
+	const removeRangeAnnotation = useChartStore((state) => state.removeRangeAnnotation);
+
+	const rangeAnnotationPopover = useUIStore((state) => state.rangeAnnotationPopover);
+	const rangeAnnotationDraft = useUIStore((state) => state.rangeAnnotationDraft);
+	const closeRangeAnnotationPopover = useUIStore((state) => state.closeRangeAnnotationPopover);
+
 	const collapsedBlocks = useChartStore((state) => state.collapsedBlocks);
 	const addCollapsedBlock = useChartStore((state) => state.addCollapsedBlock);
 	const collapsedColumnBlocks = useChartStore((state) => state.collapsedColumnBlocks);
@@ -134,6 +144,51 @@ export function ChartCanvas({
 		},
 		[openAnnotationPopover],
 	);
+
+	const { handleRangeDragStart, handleRangeDragMove, handleRangeDragEnd } = useRangeAnnotationDrag({
+		onSingleRow: (rowIndex) => {
+			handleAnnotationAreaClick(rowIndex, 'right', 0, 0, null);
+		},
+	});
+
+	const handleRangeBracketClick = useCallback(
+		(id: string, anchorX: number, anchorY: number) => {
+			const annotation = rangeAnnotations.find((a) => a.id === id);
+			if (!annotation) return;
+			useUIStore.getState().openRangeAnnotationPopover({
+				startRowIndex: annotation.startRow,
+				endRowIndex: annotation.endRow,
+				anchorX,
+				anchorY,
+				existingId: id,
+			});
+		},
+		[rangeAnnotations],
+	);
+
+	const handleRangeAnnotationConfirm = useCallback(
+		(text: string) => {
+			if (rangeAnnotationPopover === null) return;
+			const { startRowIndex, endRowIndex, existingId } = rangeAnnotationPopover;
+			if (existingId !== null) {
+				updateRangeAnnotation(existingId, text);
+			} else {
+				addRangeAnnotation(startRowIndex, endRowIndex, text);
+			}
+			closeRangeAnnotationPopover();
+		},
+		[rangeAnnotationPopover, updateRangeAnnotation, addRangeAnnotation, closeRangeAnnotationPopover],
+	);
+
+	const handleRangeAnnotationDelete = useCallback(() => {
+		if (rangeAnnotationPopover === null || rangeAnnotationPopover.existingId === null) return;
+		removeRangeAnnotation(rangeAnnotationPopover.existingId);
+		closeRangeAnnotationPopover();
+	}, [rangeAnnotationPopover, removeRangeAnnotation, closeRangeAnnotationPopover]);
+
+	const handleRangeAnnotationClose = useCallback(() => {
+		closeRangeAnnotationPopover();
+	}, [closeRangeAnnotationPopover]);
 
 	const handleAnnotationConfirm = useCallback(
 		(label: string) => {
@@ -304,6 +359,12 @@ export function ChartCanvas({
 						rowAnnotations={rowAnnotations}
 						isAnnotationMode={isAnnotationMode}
 						onAnnotationAreaClick={handleAnnotationAreaClick}
+						rangeAnnotations={rangeAnnotations}
+						rangeAnnotationDraft={rangeAnnotationDraft}
+						onRangeBracketClick={handleRangeBracketClick}
+						onRangeDragStart={handleRangeDragStart}
+						onRangeDragMove={handleRangeDragMove}
+						onRangeDragEnd={handleRangeDragEnd}
 					/>
 
 					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}
@@ -375,6 +436,26 @@ export function ChartCanvas({
 							onConfirm={handleAnnotationConfirm}
 							onDelete={annotationPopover.existingId !== null ? handleAnnotationDelete : null}
 							onClose={handleAnnotationClose}
+						/>
+					)}
+
+					{/* 범위 주석 팝오버 */}
+					{rangeAnnotationPopover !== null && (
+						<AnnotationPopover
+							anchorX={rangeAnnotationPopover.anchorX}
+							anchorY={rangeAnnotationPopover.anchorY}
+							side="right"
+							mode="range"
+							startRowNumber={gridSize.rows - rangeAnnotationPopover.startRowIndex}
+							endRowNumber={gridSize.rows - rangeAnnotationPopover.endRowIndex}
+							initialText={
+								rangeAnnotationPopover.existingId !== null
+									? (rangeAnnotations.find((a) => a.id === rangeAnnotationPopover.existingId)?.text ?? '')
+									: ''
+							}
+							onConfirm={handleRangeAnnotationConfirm}
+							onDelete={rangeAnnotationPopover.existingId !== null ? handleRangeAnnotationDelete : null}
+							onClose={handleRangeAnnotationClose}
 						/>
 					)}
 

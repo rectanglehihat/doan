@@ -420,6 +420,109 @@ describe('useChartStore', () => {
 		});
 	});
 
+	describe('rangeAnnotations', () => {
+		it('초기값은 빈 배열이다', () => {
+			const { rangeAnnotations } = useChartStore.getState();
+			expect(rangeAnnotations).toEqual([]);
+		});
+
+		it('addRangeAnnotation 호출 시 배열에 항목이 추가된다', () => {
+			useChartStore.getState().addRangeAnnotation(2, 5, '오른쪽 경사 감코');
+			const { rangeAnnotations } = useChartStore.getState();
+			expect(rangeAnnotations).toHaveLength(1);
+			expect(rangeAnnotations[0].startRow).toBe(2);
+			expect(rangeAnnotations[0].endRow).toBe(5);
+			expect(rangeAnnotations[0].text).toBe('오른쪽 경사 감코');
+		});
+
+		it('addRangeAnnotation 호출 시 id가 자동으로 생성된다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 3, '테스트');
+			const { rangeAnnotations } = useChartStore.getState();
+			expect(typeof rangeAnnotations[0].id).toBe('string');
+			expect(rangeAnnotations[0].id.length).toBeGreaterThan(0);
+		});
+
+		it('addRangeAnnotation 여러 번 호출 시 각각 고유한 id를 가진다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 2, '첫 번째');
+			useChartStore.getState().addRangeAnnotation(5, 8, '두 번째');
+			const { rangeAnnotations } = useChartStore.getState();
+			expect(rangeAnnotations).toHaveLength(2);
+			expect(rangeAnnotations[0].id).not.toBe(rangeAnnotations[1].id);
+		});
+
+		it('updateRangeAnnotation 호출 시 text가 수정된다', () => {
+			useChartStore.getState().addRangeAnnotation(1, 4, '원래 텍스트');
+			const { id } = useChartStore.getState().rangeAnnotations[0];
+			useChartStore.getState().updateRangeAnnotation(id, '수정된 텍스트');
+			expect(useChartStore.getState().rangeAnnotations[0].text).toBe('수정된 텍스트');
+		});
+
+		it('updateRangeAnnotation 호출 시 startRow, endRow는 변경되지 않는다', () => {
+			useChartStore.getState().addRangeAnnotation(3, 7, '텍스트');
+			const { id } = useChartStore.getState().rangeAnnotations[0];
+			useChartStore.getState().updateRangeAnnotation(id, '수정');
+			const annotation = useChartStore.getState().rangeAnnotations[0];
+			expect(annotation.startRow).toBe(3);
+			expect(annotation.endRow).toBe(7);
+		});
+
+		it('removeRangeAnnotation 호출 시 해당 id 항목이 삭제된다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 3, '삭제될 항목');
+			const { id } = useChartStore.getState().rangeAnnotations[0];
+			useChartStore.getState().removeRangeAnnotation(id);
+			expect(useChartStore.getState().rangeAnnotations).toHaveLength(0);
+		});
+
+		it('removeRangeAnnotation 존재하지 않는 id는 무시한다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 2, '항목');
+			expect(() =>
+				useChartStore.getState().removeRangeAnnotation('non-existent-id'),
+			).not.toThrow();
+			expect(useChartStore.getState().rangeAnnotations).toHaveLength(1);
+		});
+
+		it('reset() 호출 시 rangeAnnotations가 빈 배열로 초기화된다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 4, '초기화 테스트');
+			useChartStore.getState().reset();
+			expect(useChartStore.getState().rangeAnnotations).toEqual([]);
+		});
+
+		it('restoreSnapshot 호출 시 rangeAnnotations가 복원된다', () => {
+			const rangeAnnotations = [
+				{ id: 'range-1', startRow: 2, endRow: 6, text: '복원 텍스트' },
+			];
+			const cells = [[{ symbolId: null, color: null }]];
+			useChartStore.getState().restoreSnapshot(
+				cells,
+				{ rows: 1, cols: 1 },
+				'knitting',
+				'',
+				[],
+				0,
+				'',
+				[],
+				[],
+				rangeAnnotations,
+			);
+			expect(useChartStore.getState().rangeAnnotations).toEqual(rangeAnnotations);
+		});
+
+		it('restoreSnapshot에 rangeAnnotations 미전달 시 빈 배열로 초기화된다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 3, '기존 항목');
+			const cells = [[{ symbolId: null, color: null }]];
+			useChartStore.getState().restoreSnapshot(
+				cells,
+				{ rows: 1, cols: 1 },
+				'knitting',
+				'',
+				[],
+				0,
+				'',
+			);
+			expect(useChartStore.getState().rangeAnnotations).toEqual([]);
+		});
+	});
+
 	describe('rowAnnotations', () => {
 		it('초기값은 빈 배열이다', () => {
 			const { rowAnnotations } = useChartStore.getState();
