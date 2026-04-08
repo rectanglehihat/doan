@@ -37,10 +37,27 @@ interface UIState {
 	clipboard: ChartCell[][] | null;
 	isSelectionMode: boolean;
 	recentColors: string[];
+	isAnnotationMode: boolean;
+	annotationPopover: {
+		rowIndex: number;
+		anchorX: number;
+		anchorY: number;
+		side: 'right' | 'left';
+		existingId: string | null;
+	} | null;
 	setCellSelection: (sel: CellSelection | null) => void;
 	setClipboard: (cells: ChartCell[][] | null) => void;
 	setSelectionMode: (active: boolean) => void;
 	addRecentColor: (color: string) => void;
+	setAnnotationMode: (active: boolean) => void;
+	openAnnotationPopover: (state: {
+		rowIndex: number;
+		anchorX: number;
+		anchorY: number;
+		side: 'right' | 'left';
+		existingId: string | null;
+	}) => void;
+	closeAnnotationPopover: () => void;
 	reset: () => void;
 }
 
@@ -63,6 +80,8 @@ export const useUIStore = create<UIState>((set) => ({
 	clipboard: null,
 	isSelectionMode: false,
 	recentColors: [],
+	isAnnotationMode: false,
+	annotationPopover: null,
 
 	setSelectedSymbol: (symbol) =>
 		set(
@@ -125,6 +144,26 @@ export const useUIStore = create<UIState>((set) => ({
 			recentColors: [color, ...state.recentColors.filter((c) => c !== color)].slice(0, 6),
 		})),
 
+	setAnnotationMode: (active) =>
+		set(
+			active
+				? {
+						isAnnotationMode: true,
+						isShapeGuideDrawMode: false,
+						isShapeGuideEraseMode: false,
+						isSelectionMode: false,
+						cellSelection: null,
+						selectedSymbol: null,
+						isColorMode: false,
+						selectedColor: null,
+					}
+				: { isAnnotationMode: false, annotationPopover: null },
+		),
+
+	openAnnotationPopover: (popoverState) => set({ annotationPopover: popoverState }),
+
+	closeAnnotationPopover: () => set({ annotationPopover: null }),
+
 	reset: () =>
 		set({
 			selectedSymbol: null,
@@ -143,5 +182,7 @@ export const useUIStore = create<UIState>((set) => ({
 			rotationalMode: 'none',
 			historyResetToken: 0,
 			recentColors: [],
+			isAnnotationMode: false,
+			annotationPopover: null,
 		}),
 }));

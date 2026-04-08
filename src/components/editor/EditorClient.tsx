@@ -8,6 +8,7 @@ import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useEditorActions } from '@/hooks/useEditorActions';
+import { useUIStore } from '@/store/useUIStore';
 
 export function EditorClient() {
 	const stageRef = useRef<Konva.Stage | null>(null);
@@ -22,6 +23,8 @@ export function EditorClient() {
 		selectedColor, onColorChange, onColorClear,
 		recentColors, onFitToScreen,
 	} = useEditorActions();
+	const isAnnotationMode = useUIStore((state) => state.isAnnotationMode);
+	const setAnnotationMode = useUIStore((state) => state.setAnnotationMode);
 
 	return (
 		<div className="flex h-screen overflow-hidden bg-zinc-100">
@@ -46,6 +49,8 @@ export function EditorClient() {
 					onColorClear={onColorClear}
 					recentColors={recentColors}
 					onFitToScreen={onFitToScreen}
+					isAnnotationMode={isAnnotationMode}
+					onAnnotationModeChange={setAnnotationMode}
 				/>
 				<div className="flex-1 overflow-auto">
 					<ChartCanvas

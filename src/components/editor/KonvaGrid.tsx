@@ -12,6 +12,7 @@ import { calcErasePartialStrokes, calcErasePartialStrokesNearPoint } from '@/lib
 import { ShapeGuideLayer } from './ShapeGuideLayer';
 import { CollapsedRow } from './CollapsedRow';
 import { CollapsedColumn } from './CollapsedColumn';
+import { AnnotationLayer } from './AnnotationLayer';
 import type { KonvaGridProps } from '@/types/konva-grid';
 
 export type { KonvaGridProps };
@@ -57,6 +58,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 	isColorMode = false,
 	selectedColor = null,
 	onCellColorPaint,
+	rowAnnotations = [],
+	isAnnotationMode = false,
+	annotationSideWidth = 80,
+	onAnnotationAreaClick,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -254,6 +259,22 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[onCollapsedColumnBlockClick],
 	);
 
+	const handleAnnotationMarkerClick = useCallback(
+		(rowIndex: number, anchorX: number, anchorY: number) => {
+			const existing = rowAnnotations.find((a) => a.rowIndex === rowIndex) ?? null;
+			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existing?.id ?? null);
+		},
+		[rowAnnotations, onAnnotationAreaClick],
+	);
+
+	const handleAnnotationSideAreaClick = useCallback(
+		(rowIndex: number, anchorX: number, anchorY: number) => {
+			const existing = rowAnnotations.find((a) => a.rowIndex === rowIndex) ?? null;
+			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existing?.id ?? null);
+		},
+		[rowAnnotations, onAnnotationAreaClick],
+	);
+
 	const handleMouseDown = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
 			if (e.evt.button === 1 || (e.evt.button === 0 && isInSpacePanMode())) {
@@ -262,6 +283,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 				return;
 			}
 			if (e.evt.button === 0) {
+				if (isAnnotationMode) {
+					return;
+				}
 				if (isSelectionMode) {
 					const cell = getCellFromPointer();
 					if (cell) {
@@ -307,6 +331,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 			onShapeGuideEraseStart,
 			startMousePan,
 			isInSpacePanMode,
+			isAnnotationMode,
 			isColorMode,
 			isShapeGuideDrawMode,
 			isShapeGuideEraseMode,
@@ -685,6 +710,20 @@ export const KonvaGrid = memo(function KonvaGrid({
 					/>
 				))}
 			</Layer>
+
+			{/* Layer 4: 주석 레이어 — 행 주석 마커, 클릭 히트 영역 */}
+			<AnnotationLayer
+				rowAnnotations={rowAnnotations}
+				rowVisualYMap={rowVisualYMap}
+				totalWidth={totalWidth}
+				cellSize={cellSize}
+				annotationSideWidth={annotationSideWidth}
+				isAnnotationMode={isAnnotationMode}
+				totalRows={gridSize.rows}
+				transform={transform}
+				onMarkerClick={handleAnnotationMarkerClick}
+				onSideAreaClick={handleAnnotationSideAreaClick}
+			/>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (
 				<ShapeGuideLayer

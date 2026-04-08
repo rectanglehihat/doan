@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { AnnotationSide, RowAnnotation } from '@/types/annotation';
 import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
@@ -66,6 +67,10 @@ export interface ChartState {
 	setCollapsedColumnBlocks: (blocks: CollapsedColumnBlock[]) => void;
 	setDifficulty: (difficulty: number) => void;
 	setMaterials: (materials: string) => void;
+	rowAnnotations: RowAnnotation[];
+	addRowAnnotation: (rowIndex: number, label: string, side: AnnotationSide) => void;
+	updateRowAnnotation: (id: string, label: string) => void;
+	removeRowAnnotation: (id: string) => void;
 	restoreSnapshot: (
 		cells: ChartCell[][],
 		gridSize: GridSize,
@@ -75,6 +80,7 @@ export interface ChartState {
 		difficulty: number,
 		materials: string,
 		collapsedColumnBlocks?: CollapsedColumnBlock[],
+		rowAnnotations?: RowAnnotation[],
 	) => void;
 	reset: () => void;
 }
@@ -83,12 +89,24 @@ const initialState = {
 	cells: createEmptyGrid(DEFAULT_GRID_SIZE.rows, DEFAULT_GRID_SIZE.cols),
 	gridSize: DEFAULT_GRID_SIZE,
 	cellSize: DEFAULT_CELL_SIZE,
-	patternType: 'knitting' as PatternType,
+	patternType: 'knitting',
 	patternTitle: '',
-	collapsedBlocks: [] as CollapsedBlock[],
-	collapsedColumnBlocks: [] as CollapsedColumnBlock[],
+	collapsedBlocks: [],
+	collapsedColumnBlocks: [],
 	difficulty: 0,
 	materials: '',
+	rowAnnotations: [],
+} satisfies {
+	cells: ChartCell[][];
+	gridSize: GridSize;
+	cellSize: number;
+	patternType: PatternType;
+	patternTitle: string;
+	collapsedBlocks: CollapsedBlock[];
+	collapsedColumnBlocks: CollapsedColumnBlock[];
+	difficulty: number;
+	materials: string;
+	rowAnnotations: RowAnnotation[];
 };
 
 export const useChartStore = create<ChartState>((set, get) => ({
@@ -199,8 +217,30 @@ export const useChartStore = create<ChartState>((set, get) => ({
 
 	setMaterials: (materials) => set({ materials }),
 
-	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks) =>
-		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [] }),
+	addRowAnnotation: (rowIndex, label, side) => {
+		const newAnnotation: RowAnnotation = {
+			id: crypto.randomUUID(),
+			rowIndex,
+			label,
+			side,
+		};
+		set((state) => ({ rowAnnotations: [...state.rowAnnotations, newAnnotation] }));
+	},
+
+	updateRowAnnotation: (id, label) =>
+		set((state) => ({
+			rowAnnotations: state.rowAnnotations.map((annotation) =>
+				annotation.id === id ? { ...annotation, label } : annotation,
+			),
+		})),
+
+	removeRowAnnotation: (id) =>
+		set((state) => ({
+			rowAnnotations: state.rowAnnotations.filter((annotation) => annotation.id !== id),
+		})),
+
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [] }),
 
 	reset: () =>
 		set({
@@ -213,5 +253,6 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			collapsedColumnBlocks: [],
 			difficulty: 0,
 			materials: '',
+			rowAnnotations: [],
 		}),
 }));

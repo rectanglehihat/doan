@@ -25,6 +25,8 @@ interface ToolbarProps {
 	onColorClear: () => void;
 	recentColors: string[];
 	onFitToScreen?: () => void;
+	isAnnotationMode: boolean;
+	onAnnotationModeChange: (active: boolean) => void;
 }
 
 export function Toolbar({
@@ -47,6 +49,8 @@ export function Toolbar({
 	onColorClear,
 	recentColors,
 	onFitToScreen,
+	isAnnotationMode,
+	onAnnotationModeChange,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -88,6 +92,10 @@ export function Toolbar({
 		onRotationalModeChange(rotationalMode === 'both' ? 'none' : 'both');
 	}, [onRotationalModeChange, rotationalMode]);
 
+	const handleAnnotationModeToggle = useCallback(() => {
+		onAnnotationModeChange(!isAnnotationMode);
+	}, [onAnnotationModeChange, isAnnotationMode]);
+
 	const handleColorClear = useCallback(() => {
 		onColorClear();
 	}, [onColorClear]);
@@ -97,7 +105,7 @@ export function Toolbar({
 	}, [onFitToScreen]);
 
 	return (
-		<div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
+		<div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
 			{/* 실행 취소 / 다시 실행 */}
 			<div className="flex items-center gap-1">
 				<Button
@@ -198,6 +206,21 @@ export function Toolbar({
 					aria-label="형태선 전체 지우기"
 				>
 					전체 지우기
+				</Button>
+			</div>
+
+			<div className="h-5 w-px bg-zinc-200" />
+
+			{/* 주석 모드 */}
+			<div className="flex items-center gap-1">
+				<Button
+					variant={isAnnotationMode ? 'default' : 'ghost'}
+					size="sm"
+					onClick={handleAnnotationModeToggle}
+					aria-label="주석 모드"
+					aria-pressed={isAnnotationMode}
+				>
+					주석
 				</Button>
 			</div>
 

@@ -1,5 +1,5 @@
 import type Konva from 'konva';
-import type { ChartCell, CellSelection, CollapsedBlock, CollapsedColumnBlock, GridSize, RotationalMode, ShapeGuide } from './knitting';
+import type { ChartCell, CellSelection, CollapsedBlock, CollapsedColumnBlock, GridSize, RotationalMode, RowAnnotation, ShapeGuide } from './knitting';
 
 export interface GridCoreProps {
 	cells: ChartCell[][];
@@ -55,10 +55,24 @@ export interface RotationalProps {
 	rotationalMode?: RotationalMode;
 }
 
+export interface AnnotationProps {
+	rowAnnotations?: RowAnnotation[];
+	isAnnotationMode?: boolean;
+	annotationSideWidth?: number;
+	onAnnotationAreaClick?: (
+		rowIndex: number,
+		side: 'right' | 'left',
+		anchorX: number,
+		anchorY: number,
+		existingAnnotationId: string | null,
+	) => void;
+}
+
 export type KonvaGridProps = GridCoreProps &
 	PaintingProps &
 	ColorProps &
 	ShapeGuideProps &
 	SelectionProps &
 	CollapsedProps &
-	RotationalProps;
+	RotationalProps &
+	AnnotationProps;

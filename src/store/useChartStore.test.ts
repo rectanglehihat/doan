@@ -419,4 +419,70 @@ describe('useChartStore', () => {
 			expect(useChartStore.getState().collapsedBlocks).toHaveLength(2);
 		});
 	});
+
+	describe('rowAnnotations', () => {
+		it('초기값은 빈 배열이다', () => {
+			const { rowAnnotations } = useChartStore.getState();
+			expect(rowAnnotations).toEqual([]);
+		});
+
+		it('addRowAnnotation 호출 시 항목이 추가된다', () => {
+			useChartStore.getState().addRowAnnotation(3, '10단', 'right');
+			const { rowAnnotations } = useChartStore.getState();
+			expect(rowAnnotations).toHaveLength(1);
+			expect(typeof rowAnnotations[0].id).toBe('string');
+			expect(rowAnnotations[0].rowIndex).toBe(3);
+			expect(rowAnnotations[0].label).toBe('10단');
+			expect(rowAnnotations[0].side).toBe('right');
+		});
+
+		it('addRowAnnotation 여러 번 호출 시 각각 고유한 id를 가진다', () => {
+			useChartStore.getState().addRowAnnotation(0, '1단', 'right');
+			useChartStore.getState().addRowAnnotation(5, '6단', 'right');
+			const { rowAnnotations } = useChartStore.getState();
+			expect(rowAnnotations).toHaveLength(2);
+			expect(rowAnnotations[0].id).not.toBe(rowAnnotations[1].id);
+		});
+
+		it('updateRowAnnotation 호출 시 해당 항목의 label이 변경된다', () => {
+			useChartStore.getState().addRowAnnotation(2, '원래 라벨', 'right');
+			const { id } = useChartStore.getState().rowAnnotations[0];
+			useChartStore.getState().updateRowAnnotation(id, '수정된 라벨');
+			expect(useChartStore.getState().rowAnnotations[0].label).toBe('수정된 라벨');
+		});
+
+		it('updateRowAnnotation 호출 시 rowIndex와 side는 변경되지 않는다', () => {
+			useChartStore.getState().addRowAnnotation(7, '7단', 'right');
+			const { id } = useChartStore.getState().rowAnnotations[0];
+			useChartStore.getState().updateRowAnnotation(id, '수정');
+			const annotation = useChartStore.getState().rowAnnotations[0];
+			expect(annotation.rowIndex).toBe(7);
+			expect(annotation.side).toBe('right');
+		});
+
+		it('removeRowAnnotation 호출 시 해당 항목이 삭제된다', () => {
+			useChartStore.getState().addRowAnnotation(1, '2단', 'right');
+			const { id } = useChartStore.getState().rowAnnotations[0];
+			useChartStore.getState().removeRowAnnotation(id);
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+		});
+
+		it('removeRowAnnotation 존재하지 않는 id는 무시한다', () => {
+			useChartStore.getState().addRowAnnotation(0, '1단', 'right');
+			expect(() => useChartStore.getState().removeRowAnnotation('non-existent-id')).not.toThrow();
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(1);
+		});
+
+		it('reset() 호출 시 rowAnnotations가 빈 배열로 초기화된다', () => {
+			useChartStore.getState().addRowAnnotation(0, '1단', 'right');
+			useChartStore.getState().addRowAnnotation(5, '6단', 'right');
+			useChartStore.getState().reset();
+			expect(useChartStore.getState().rowAnnotations).toEqual([]);
+		});
+
+		it('addRowAnnotation side=left도 저장된다', () => {
+			useChartStore.getState().addRowAnnotation(4, '5단', 'left');
+			expect(useChartStore.getState().rowAnnotations[0].side).toBe('left');
+		});
+	});
 });

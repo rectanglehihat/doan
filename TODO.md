@@ -90,6 +90,32 @@
   - 캔버스가 화면 밖으로 벗어났을 때 화면으로 이동시키기
   - 화면에 맞게 스케일 적용해서 중앙에 배치
   - F키 단축키 적용
+- [ ] 주석 시스템
+  - [x] **Phase 1 — 단 번호 마커**: 특정 행 우측/좌측에 "10단", "38단" 표시 + 연결선
+    - `src/types/annotation.ts` 신규 (`RowAnnotation`, `RangeAnnotation`, `ColumnSectionLabel`)
+    - `useChartStore` 확장 — `rowAnnotations` 상태 + `addRowAnnotation` / `updateRowAnnotation` / `removeRowAnnotation` 액션
+    - `useUIStore` 확장 — `isAnnotationMode`, `annotationPopover` 상태
+    - `AnnotationLayer` Konva Organism (`src/components/editor/AnnotationLayer.tsx`)
+    - `AnnotationPopover` Molecule (`src/components/ui/molecules/AnnotationPopover.tsx`)
+    - `AnnotationModeButton` Molecule (`src/components/ui/molecules/AnnotationModeButton.tsx`)
+    - `KonvaGrid` Layer 4 추가 + `AnnotationProps` 연결
+    - `ChartCanvas` / `Toolbar` 연결
+    - `SavedPatternSnapshot` + `local-storage-service` 직렬화 통합
+  - [ ] **Phase 2 — 범위 브라켓 주석**: 여러 행에 걸친 브라켓 + 멀티라인 텍스트 ("2-1-2 / 2-2-1 / 2코 코막음")
+    - `rangeAnnotations` 상태 + 액션 추가
+    - `AnnotationLayer` 브라켓 렌더링 확장 (┤ / ├ 모양)
+    - `AnnotationPopover` textarea 모드 확장
+    - 주석 모드에서 우측 여백 드래그로 행 범위 선택
+  - [ ] **Phase 3 — 상단 구간 레이블**: 열 범위 위에 "어깨 11코", "목 20코" 구분선 + 레이블
+    - `columnSectionLabels` 상태 + 액션 추가
+    - `ColumnSectionLabelBar` HTML Organism (`src/components/editor/ColumnSectionLabelBar.tsx`)
+    - `ChartCanvas` 상단에 배치, `colVisualXMap` 기반 좌표 계산
+  - [ ] **Phase 4 — 편집/삭제/Undo 통합**: 기존 주석 클릭 → 편집, Undo/Redo 통합
+    - `useHistory` 주석 변경 스냅샷 포함
+    - `AnnotationLayer` 클릭 → `AnnotationPopover` 편집 모드 (삭제 버튼 포함)
+  - [ ] **Phase 5 — PDF 통합**: 주석 포함 PDF 출력
+    - `AnnotationLayer` (Konva) → `Stage.toDataURL()` 자동 포함
+    - `ColumnSectionLabelBar` (HTML) → html2canvas 별도 캡처 후 합성
 
 ### 1-6. 저장 및 불러오기
 
@@ -150,8 +176,10 @@
 | `Select`          | 완료 | 15개   |
 | `GridSizeInput`   | 완료 | 8개    |
 | `DifficultyStars` | 완료 | 4개    |
-| `ColorPicker`     | 완료 | 16개   |
-| `ConfirmDialog`   | 완료 | 8개    |
+| `ColorPicker`          | 완료 | 16개   |
+| `ConfirmDialog`        | 완료 | 8개    |
+| `AnnotationModeButton` | 완료 | 7개    |
+| `AnnotationPopover`    | 완료 | 10개   |
 
 ### Organisms (`src/components/editor/`)
 
@@ -167,6 +195,7 @@
 | `CollapsedBlockPopover` | 완료 | 5개    |
 | `CollapsedRow`          | 완료 | 4개    |
 | `CollapsedColumn`       | 완료 | 4개    |
+| `AnnotationLayer`       | 완료 | 8개    |
 
 ### Organisms (`src/components/pdf/`)
 

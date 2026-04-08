@@ -22,6 +22,8 @@ const defaultProps = {
 	onColorClear: vi.fn(),
 	recentColors: [],
 	onFitToScreen: vi.fn(),
+	isAnnotationMode: false,
+	onAnnotationModeChange: vi.fn(),
 };
 
 describe('Toolbar', () => {

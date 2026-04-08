@@ -476,4 +476,106 @@ describe('useUIStore', () => {
 			expect(symmetryMode).toBe('none');
 		});
 	});
+
+	describe('isAnnotationMode', () => {
+		it('초기값은 false이다', () => {
+			expect(useUIStore.getState().isAnnotationMode).toBe(false);
+		});
+
+		it('setAnnotationMode(true) 호출 시 isAnnotationMode가 true가 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().isAnnotationMode).toBe(true);
+		});
+
+		it('setAnnotationMode(true) 호출 시 isShapeGuideDrawMode가 false가 된다', () => {
+			useUIStore.getState().setShapeGuideDrawMode(true);
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().isShapeGuideDrawMode).toBe(false);
+		});
+
+		it('setAnnotationMode(true) 호출 시 isShapeGuideEraseMode가 false가 된다', () => {
+			useUIStore.getState().setShapeGuideEraseMode(true);
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().isShapeGuideEraseMode).toBe(false);
+		});
+
+		it('setAnnotationMode(true) 호출 시 isSelectionMode가 false가 된다', () => {
+			useUIStore.getState().setSelectionMode(true);
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+
+		it('setAnnotationMode(true) 호출 시 cellSelection이 null이 된다', () => {
+			useUIStore.getState().setCellSelection({ startRow: 0, startCol: 0, endRow: 2, endCol: 2 });
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().cellSelection).toBeNull();
+		});
+
+		it('setAnnotationMode(true) 호출 시 selectedSymbol이 null이 된다', () => {
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().selectedSymbol).toBeNull();
+		});
+
+		it('setAnnotationMode(true) 호출 시 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('setAnnotationMode(true) 호출 시 selectedColor가 null이 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setAnnotationMode(true);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
+
+		it('setAnnotationMode(false) 호출 시 isAnnotationMode가 false가 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().setAnnotationMode(false);
+			expect(useUIStore.getState().isAnnotationMode).toBe(false);
+		});
+
+		it('setAnnotationMode(false) 호출 시 annotationPopover가 null이 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().openAnnotationPopover({ rowIndex: 0, anchorX: 10, anchorY: 20, side: 'right', existingId: null });
+			useUIStore.getState().setAnnotationMode(false);
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+		});
+
+		it('reset() 후 isAnnotationMode가 false이다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().isAnnotationMode).toBe(false);
+		});
+	});
+
+	describe('annotationPopover', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+		});
+
+		it('openAnnotationPopover 호출 시 annotationPopover가 설정된다', () => {
+			const state = { rowIndex: 3, anchorX: 100, anchorY: 60, side: 'right' as const, existingId: null };
+			useUIStore.getState().openAnnotationPopover(state);
+			expect(useUIStore.getState().annotationPopover).toEqual(state);
+		});
+
+		it('openAnnotationPopover에 existingId가 있을 때 저장된다', () => {
+			const state = { rowIndex: 2, anchorX: 50, anchorY: 40, side: 'right' as const, existingId: 'abc-123' };
+			useUIStore.getState().openAnnotationPopover(state);
+			expect(useUIStore.getState().annotationPopover?.existingId).toBe('abc-123');
+		});
+
+		it('closeAnnotationPopover 호출 시 annotationPopover가 null이 된다', () => {
+			useUIStore.getState().openAnnotationPopover({ rowIndex: 0, anchorX: 0, anchorY: 0, side: 'right', existingId: null });
+			useUIStore.getState().closeAnnotationPopover();
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+		});
+
+		it('reset() 후 annotationPopover가 null이다', () => {
+			useUIStore.getState().openAnnotationPopover({ rowIndex: 1, anchorX: 10, anchorY: 20, side: 'right', existingId: null });
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+		});
+	});
 });
