@@ -308,6 +308,18 @@ describe('useUIStore', () => {
 			useUIStore.getState().setSelectionMode(true);
 			expect(useUIStore.getState().annotationPopover).toBeNull();
 		});
+
+		it('setSelectionMode(true) 호출 시 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setSelectionMode(true);
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
+		it('setSelectionMode(true) 호출 시 selectedColor가 null이 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setSelectionMode(true);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
 	});
 
 	describe('툴바 모드와 기호 선택 상호 배타성', () => {
@@ -386,6 +398,19 @@ describe('useUIStore', () => {
 			useUIStore.getState().setSelectionMode(true);
 			useUIStore.getState().setSelectedColor('#FF0000');
 			expect(useUIStore.getState().isSelectionMode).toBe(false);
+		});
+
+		it('색상 선택 시 isAnnotationMode가 false로 해제된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().isAnnotationMode).toBe(false);
+		});
+
+		it('색상 선택 시 annotationPopover가 null이 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().openAnnotationPopover({ rowIndex: 0, anchorX: 0, anchorY: 0, side: 'right', existingId: null });
+			useUIStore.getState().setSelectedColor('#FF0000');
+			expect(useUIStore.getState().annotationPopover).toBeNull();
 		});
 
 		it('reset() 후 selectedColor는 null이고 isColorMode는 false이다', () => {
