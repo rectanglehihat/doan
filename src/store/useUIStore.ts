@@ -45,6 +45,14 @@ interface UIState {
 		side: 'right' | 'left';
 		existingId: string | null;
 	} | null;
+	rangeAnnotationPopover: {
+		startRowIndex: number;
+		endRowIndex: number;
+		anchorX: number;
+		anchorY: number;
+		existingId: string | null;
+	} | null;
+	rangeAnnotationDraft: { startRow: number; endRow: number } | null;
 	setCellSelection: (sel: CellSelection | null) => void;
 	setClipboard: (cells: ChartCell[][] | null) => void;
 	setSelectionMode: (active: boolean) => void;
@@ -58,6 +66,15 @@ interface UIState {
 		existingId: string | null;
 	}) => void;
 	closeAnnotationPopover: () => void;
+	openRangeAnnotationPopover: (state: {
+		startRowIndex: number;
+		endRowIndex: number;
+		anchorX: number;
+		anchorY: number;
+		existingId: string | null;
+	}) => void;
+	closeRangeAnnotationPopover: () => void;
+	setRangeAnnotationDraft: (draft: { startRow: number; endRow: number } | null) => void;
 	reset: () => void;
 }
 
@@ -82,6 +99,8 @@ export const useUIStore = create<UIState>((set) => ({
 	recentColors: [],
 	isAnnotationMode: false,
 	annotationPopover: null,
+	rangeAnnotationPopover: null,
+	rangeAnnotationDraft: null,
 
 	setSelectedSymbol: (symbol) =>
 		set(
@@ -161,9 +180,15 @@ export const useUIStore = create<UIState>((set) => ({
 				: { isAnnotationMode: false, annotationPopover: null },
 		),
 
-	openAnnotationPopover: (popoverState) => set({ annotationPopover: popoverState }),
+	openAnnotationPopover: (popoverState) => set({ annotationPopover: popoverState, rangeAnnotationPopover: null }),
 
 	closeAnnotationPopover: () => set({ annotationPopover: null }),
+
+	openRangeAnnotationPopover: (popoverState) => set({ rangeAnnotationPopover: popoverState, annotationPopover: null }),
+
+	closeRangeAnnotationPopover: () => set({ rangeAnnotationPopover: null }),
+
+	setRangeAnnotationDraft: (draft) => set({ rangeAnnotationDraft: draft }),
 
 	reset: () =>
 		set({
@@ -185,5 +210,7 @@ export const useUIStore = create<UIState>((set) => ({
 			recentColors: [],
 			isAnnotationMode: false,
 			annotationPopover: null,
+			rangeAnnotationPopover: null,
+			rangeAnnotationDraft: null,
 		}),
 }));

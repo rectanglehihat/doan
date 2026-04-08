@@ -613,6 +613,122 @@ describe('useUIStore', () => {
 		});
 	});
 
+	describe('rangeAnnotationPopover', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
+		});
+
+		it('openRangeAnnotationPopover 호출 시 rangeAnnotationPopover가 설정된다', () => {
+			const state = {
+				startRowIndex: 2,
+				endRowIndex: 6,
+				anchorX: 150,
+				anchorY: 80,
+				existingId: null,
+			};
+			useUIStore.getState().openRangeAnnotationPopover(state);
+			expect(useUIStore.getState().rangeAnnotationPopover).toEqual(state);
+		});
+
+		it('openRangeAnnotationPopover에 existingId가 있을 때 저장된다', () => {
+			const state = {
+				startRowIndex: 1,
+				endRowIndex: 5,
+				anchorX: 100,
+				anchorY: 60,
+				existingId: 'range-abc',
+			};
+			useUIStore.getState().openRangeAnnotationPopover(state);
+			expect(useUIStore.getState().rangeAnnotationPopover?.existingId).toBe('range-abc');
+		});
+
+		it('closeRangeAnnotationPopover 호출 시 rangeAnnotationPopover가 null이 된다', () => {
+			useUIStore.getState().openRangeAnnotationPopover({
+				startRowIndex: 0,
+				endRowIndex: 3,
+				anchorX: 0,
+				anchorY: 0,
+				existingId: null,
+			});
+			useUIStore.getState().closeRangeAnnotationPopover();
+			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
+		});
+
+		it('openRangeAnnotationPopover 호출 시 기존 annotationPopover도 닫힌다 (배타적)', () => {
+			useUIStore.getState().openAnnotationPopover({
+				rowIndex: 0,
+				anchorX: 0,
+				anchorY: 0,
+				side: 'right',
+				existingId: null,
+			});
+			useUIStore.getState().openRangeAnnotationPopover({
+				startRowIndex: 2,
+				endRowIndex: 5,
+				anchorX: 100,
+				anchorY: 60,
+				existingId: null,
+			});
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+			expect(useUIStore.getState().rangeAnnotationPopover).not.toBeNull();
+		});
+
+		it('openAnnotationPopover 호출 시 기존 rangeAnnotationPopover도 닫힌다 (배타적)', () => {
+			useUIStore.getState().openRangeAnnotationPopover({
+				startRowIndex: 2,
+				endRowIndex: 5,
+				anchorX: 100,
+				anchorY: 60,
+				existingId: null,
+			});
+			useUIStore.getState().openAnnotationPopover({
+				rowIndex: 0,
+				anchorX: 0,
+				anchorY: 0,
+				side: 'right',
+				existingId: null,
+			});
+			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
+			expect(useUIStore.getState().annotationPopover).not.toBeNull();
+		});
+
+		it('reset() 후 rangeAnnotationPopover가 null이다', () => {
+			useUIStore.getState().openRangeAnnotationPopover({
+				startRowIndex: 1,
+				endRowIndex: 4,
+				anchorX: 10,
+				anchorY: 20,
+				existingId: null,
+			});
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
+		});
+	});
+
+	describe('rangeAnnotationDraft', () => {
+		it('초기값은 null이다', () => {
+			expect(useUIStore.getState().rangeAnnotationDraft).toBeNull();
+		});
+
+		it('setRangeAnnotationDraft 호출 시 draft 상태가 설정된다', () => {
+			const draft = { startRow: 3, endRow: 7 };
+			useUIStore.getState().setRangeAnnotationDraft(draft);
+			expect(useUIStore.getState().rangeAnnotationDraft).toEqual(draft);
+		});
+
+		it('setRangeAnnotationDraft(null) 호출 시 null이 된다', () => {
+			useUIStore.getState().setRangeAnnotationDraft({ startRow: 0, endRow: 5 });
+			useUIStore.getState().setRangeAnnotationDraft(null);
+			expect(useUIStore.getState().rangeAnnotationDraft).toBeNull();
+		});
+
+		it('reset() 후 rangeAnnotationDraft가 null이다', () => {
+			useUIStore.getState().setRangeAnnotationDraft({ startRow: 1, endRow: 3 });
+			useUIStore.getState().reset();
+			expect(useUIStore.getState().rangeAnnotationDraft).toBeNull();
+		});
+	});
+
 	describe('annotationPopover', () => {
 		it('초기값은 null이다', () => {
 			expect(useUIStore.getState().annotationPopover).toBeNull();

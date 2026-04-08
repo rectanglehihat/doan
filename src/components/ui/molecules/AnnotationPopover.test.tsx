@@ -88,4 +88,75 @@ describe('AnnotationPopover', () => {
 		const popover = screen.getByRole('dialog');
 		expect(popover).toHaveStyle({ position: 'absolute' });
 	});
+
+	describe('mode=range', () => {
+		const rangeProps = {
+			anchorX: 200,
+			anchorY: 100,
+			side: 'right' as const,
+			mode: 'range' as const,
+			startRowNumber: 3,
+			endRowNumber: 7,
+			initialText: '',
+			onConfirm: vi.fn(),
+			onDelete: null,
+			onClose: vi.fn(),
+		};
+
+		beforeEach(() => {
+			vi.clearAllMocks();
+		});
+
+		it('mode=range일 때 textarea가 렌더링된다', () => {
+			render(<AnnotationPopover {...rangeProps} />);
+			expect(screen.getByRole('textbox')).toBeInTheDocument();
+			// textarea는 multiline이므로 tagName 확인
+			expect(screen.getByRole('textbox').tagName.toLowerCase()).toBe('textarea');
+		});
+
+		it('mode=range일 때 {startRowNumber}~{endRowNumber}단 제목이 표시된다', () => {
+			render(<AnnotationPopover {...rangeProps} startRowNumber={3} endRowNumber={7} />);
+			expect(screen.getByText(/3~7단/)).toBeInTheDocument();
+		});
+
+		it('mode=range일 때 initialText가 textarea 초기값으로 설정된다', () => {
+			render(<AnnotationPopover {...rangeProps} initialText="초기 텍스트" />);
+			expect(screen.getByRole('textbox')).toHaveValue('초기 텍스트');
+		});
+
+		it('mode=range일 때 textarea 입력 후 확인 클릭 시 onConfirm(text)이 호출된다', async () => {
+			const handleConfirm = vi.fn();
+			render(<AnnotationPopover {...rangeProps} initialText="" onConfirm={handleConfirm} />);
+			await userEvent.type(screen.getByRole('textbox'), '멀티라인\n텍스트');
+			await userEvent.click(screen.getByRole('button', { name: /확인/ }));
+			expect(handleConfirm).toHaveBeenCalledTimes(1);
+			expect(handleConfirm).toHaveBeenCalledWith(expect.stringContaining('멀티라인'));
+		});
+
+		it('mode=range일 때 initialText가 있으면 확인 클릭 시 initialText가 onConfirm에 전달된다', async () => {
+			const handleConfirm = vi.fn();
+			render(
+				<AnnotationPopover {...rangeProps} initialText="기존 브라켓 텍스트" onConfirm={handleConfirm} />,
+			);
+			await userEvent.click(screen.getByRole('button', { name: /확인/ }));
+			expect(handleConfirm).toHaveBeenCalledWith('기존 브라켓 텍스트');
+		});
+
+		it('mode=range일 때 취소 버튼 클릭 시 onClose가 호출된다', async () => {
+			const handleClose = vi.fn();
+			render(<AnnotationPopover {...rangeProps} onClose={handleClose} />);
+			await userEvent.click(screen.getByRole('button', { name: /취소/ }));
+			expect(handleClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('mode=range일 때 onDelete가 있으면 삭제 버튼이 렌더링된다', () => {
+			render(<AnnotationPopover {...rangeProps} onDelete={vi.fn()} />);
+			expect(screen.getByRole('button', { name: /삭제/ })).toBeInTheDocument();
+		});
+
+		it('mode=range일 때 onDelete=null이면 삭제 버튼이 렌더링되지 않는다', () => {
+			render(<AnnotationPopover {...rangeProps} onDelete={null} />);
+			expect(screen.queryByRole('button', { name: /삭제/ })).not.toBeInTheDocument();
+		});
+	});
 });
