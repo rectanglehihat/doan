@@ -92,7 +92,7 @@ export const useUIStore = create<UIState>((set) => ({
 	setSelectedColor: (color) =>
 		set(
 			color !== null
-				? { selectedColor: color, isColorMode: true, selectedSymbol: null, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false }
+				? { selectedColor: color, isColorMode: true, selectedSymbol: null, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, isAnnotationMode: false, annotationPopover: null }
 				: { selectedColor: null, isColorMode: false },
 		),
 	setSymmetryMode: (mode) => set({ symmetryMode: mode }),
@@ -139,7 +139,7 @@ export const useUIStore = create<UIState>((set) => ({
 	setCellSelection: (sel) => set({ cellSelection: sel }),
 	setClipboard: (cells) => set({ clipboard: cells }),
 	setSelectionMode: (active) =>
-		set(active ? { isSelectionMode: true, isAnnotationMode: false, annotationPopover: null } : { isSelectionMode: false }),
+		set(active ? { isSelectionMode: true, isAnnotationMode: false, annotationPopover: null, ...COLOR_MODE_RESET } : { isSelectionMode: false }),
 	addRecentColor: (color) =>
 		set((state) => ({
 			recentColors: [color, ...state.recentColors.filter((c) => c !== color)].slice(0, 6),

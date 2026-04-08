@@ -79,7 +79,7 @@ export function ChartCanvas({
 	onShapeGuideEraseEnd,
 	stageRef,
 }: ChartCanvasProps) {
-	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint, copySelection, pasteClipboard } =
+	const { cells, gridSize, cellSize, selectedSymbol, symbolsMap, handleCellPaint, handleCellColorPaint, copySelection, pasteClipboard } =
 		useChartEditor();
 	const shapeGuide = useUIStore((state) => state.shapeGuide);
 	const isShapeGuideDrawMode = useUIStore((state) => state.isShapeGuideDrawMode);
@@ -104,8 +104,6 @@ export function ChartCanvas({
 	const updateRowAnnotation = useChartStore((state) => state.updateRowAnnotation);
 	const removeRowAnnotation = useChartStore((state) => state.removeRowAnnotation);
 
-	const setCellColor = useChartStore((state) => state.setCellColor);
-
 	const collapsedBlocks = useChartStore((state) => state.collapsedBlocks);
 	const addCollapsedBlock = useChartStore((state) => state.addCollapsedBlock);
 	const collapsedColumnBlocks = useChartStore((state) => state.collapsedColumnBlocks);
@@ -113,13 +111,6 @@ export function ChartCanvas({
 
 	const [selectedCollapsedBlockId, setSelectedCollapsedBlockId] = useState<string | null>(null);
 	const [selectedCollapsedColumnBlockId, setSelectedCollapsedColumnBlockId] = useState<string | null>(null);
-
-	const handleCellColorPaint = useCallback(
-		(row: number, col: number, color: string | null) => {
-			setCellColor(row, col, color);
-		},
-		[setCellColor],
-	);
 
 	const handleShapeGuideStrokeAdd = useCallback(
 		(stroke: number[]) => {
