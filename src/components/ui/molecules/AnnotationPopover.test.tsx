@@ -89,6 +89,12 @@ describe('AnnotationPopover', () => {
 		expect(popover).toHaveStyle({ position: 'absolute' });
 	});
 
+	it('Escape 키 입력 시 onClose가 호출된다', async () => {
+		render(<AnnotationPopover {...defaultProps} />);
+		await userEvent.keyboard('{Escape}');
+		expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+	});
+
 	describe('mode=range', () => {
 		const rangeProps = {
 			anchorX: 200,
@@ -157,6 +163,13 @@ describe('AnnotationPopover', () => {
 		it('mode=range일 때 onDelete=null이면 삭제 버튼이 렌더링되지 않는다', () => {
 			render(<AnnotationPopover {...rangeProps} onDelete={null} />);
 			expect(screen.queryByRole('button', { name: /삭제/ })).not.toBeInTheDocument();
+		});
+
+		it('mode=range일 때 Escape 키 입력 시 onClose가 호출된다', async () => {
+			const handleClose = vi.fn();
+			render(<AnnotationPopover {...rangeProps} onClose={handleClose} />);
+			await userEvent.keyboard('{Escape}');
+			expect(handleClose).toHaveBeenCalledTimes(1);
 		});
 	});
 });
