@@ -63,7 +63,36 @@
   - 페이지 레이아웃 자동 조정 (여러 페이지 대응)
   - 다운로드 가능
 
-#### 2.6 도안 기호 범례 자동 생성
+#### 2.6 주석(Annotation) 시스템
+
+- **User Story**: "사용자로서 나는 실제 뜨개 도안처럼 그리드 옆에 단 번호, 범위 설명, 구간 레이블을 추가하고 싶다"
+- **Acceptance Criteria**:
+  - **단 번호 마커**: 특정 행 우측/좌측에 "10단", "38단" 등 번호 + 수평 연결선 표시
+  - **범위 브라켓 주석**: 여러 행에 걸친 브라켓(┤/├) + 멀티라인 설명 ("2-1-2 / 2-2-1 / 2코 코막음")
+  - **상단 구간 레이블**: 열 범위 위에 "어깨 11코", "목 20코" 구분선 + 레이블
+  - 중략 블록 내부 행의 주석은 자동 숨김
+  - 주석 추가/편집/삭제 + Undo/Redo 통합
+  - 저장/불러오기 시 주석 데이터 직렬화
+  - PDF 출력 시 주석 포함
+
+- **기술 설계**:
+  - 타입: `src/types/annotation.ts` — `RowAnnotation`, `RangeAnnotation`, `ColumnSectionLabel`
+  - 스토어: `useChartStore` 확장 — 3종 주석 상태 + CRUD 액션
+  - UI 모드: `useUIStore` — `isAnnotationMode`, `annotationPopover` 상태
+  - 렌더링: `AnnotationLayer` (Konva Layer 4) — 단 번호·브라켓 렌더
+  - 구간 레이블: `ColumnSectionLabelBar` (HTML, 캔버스 상단)
+  - 입력: `AnnotationPopover` (shadcn Popover 기반 Molecule)
+  - 툴바: `AnnotationModeButton` (Molecule)
+  - 좌표 기준: `rowVisualYMap` 활용 → 중략 자동 처리
+
+- **구현 Phase**:
+  1. Phase 1 — 단 번호 마커 (핵심, 구현 단순)
+  2. Phase 2 — 범위 브라켓 주석
+  3. Phase 3 — 상단 구간 레이블
+  4. Phase 4 — 편집/삭제/Undo 통합
+  5. Phase 5 — PDF 통합
+
+#### 2.7 도안 기호 범례 자동 생성
 
 - **User Story**: "사용자로서 나는 PDF에 사용된 기호가 무엇인지 한눈에 알 수 있는 범례를 포함하고 싶다"
 - **Acceptance Criteria**:

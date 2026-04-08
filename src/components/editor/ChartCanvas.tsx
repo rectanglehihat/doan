@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useChartEditor } from '@/hooks/useChartEditor';
 import { useUIStore } from '@/store/useUIStore';
 import { useChartStore } from '@/store/useChartStore';
+import { AnnotationPopover } from '@/components/ui/molecules/AnnotationPopover';
 import type Konva from 'konva';
 import { RotationalMode } from '@/types/knitting';
 
@@ -93,6 +94,15 @@ export function ChartCanvas({
 	const setCellSelection = useUIStore((state) => state.setCellSelection);
 	const selectedColor = useUIStore((state) => state.selectedColor);
 	const isColorMode = useUIStore((state) => state.isColorMode);
+	const isAnnotationMode = useUIStore((state) => state.isAnnotationMode);
+	const annotationPopover = useUIStore((state) => state.annotationPopover);
+	const openAnnotationPopover = useUIStore((state) => state.openAnnotationPopover);
+	const closeAnnotationPopover = useUIStore((state) => state.closeAnnotationPopover);
+
+	const rowAnnotations = useChartStore((state) => state.rowAnnotations);
+	const addRowAnnotation = useChartStore((state) => state.addRowAnnotation);
+	const updateRowAnnotation = useChartStore((state) => state.updateRowAnnotation);
+	const removeRowAnnotation = useChartStore((state) => state.removeRowAnnotation);
 
 	const setCellColor = useChartStore((state) => state.setCellColor);
 
@@ -120,6 +130,43 @@ export function ChartCanvas({
 		},
 		[addShapeGuideStroke, rotationalMode, gridSize, onShapeGuideDrawStart, onShapeGuideDrawEnd],
 	);
+
+	const handleAnnotationAreaClick = useCallback(
+		(
+			rowIndex: number,
+			side: 'right' | 'left',
+			anchorX: number,
+			anchorY: number,
+			existingAnnotationId: string | null,
+		) => {
+			openAnnotationPopover({ rowIndex, anchorX, anchorY, side, existingId: existingAnnotationId });
+		},
+		[openAnnotationPopover],
+	);
+
+	const handleAnnotationConfirm = useCallback(
+		(label: string) => {
+			if (annotationPopover === null) return;
+			const { rowIndex, existingId, side } = annotationPopover;
+			if (existingId !== null) {
+				updateRowAnnotation(existingId, label);
+			} else {
+				addRowAnnotation(rowIndex, label, side);
+			}
+			closeAnnotationPopover();
+		},
+		[annotationPopover, updateRowAnnotation, addRowAnnotation, closeAnnotationPopover],
+	);
+
+	const handleAnnotationDelete = useCallback(() => {
+		if (annotationPopover === null || annotationPopover.existingId === null) return;
+		removeRowAnnotation(annotationPopover.existingId);
+		closeAnnotationPopover();
+	}, [annotationPopover, removeRowAnnotation, closeAnnotationPopover]);
+
+	const handleAnnotationClose = useCallback(() => {
+		closeAnnotationPopover();
+	}, [closeAnnotationPopover]);
 
 	const handleCollapsedBlockClick = useCallback((blockId: string) => {
 		setSelectedCollapsedBlockId(blockId);
@@ -263,6 +310,9 @@ export function ChartCanvas({
 						isColorMode={isColorMode}
 						selectedColor={selectedColor}
 						onCellColorPaint={handleCellColorPaint}
+						rowAnnotations={rowAnnotations}
+						isAnnotationMode={isAnnotationMode}
+						onAnnotationAreaClick={handleAnnotationAreaClick}
 					/>
 
 					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}
@@ -317,6 +367,24 @@ export function ChartCanvas({
 								</div>
 							</div>
 						</div>
+					)}
+
+					{/* 주석 팝오버 */}
+					{annotationPopover !== null && (
+						<AnnotationPopover
+							anchorX={annotationPopover.anchorX}
+							anchorY={annotationPopover.anchorY}
+							side={annotationPopover.side}
+							rowNumber={gridSize.rows - annotationPopover.rowIndex}
+							initialLabel={
+								annotationPopover.existingId !== null
+									? (rowAnnotations.find((a) => a.id === annotationPopover.existingId)?.label ?? '')
+									: ''
+							}
+							onConfirm={handleAnnotationConfirm}
+							onDelete={annotationPopover.existingId !== null ? handleAnnotationDelete : null}
+							onClose={handleAnnotationClose}
+						/>
 					)}
 
 					{/* CollapsedColumnBlock 팝오버 */}

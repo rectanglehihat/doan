@@ -5,6 +5,15 @@ const STORAGE_KEY = 'doan_patterns';
 const MAX_PATTERNS = 5;
 const COMPRESSED_PREFIX = 'lz:';
 
+function isPatternStorageEntry(value: unknown): value is PatternStorageEntry {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		(value as Record<string, unknown>)['version'] === 1 &&
+		Array.isArray((value as Record<string, unknown>)['patterns'])
+	);
+}
+
 export type StorageResult<T> =
 	| { ok: true; data: T }
 	| {
@@ -47,15 +56,11 @@ function readStorage(): StorageResult<PatternStorageEntry> {
 		}
 	}
 
-	if (
-		typeof parsed !== 'object' ||
-		parsed === null ||
-		(parsed as PatternStorageEntry).version !== 1
-	) {
+	if (!isPatternStorageEntry(parsed)) {
 		return { ok: true, data: { version: 1, patterns: [] } };
 	}
 
-	return { ok: true, data: parsed as PatternStorageEntry };
+	return { ok: true, data: parsed };
 }
 
 function writeStorage(entry: PatternStorageEntry): StorageResult<void> {
@@ -81,7 +86,11 @@ function migrateCells(cells: ChartCell[][]): ChartCell[][] {
 }
 
 function migrateSnapshot(snapshot: SavedPatternSnapshot): SavedPatternSnapshot {
-	return { ...snapshot, cells: migrateCells(snapshot.cells) };
+	return {
+		...snapshot,
+		cells: migrateCells(snapshot.cells),
+		rowAnnotations: snapshot.rowAnnotations ?? [],
+	};
 }
 
 export function loadAllPatterns(): StorageResult<SavedPatternSnapshot[]> {

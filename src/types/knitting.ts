@@ -1,3 +1,7 @@
+import type { RowAnnotation } from './annotation';
+
+export type { RowAnnotation };
+
 export type SymbolCategory = 'basic-structure' | 'basic-stitch' | 'increase' | 'decrease' | 'special';
 
 export type SymmetryMode = 'none' | 'horizontal' | 'vertical' | 'both';
@@ -88,6 +92,7 @@ export interface SavedPatternSnapshot {
 	savedAt: string; // ISO 8601
 	difficulty: number; // 0~5
 	materials: string;
+	rowAnnotations?: RowAnnotation[];
 }
 
 export interface PatternStorageEntry {

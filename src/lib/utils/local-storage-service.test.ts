@@ -23,6 +23,7 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 		savedAt: '2025-01-01T00:00:00.000Z',
 		difficulty: 0,
 		materials: '',
+		rowAnnotations: [],
 		...overrides,
 	};
 }
