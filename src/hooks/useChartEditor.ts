@@ -7,9 +7,9 @@ import { knittingSymbols, crochetSymbols } from '@/constants/knitting-symbols';
 import { GridSize, CellSelection } from '@/types/knitting';
 
 export function useChartEditor() {
-	const { cells, gridSize, cellSize, patternType, setCellSymbol, setCells, setGridSize, setCellSize, setPatternType, reset } =
+	const { cells, gridSize, cellSize, patternType, setCellSymbol, setCellColor, setCells, setGridSize, setCellSize, setPatternType, reset } =
 		useChartStore();
-	const { selectedSymbol, rotationalMode, clipboard, setClipboard } = useUIStore();
+	const { selectedSymbol, selectedColor, rotationalMode, clipboard, setClipboard } = useUIStore();
 
 	const symbolsMap = useMemo<Record<string, string>>(() => {
 		const symbols = patternType === 'knitting' ? knittingSymbols : crochetSymbols;
@@ -44,6 +44,35 @@ export function useChartEditor() {
 			setCells(newCells);
 		},
 		[setCellSymbol, setCells, cells, selectedSymbol, rotationalMode, gridSize],
+	);
+
+	const handleCellColorPaint = useCallback(
+		(row: number, col: number) => {
+			const color = selectedColor;
+			if (rotationalMode === 'none') {
+				setCellColor(row, col, color);
+				return;
+			}
+
+			const mirrorCol = gridSize.cols - 1 - col;
+			const mirrorRow = gridSize.rows - 1 - row;
+			const paintSet = new Set([`${row},${col}`]);
+			if (rotationalMode === 'horizontal' || rotationalMode === 'both') {
+				paintSet.add(`${row},${mirrorCol}`);
+			}
+			if (rotationalMode === 'vertical' || rotationalMode === 'both') {
+				paintSet.add(`${mirrorRow},${col}`);
+			}
+			if (rotationalMode === 'both') {
+				paintSet.add(`${mirrorRow},${mirrorCol}`);
+			}
+
+			const newCells = cells.map((r, rIdx) =>
+				r.map((cell, cIdx) => (paintSet.has(`${rIdx},${cIdx}`) ? { ...cell, color } : cell)),
+			);
+			setCells(newCells);
+		},
+		[setCellColor, setCells, cells, selectedColor, rotationalMode, gridSize],
 	);
 
 	const clearCell = useCallback(
@@ -96,8 +125,10 @@ export function useChartEditor() {
 		cellSize,
 		patternType,
 		selectedSymbol,
+		selectedColor,
 		symbolsMap,
 		handleCellPaint,
+		handleCellColorPaint,
 		clearCell,
 		resizeGrid,
 		setCellSize,

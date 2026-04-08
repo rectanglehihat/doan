@@ -174,6 +174,60 @@ describe('useChartEditor', () => {
 		});
 	});
 
+	describe('handleCellColorPaint 대칭 모드', () => {
+		beforeEach(() => {
+			act(() => useUIStore.getState().setSelectedColor('#FF0000'));
+		});
+
+		it('none 모드에서는 해당 셀만 색상이 적용된다', () => {
+			act(() => useUIStore.getState().setRotationalMode('none'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellColorPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].color).toBe('#FF0000');
+			expect(cells[0][19].color).toBeNull();
+		});
+
+		it('horizontal 모드에서 좌우 대칭 셀에도 색상이 적용된다', () => {
+			act(() => useUIStore.getState().setRotationalMode('horizontal'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellColorPaint(0, 2));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][2].color).toBe('#FF0000');
+			expect(cells[0][17].color).toBe('#FF0000'); // mirrorCol = 20-1-2 = 17
+		});
+
+		it('vertical 모드에서 상하 대칭 셀에도 색상이 적용된다', () => {
+			act(() => useUIStore.getState().setRotationalMode('vertical'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellColorPaint(2, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[2][0].color).toBe('#FF0000');
+			expect(cells[17][0].color).toBe('#FF0000'); // mirrorRow = 20-1-2 = 17
+		});
+
+		it('both 모드에서 4방향 대칭 셀에 모두 색상이 적용된다', () => {
+			act(() => useUIStore.getState().setRotationalMode('both'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellColorPaint(0, 0));
+			const cells = useChartStore.getState().cells;
+			expect(cells[0][0].color).toBe('#FF0000');
+			expect(cells[0][19].color).toBe('#FF0000');
+			expect(cells[19][0].color).toBe('#FF0000');
+			expect(cells[19][19].color).toBe('#FF0000');
+		});
+
+		it('null 색상을 전달하면 해당 셀의 색상이 지워진다', () => {
+			act(() => useUIStore.getState().setRotationalMode('none'));
+			const { result } = renderHook(() => useChartEditor());
+			act(() => result.current.handleCellColorPaint(0, 0));
+			expect(useChartStore.getState().cells[0][0].color).toBe('#FF0000');
+			act(() => useUIStore.getState().setSelectedColor(null));
+			act(() => result.current.handleCellColorPaint(0, 0));
+			expect(useChartStore.getState().cells[0][0].color).toBeNull();
+		});
+	});
+
 	describe('symbolsMap', () => {
 		it('knitting 모드에서 기호 id를 abbr로 매핑한다', () => {
 			const { result } = renderHook(() => useChartEditor());

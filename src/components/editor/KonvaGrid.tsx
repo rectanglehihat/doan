@@ -56,7 +56,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onCollapsedColumnBlockClick,
 	externalStageRef,
 	isColorMode = false,
-	selectedColor = null,
 	onCellColorPaint,
 	rowAnnotations = [],
 	isAnnotationMode = false,
@@ -297,7 +296,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 					isPainting.current = true;
 					onPaintStart?.();
 					const cell = getCellFromPointer();
-					if (cell) onCellColorPaint?.(cell.row, cell.col, selectedColor);
+					if (cell) onCellColorPaint?.(cell.row, cell.col);
 				} else if (isShapeGuideEraseMode) {
 					const pt = getGridPointer();
 					if (pt) {
@@ -337,7 +336,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isShapeGuideEraseMode,
 			isSelectionMode,
 			onSelectionChange,
-			selectedColor,
 			setSelectedStrokeIndex,
 		],
 	);
@@ -395,7 +393,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				const cell = getCellFromPointer();
 				setHoverCell(cell);
 				if (isPainting.current && cell) {
-					onCellColorPaint?.(cell.row, cell.col, selectedColor);
+					onCellColorPaint?.(cell.row, cell.col);
 				}
 			} else {
 				const cell = getCellFromPointer();
@@ -417,7 +415,6 @@ export const KonvaGrid = memo(function KonvaGrid({
 			erasePartialStrokes,
 			isSelectionMode,
 			onSelectionChange,
-			selectedColor,
 		],
 	);
 

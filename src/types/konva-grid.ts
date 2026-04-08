@@ -21,7 +21,7 @@ export interface PaintingProps {
 export interface ColorProps {
 	isColorMode?: boolean;
 	selectedColor?: string | null;
-	onCellColorPaint?: (row: number, col: number, color: string | null) => void;
+	onCellColorPaint?: (row: number, col: number) => void;
 }
 
 export interface ShapeGuideProps {
