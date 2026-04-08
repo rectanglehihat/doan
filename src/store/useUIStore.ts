@@ -132,13 +132,14 @@ export const useUIStore = create<UIState>((set) => ({
 			};
 		}),
 	setShapeGuideDrawMode: (active) =>
-		set(active ? { isShapeGuideDrawMode: true, ...COLOR_MODE_RESET } : { isShapeGuideDrawMode: false }),
+		set(active ? { isShapeGuideDrawMode: true, isAnnotationMode: false, annotationPopover: null, ...COLOR_MODE_RESET } : { isShapeGuideDrawMode: false }),
 	setShapeGuideEraseMode: (active) =>
-		set(active ? { isShapeGuideEraseMode: true, ...COLOR_MODE_RESET } : { isShapeGuideEraseMode: false }),
+		set(active ? { isShapeGuideEraseMode: true, isAnnotationMode: false, annotationPopover: null, ...COLOR_MODE_RESET } : { isShapeGuideEraseMode: false }),
 	setRotationalMode: (mode) => set({ rotationalMode: mode }),
 	setCellSelection: (sel) => set({ cellSelection: sel }),
 	setClipboard: (cells) => set({ clipboard: cells }),
-	setSelectionMode: (active) => set({ isSelectionMode: active }),
+	setSelectionMode: (active) =>
+		set(active ? { isSelectionMode: true, isAnnotationMode: false, annotationPopover: null } : { isSelectionMode: false }),
 	addRecentColor: (color) =>
 		set((state) => ({
 			recentColors: [color, ...state.recentColors.filter((c) => c !== color)].slice(0, 6),
