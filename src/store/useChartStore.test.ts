@@ -588,4 +588,56 @@ describe('useChartStore', () => {
 			expect(useChartStore.getState().rowAnnotations[0].side).toBe('left');
 		});
 	});
+
+	describe('restoreAnnotations', () => {
+		it('rowAnnotations 상태를 전달한 배열로 교체한다', () => {
+			useChartStore.getState().addRowAnnotation(0, '원래 라벨', 'right');
+			const newRowAnnotations = [
+				{ id: 'restored-row-1', rowIndex: 3, label: '복원된 라벨', side: 'left' as const },
+			];
+			useChartStore.getState().restoreAnnotations(newRowAnnotations, []);
+			expect(useChartStore.getState().rowAnnotations).toEqual(newRowAnnotations);
+		});
+
+		it('rangeAnnotations 상태를 전달한 배열로 교체한다', () => {
+			useChartStore.getState().addRangeAnnotation(0, 3, '원래 범위 텍스트');
+			const newRangeAnnotations = [
+				{ id: 'restored-range-1', startRow: 5, endRow: 8, text: '복원된 범위 텍스트' },
+			];
+			useChartStore.getState().restoreAnnotations([], newRangeAnnotations);
+			expect(useChartStore.getState().rangeAnnotations).toEqual(newRangeAnnotations);
+		});
+
+		it('rowAnnotations와 rangeAnnotations를 동시에 교체한다', () => {
+			useChartStore.getState().addRowAnnotation(1, '기존 행 주석', 'right');
+			useChartStore.getState().addRangeAnnotation(2, 4, '기존 범위 주석');
+			const newRowAnnotations = [
+				{ id: 'new-row-1', rowIndex: 0, label: '새 행 주석', side: 'right' as const },
+			];
+			const newRangeAnnotations = [
+				{ id: 'new-range-1', startRow: 1, endRow: 3, text: '새 범위 주석' },
+			];
+			useChartStore.getState().restoreAnnotations(newRowAnnotations, newRangeAnnotations);
+			expect(useChartStore.getState().rowAnnotations).toEqual(newRowAnnotations);
+			expect(useChartStore.getState().rangeAnnotations).toEqual(newRangeAnnotations);
+		});
+
+		it('빈 배열 전달 시 기존 주석이 모두 제거된다', () => {
+			useChartStore.getState().addRowAnnotation(0, '삭제될 주석', 'right');
+			useChartStore.getState().addRangeAnnotation(1, 4, '삭제될 범위 주석');
+			useChartStore.getState().restoreAnnotations([], []);
+			expect(useChartStore.getState().rowAnnotations).toEqual([]);
+			expect(useChartStore.getState().rangeAnnotations).toEqual([]);
+		});
+
+		it('restoreAnnotations 호출 후 cells, gridSize 등 다른 상태는 변경되지 않는다', () => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+			useChartStore.getState().setGridSize({ rows: 10, cols: 10 });
+			const cellsBefore = useChartStore.getState().cells;
+			const gridSizeBefore = useChartStore.getState().gridSize;
+			useChartStore.getState().restoreAnnotations([], []);
+			expect(useChartStore.getState().cells).toBe(cellsBefore);
+			expect(useChartStore.getState().gridSize).toEqual(gridSizeBefore);
+		});
+	});
 });

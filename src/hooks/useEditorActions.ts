@@ -165,6 +165,7 @@ export function useEditorActions(): EditorActions {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (!(e.ctrlKey || e.metaKey)) return;
+      if (e.repeat) return;
 
       if (e.key === 'z' && !e.shiftKey) {
         e.preventDefault();

@@ -265,19 +265,18 @@ export const KonvaGrid = memo(function KonvaGrid({
 	);
 
 	const handleAnnotationMarkerClick = useCallback(
-		(rowIndex: number, anchorX: number, anchorY: number) => {
-			const existing = rowAnnotations.find((a) => a.rowIndex === rowIndex) ?? null;
-			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existing?.id ?? null);
+		(rowIndex: number, anchorX: number, anchorY: number, existingId: string | null) => {
+			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existingId);
 		},
-		[rowAnnotations, onAnnotationAreaClick],
+		[onAnnotationAreaClick],
 	);
 
 	const handleAnnotationSideAreaClick = useCallback(
 		(rowIndex: number, anchorX: number, anchorY: number) => {
-			const existing = rowAnnotations.find((a) => a.rowIndex === rowIndex) ?? null;
-			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existing?.id ?? null);
+			// SideHitArea는 주석 없는 행에만 렌더링되므로 항상 신규 생성(existingId = null)
+			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, null);
 		},
-		[rowAnnotations, onAnnotationAreaClick],
+		[onAnnotationAreaClick],
 	);
 
 	// Stage Y 좌표를 논리 rowIndex로 변환 (0 ~ rows-1 클램핑)

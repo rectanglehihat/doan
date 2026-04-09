@@ -18,6 +18,14 @@ vi.mock('./ShapeGuideLayer', () => ({ ShapeGuideLayer: () => null }));
 vi.mock('./CollapsedRow', () => ({ CollapsedRow: () => null }));
 vi.mock('./CollapsedColumn', () => ({ CollapsedColumn: () => null }));
 
+let capturedAnnotationLayerProps: Record<string, unknown> = {};
+vi.mock('./AnnotationLayer', () => ({
+	AnnotationLayer: (props: Record<string, unknown>) => {
+		capturedAnnotationLayerProps = props;
+		return null;
+	},
+}));
+
 const mockFitToScreen = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/useCanvasNavigation', () => ({
@@ -77,6 +85,7 @@ const defaultProps = {
 describe('KonvaGrid', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		capturedAnnotationLayerProps = {};
 	});
 
 	it('doan:fit-to-screen 이벤트 발생 시 fitToScreen이 올바른 인자로 호출된다', () => {
@@ -109,5 +118,48 @@ describe('KonvaGrid', () => {
 		const { unmount } = render(<KonvaGrid {...defaultProps} externalStageRef={externalStageRef} />);
 		unmount();
 		expect(externalStageRef.current).toBeNull();
+	});
+
+	describe('주석 마커 클릭 — existingId 경로 (Phase 3)', () => {
+		it('마커 클릭 시 AnnotationLayer.onMarkerClick이 existingId와 함께 onAnnotationAreaClick을 호출한다', () => {
+			const onAnnotationAreaClick = vi.fn();
+			render(
+				<KonvaGrid
+					{...defaultProps}
+					isAnnotationMode={true}
+					onAnnotationAreaClick={onAnnotationAreaClick}
+				/>,
+			);
+
+			const onMarkerClick = capturedAnnotationLayerProps.onMarkerClick as (
+				rowIndex: number,
+				anchorX: number,
+				anchorY: number,
+				existingId: string | null,
+			) => void;
+
+			onMarkerClick(2, 100, 200, 'ann-123');
+			expect(onAnnotationAreaClick).toHaveBeenCalledWith(2, 'right', 100, 200, 'ann-123');
+		});
+
+		it('SideArea 클릭 시 AnnotationLayer.onSideAreaClick이 existingId=null로 onAnnotationAreaClick을 호출한다', () => {
+			const onAnnotationAreaClick = vi.fn();
+			render(
+				<KonvaGrid
+					{...defaultProps}
+					isAnnotationMode={true}
+					onAnnotationAreaClick={onAnnotationAreaClick}
+				/>,
+			);
+
+			const onSideAreaClick = capturedAnnotationLayerProps.onSideAreaClick as (
+				rowIndex: number,
+				anchorX: number,
+				anchorY: number,
+			) => void;
+
+			onSideAreaClick(1, 50, 100);
+			expect(onAnnotationAreaClick).toHaveBeenCalledWith(1, 'right', 50, 100, null);
+		});
 	});
 });
