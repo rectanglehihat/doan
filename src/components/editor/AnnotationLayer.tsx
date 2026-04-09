@@ -21,7 +21,7 @@ export interface AnnotationLayerProps {
 	isAnnotationMode: boolean;
 	totalRows: number;
 	transform?: AnnotationLayerTransform;
-	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
+	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number, existingId: string | null) => void;
 	onSideAreaClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
 	rangeAnnotations?: RangeAnnotation[];
 	rangeAnnotationDraft?: { startRow: number; endRow: number } | null;
@@ -34,9 +34,9 @@ export interface AnnotationLayerProps {
 const FONT_SIZE = 11;
 const MARKER_RADIUS = 6;
 
-function noopMarkerClick(): void {
-	// no-op default handler
-}
+const noopMarkerClick: (id: string, anchorX: number, anchorY: number) => void = () => {
+	// no-op default handler for RangeBracketItem.onMarkerClick
+};
 const LINE_EXTEND = 8;
 const TEXT_OFFSET_X = 12;
 
@@ -47,7 +47,7 @@ interface AnnotationItemProps {
 	cellSize: number;
 	isAnnotationMode: boolean;
 	totalRows: number;
-	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number) => void;
+	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number, existingId: string | null) => void;
 }
 
 const AnnotationItem = memo(function AnnotationItemInner({
@@ -68,9 +68,9 @@ const AnnotationItem = memo(function AnnotationItemInner({
 			if (!isAnnotationMode) return;
 			// jsdom 테스트 환경에서 e.evt가 undefined일 수 있음 (mock 한계)
 			const nativeEvt: MouseEvent | undefined = e.evt;
-			onMarkerClick(annotation.rowIndex, nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
+			onMarkerClick(annotation.rowIndex, nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0, annotation.id);
 		},
-		[isAnnotationMode, annotation.rowIndex, onMarkerClick],
+		[isAnnotationMode, annotation.rowIndex, annotation.id, onMarkerClick],
 	);
 
 	return (

@@ -87,6 +87,7 @@ export interface ChartState {
 		rowAnnotations?: RowAnnotation[],
 		rangeAnnotations?: RangeAnnotation[],
 	) => void;
+	restoreAnnotations: (rowAnnotations: RowAnnotation[], rangeAnnotations: RangeAnnotation[]) => void;
 	reset: () => void;
 }
 
@@ -270,6 +271,11 @@ export const useChartStore = create<ChartState>((set, get) => ({
 
 	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations, rangeAnnotations) =>
 		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [], rangeAnnotations: rangeAnnotations ?? [] }),
+
+	// useHistory는 useChartStore.setState로 단일 원자적 복원을 수행하므로 직접 호출하지 않음.
+	// 외부(테스트, 향후 독립 주석 Undo 등)에서 주석만 교체할 때 사용한다.
+	restoreAnnotations: (rowAnnotations, rangeAnnotations) =>
+		set({ rowAnnotations, rangeAnnotations }),
 
 	reset: () =>
 		set({

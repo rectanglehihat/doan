@@ -162,6 +162,52 @@ describe('AnnotationLayer', () => {
 		);
 		const markers = screen.getAllByLabelText('annotation-marker');
 		await userEvent.click(markers[0]);
-		expect(handleMarkerClick).toHaveBeenCalledWith(2, expect.any(Number), expect.any(Number));
+		expect(handleMarkerClick).toHaveBeenCalledWith(2, expect.any(Number), expect.any(Number), 'ann-8');
+	});
+
+	describe('마커 클릭 시 existingId 전달 (Phase 3)', () => {
+		it('마커 클릭 시 onMarkerClick이 annotation.id를 네 번째 인수로 전달한다', async () => {
+			const handleMarkerClick = vi.fn();
+			const annotations: RowAnnotation[] = [
+				{ id: 'existing-ann-id', rowIndex: 1, label: '편집 테스트', side: 'right' },
+			];
+			render(
+				<AnnotationLayer
+					{...defaultProps}
+					rowAnnotations={annotations}
+					isAnnotationMode={true}
+					onMarkerClick={handleMarkerClick}
+				/>,
+			);
+			const markers = screen.getAllByLabelText('annotation-marker');
+			await userEvent.click(markers[0]);
+			expect(handleMarkerClick).toHaveBeenCalledWith(
+				1,
+				expect.any(Number),
+				expect.any(Number),
+				'existing-ann-id',
+			);
+		});
+
+		it('새 주석 생성 클릭(SideArea)과 구별되도록 기존 주석 마커 클릭 시 existingId가 null이 아닌 string이다', async () => {
+			const handleMarkerClick = vi.fn();
+			const annotations: RowAnnotation[] = [
+				{ id: 'check-id-string', rowIndex: 0, label: '확인', side: 'right' },
+			];
+			render(
+				<AnnotationLayer
+					{...defaultProps}
+					rowAnnotations={annotations}
+					isAnnotationMode={true}
+					onMarkerClick={handleMarkerClick}
+				/>,
+			);
+			const markers = screen.getAllByLabelText('annotation-marker');
+			await userEvent.click(markers[0]);
+			const callArgs = handleMarkerClick.mock.calls[0];
+			const existingId = callArgs[3];
+			expect(typeof existingId).toBe('string');
+			expect(existingId).toBe('check-id-string');
+		});
 	});
 });

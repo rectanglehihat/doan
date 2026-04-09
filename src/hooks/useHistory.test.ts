@@ -424,6 +424,173 @@ describe('useHistory', () => {
 		});
 	});
 
+	describe('주석 undo/redo', () => {
+		it('rowAnnotation 추가 후 undo 시 주석 없는 상태로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRowAnnotation(2, '10단', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+		});
+
+		it('rowAnnotation 수정 후 undo 시 이전 라벨로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRowAnnotation(1, '원래 라벨', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			const { id } = useChartStore.getState().rowAnnotations[0];
+			act(() => {
+				useChartStore.getState().updateRowAnnotation(id, '수정된 라벨');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations[0].label).toBe('원래 라벨');
+		});
+
+		it('rowAnnotation 삭제 후 undo 시 삭제된 주석이 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRowAnnotation(3, '복원될 주석', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			const { id } = useChartStore.getState().rowAnnotations[0];
+			act(() => {
+				useChartStore.getState().removeRowAnnotation(id);
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(1);
+			expect(useChartStore.getState().rowAnnotations[0].label).toBe('복원될 주석');
+		});
+
+		it('rangeAnnotation 추가 후 undo 시 주석 없는 상태로 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRangeAnnotation(1, 5, '범위 주석');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rangeAnnotations).toHaveLength(0);
+		});
+
+		it('rowAnnotation 추가 후 undo → redo 시 주석이 재적용된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRowAnnotation(0, 'redo 테스트', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+			act(() => {
+				result.current.redo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(1);
+			expect(useChartStore.getState().rowAnnotations[0].label).toBe('redo 테스트');
+		});
+
+		it('rangeAnnotation 추가 후 undo → redo 시 범위 주석이 재적용된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRangeAnnotation(2, 6, '범위 redo 테스트');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rangeAnnotations).toHaveLength(0);
+			act(() => {
+				result.current.redo();
+			});
+			expect(useChartStore.getState().rangeAnnotations).toHaveLength(1);
+			expect(useChartStore.getState().rangeAnnotations[0].text).toBe('범위 redo 테스트');
+		});
+
+		it('[버그 재현] 셀 변경 후 주석 추가, undo 시 주석만 제거되고 셀은 유지된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				useChartStore.getState().addRowAnnotation(0, '테스트 주석', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			// undo: 주석만 제거되어야 함
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+		});
+
+		it('[버그 재현] 주석 2개 추가 후 undo 시 하나씩 제거된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().addRowAnnotation(0, '주석1', 'right');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				useChartStore.getState().addRowAnnotation(1, '주석2', 'right');
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(2);
+			// 첫 undo: 주석2만 제거
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(1);
+			expect(useChartStore.getState().rowAnnotations[0].label).toBe('주석1');
+			// 두 번째 undo: 주석1도 제거
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+		});
+
+		it('[버그 재현] 셀 + 주석2개, undo 3번 시 각각 한 단계씩 복원된다', async () => {
+			const { result } = renderHook(() => useHistory());
+			act(() => {
+				useChartStore.getState().setCellSymbol(0, 0, 'k');
+			});
+			await waitFor(() => expect(result.current.canUndo).toBe(true));
+			act(() => {
+				useChartStore.getState().addRowAnnotation(0, '주석1', 'right');
+			});
+			act(() => {
+				useChartStore.getState().addRowAnnotation(1, '주석2', 'right');
+			});
+			// undo 1: 주석2 제거
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(1);
+			// undo 2: 주석1 제거
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBe('k');
+			expect(useChartStore.getState().rowAnnotations).toHaveLength(0);
+			// undo 3: 셀 제거
+			act(() => {
+				result.current.undo();
+			});
+			expect(useChartStore.getState().cells[0][0].symbolId).toBeNull();
+		});
+	});
+
 	describe('redo', () => {
 		it('undo 후 redo 호출 시 원래 상태로 복원된다', async () => {
 			const { result } = renderHook(() => useHistory());
