@@ -3,15 +3,20 @@
 import { useRef } from 'react';
 import type Konva from 'konva';
 import { ChartCanvas } from '@/components/editor/ChartCanvas';
+import { ColumnSectionLabelBar } from '@/components/editor/ColumnSectionLabelBar';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useEditorActions } from '@/hooks/useEditorActions';
 import { useUIStore } from '@/store/useUIStore';
+import { useChartStore } from '@/store/useChartStore';
 
 export function EditorClient() {
 	const stageRef = useRef<Konva.Stage | null>(null);
+	const labelBarRef = useRef<HTMLDivElement | null>(null);
+	const collapsedColumnBlocks = useChartStore((s) => s.collapsedColumnBlocks);
+	const gridSize = useChartStore((s) => s.gridSize);
 	const {
 		canUndo, canRedo, onUndo, onRedo, beginBatch, endBatch,
 		isResetDialogOpen, onReset, onResetConfirm, onResetCancel,
@@ -52,7 +57,7 @@ export function EditorClient() {
 					isAnnotationMode={isAnnotationMode}
 					onAnnotationModeChange={setAnnotationMode}
 				/>
-				<div className="flex-1 overflow-auto">
+				<div className="flex-1 overflow-auto flex flex-col">
 					<ChartCanvas
 						onPaintStart={beginBatch}
 						onPaintEnd={endBatch}
@@ -62,10 +67,15 @@ export function EditorClient() {
 						onShapeGuideEraseEnd={endBatch}
 						stageRef={stageRef}
 					/>
+					<ColumnSectionLabelBar
+						collapsedColumnBlocks={collapsedColumnBlocks}
+						totalCols={gridSize.cols}
+						containerRef={labelBarRef}
+					/>
 				</div>
 			</main>
 			<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">
-				<EditorSidebar stageRef={stageRef} />
+				<EditorSidebar stageRef={stageRef} labelBarRef={labelBarRef} />
 			</aside>
 			<ConfirmDialog
 				open={isResetDialogOpen}

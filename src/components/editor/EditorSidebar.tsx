@@ -104,9 +104,10 @@ function SaveStatus({ saveError, isSaved, isAutoSaving }: SaveStatusProps) {
 
 interface EditorSidebarProps {
 	stageRef?: React.RefObject<Konva.Stage | null>;
+	labelBarRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export function EditorSidebar({ stageRef }: EditorSidebarProps) {
+export function EditorSidebar({ stageRef, labelBarRef }: EditorSidebarProps) {
 	const [patternType, setPatternType] = useState<PatternType>('knitting');
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [isSaved, setIsSaved] = useState(false);
@@ -415,6 +416,7 @@ export function EditorSidebar({ stageRef }: EditorSidebarProps) {
 				isOpen={isPdfModalOpen}
 				onClose={handlePdfModalClose}
 				stageRef={resolvedStageRef}
+				labelBarRef={labelBarRef}
 			/>
 		</div>
 	);

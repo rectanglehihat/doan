@@ -16,6 +16,7 @@ interface UsePdfExportReturn {
   handleExportPdf: (
     stageRef: React.RefObject<Konva.Stage | null>,
     options: Pick<PdfOptions, 'pageSize' | 'orientation' | 'includeHeader'>,
+    labelBarRef?: React.RefObject<HTMLDivElement | null>,
   ) => Promise<void>;
   clearError: () => void;
 }
@@ -37,6 +38,7 @@ export function usePdfExport(): UsePdfExportReturn {
     async (
       stageRef: React.RefObject<Konva.Stage | null>,
       options: Pick<PdfOptions, 'pageSize' | 'orientation' | 'includeHeader'>,
+      labelBarRef?: React.RefObject<HTMLDivElement | null>,
     ): Promise<void> => {
       if (stageRef.current === null) {
         setExportError('canvas_not_ready');
@@ -58,6 +60,7 @@ export function usePdfExport(): UsePdfExportReturn {
         const result: PdfExportResult = await exportChartToPdf(
           stageRef.current,
           fullOptions,
+          labelBarRef?.current ?? null,
         );
 
         if (!result.ok) {
