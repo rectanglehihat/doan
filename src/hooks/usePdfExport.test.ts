@@ -136,6 +136,51 @@ describe('usePdfExport', () => {
     expect(result.current.exportError).toBe('canvas_not_ready');
   });
 
+  it('labelBarRef가 제공되면 exportChartToPdf에 labelBarRef.current를 전달한다', async () => {
+    const { exportChartToPdf } = await import('@/lib/utils/export-pdf');
+    const mockExport = vi.mocked(exportChartToPdf);
+    const successResult: PdfExportResult = { ok: true, fileName: 'test.pdf' };
+    mockExport.mockResolvedValue(successResult);
+
+    const stageRef = makeStageRef(makeMockStage());
+    const divEl = document.createElement('div');
+    const labelBarRef: React.RefObject<HTMLDivElement | null> = { current: divEl };
+
+    const { result } = renderHook(() => usePdfExport());
+
+    await act(async () => {
+      await result.current.handleExportPdf(stageRef, defaultOptions, labelBarRef);
+    });
+
+    expect(mockExport).toHaveBeenCalledWith(
+      stageRef.current,
+      expect.any(Object),
+      divEl,
+    );
+  });
+
+  it('labelBarRef.current가 null이면 exportChartToPdf에 null을 전달한다', async () => {
+    const { exportChartToPdf } = await import('@/lib/utils/export-pdf');
+    const mockExport = vi.mocked(exportChartToPdf);
+    const successResult: PdfExportResult = { ok: true, fileName: 'test.pdf' };
+    mockExport.mockResolvedValue(successResult);
+
+    const stageRef = makeStageRef(makeMockStage());
+    const labelBarRef: React.RefObject<HTMLDivElement | null> = { current: null };
+
+    const { result } = renderHook(() => usePdfExport());
+
+    await act(async () => {
+      await result.current.handleExportPdf(stageRef, defaultOptions, labelBarRef);
+    });
+
+    expect(mockExport).toHaveBeenCalledWith(
+      stageRef.current,
+      expect.any(Object),
+      null,
+    );
+  });
+
   it('clearError 호출 시 exportError가 null로 초기화된다', async () => {
     const { exportChartToPdf } = await import('@/lib/utils/export-pdf');
     const mockExport = vi.mocked(exportChartToPdf);

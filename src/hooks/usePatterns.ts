@@ -26,6 +26,8 @@ export function usePatterns() {
 	const collapsedColumnBlocks = useChartStore((s) => s.collapsedColumnBlocks);
 	const difficulty = useChartStore((s) => s.difficulty);
 	const materials = useChartStore((s) => s.materials);
+	const rowAnnotations = useChartStore((s) => s.rowAnnotations);
+	const rangeAnnotations = useChartStore((s) => s.rangeAnnotations);
 	const restoreSnapshot = useChartStore((s) => s.restoreSnapshot);
 	const resetChart = useChartStore((s) => s.reset);
 
@@ -62,6 +64,8 @@ export function usePatterns() {
 				cells,
 				collapsedBlocks,
 				collapsedColumnBlocks,
+				rowAnnotations,
+				rangeAnnotations,
 				shapeGuide,
 				rotationalMode,
 				savedAt: new Date().toISOString(),
@@ -76,7 +80,7 @@ export function usePatterns() {
 			}
 			return result;
 		},
-		[cells, gridSize, patternType, collapsedBlocks, collapsedColumnBlocks, shapeGuide, rotationalMode, difficulty, materials, refreshPatterns, setCurrentPatternId],
+		[cells, gridSize, patternType, collapsedBlocks, collapsedColumnBlocks, rowAnnotations, rangeAnnotations, shapeGuide, rotationalMode, difficulty, materials, refreshPatterns, setCurrentPatternId],
 	);
 
 	const loadPattern = useCallback(
@@ -94,6 +98,8 @@ export function usePatterns() {
 				snapshot.difficulty ?? 0,
 				snapshot.materials ?? '',
 				snapshot.collapsedColumnBlocks,
+				snapshot.rowAnnotations,
+				snapshot.rangeAnnotations,
 			);
 			setShapeGuide(snapshot.shapeGuide);
 			setRotationalMode(snapshot.rotationalMode ?? 'none');
@@ -151,6 +157,8 @@ export function usePatterns() {
 				cells,
 				collapsedBlocks,
 				collapsedColumnBlocks,
+				rowAnnotations,
+				rangeAnnotations,
 				shapeGuide,
 				rotationalMode,
 				savedAt: new Date().toISOString(),
@@ -169,7 +177,7 @@ export function usePatterns() {
 			}
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [cells, gridSize, patternType, patternTitle, collapsedBlocks, collapsedColumnBlocks, shapeGuide, rotationalMode, difficulty, materials]);
+	}, [cells, gridSize, patternType, patternTitle, collapsedBlocks, collapsedColumnBlocks, rowAnnotations, rangeAnnotations, shapeGuide, rotationalMode, difficulty, materials]);
 
 	return {
 		patterns,

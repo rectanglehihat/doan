@@ -115,9 +115,22 @@ function buildHeaderImage(options: PdfOptions): HeaderImage | null {
   }
 }
 
+async function captureHtmlElement(el: HTMLElement): Promise<{ dataURL: string; widthPx: number; heightPx: number } | null> {
+  if (typeof document === 'undefined') return null;
+  try {
+    const { default: html2canvas } = await import('html2canvas');
+    const canvas = await html2canvas(el);
+    const dataURL = canvas.toDataURL('image/png');
+    return dataURL ? { dataURL, widthPx: canvas.width, heightPx: canvas.height } : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function exportChartToPdf(
   stage: Konva.Stage,
   options: PdfOptions,
+  labelBarEl?: HTMLElement | null,
 ): Promise<PdfExportResult> {
   try {
     const dataURL = stage.toDataURL({ pixelRatio: 2 });
@@ -156,6 +169,15 @@ export async function exportChartToPdf(
     const imageHeight = (stageHeight / stageWidth) * imageWidth;
 
     doc.addImage(dataURL, 'PNG', MARGIN, currentY, imageWidth, imageHeight);
+    currentY += imageHeight;
+
+    if (labelBarEl) {
+      const labelCapture = await captureHtmlElement(labelBarEl);
+      if (labelCapture) {
+        const labelHeightMm = (labelCapture.heightPx / labelCapture.widthPx) * usableWidth;
+        doc.addImage(labelCapture.dataURL, 'PNG', MARGIN, currentY, usableWidth, labelHeightMm);
+      }
+    }
 
     const fileName = `${options.title || '도안'}_${Date.now()}.pdf`;
     doc.save(fileName);

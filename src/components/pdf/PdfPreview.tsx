@@ -11,6 +11,7 @@ interface PdfPreviewProps {
   isOpen: boolean;
   onClose: () => void;
   stageRef: React.RefObject<Konva.Stage | null>;
+  labelBarRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 type ExportError = 'canvas_not_ready' | 'render_failed' | 'unknown';
@@ -38,7 +39,7 @@ function ExportErrorAlert({ error }: ExportErrorAlertProps) {
   );
 }
 
-export function PdfPreview({ isOpen, onClose, stageRef }: PdfPreviewProps) {
+export function PdfPreview({ isOpen, onClose, stageRef, labelBarRef }: PdfPreviewProps) {
   const [pageSize, setPageSize] = useState<PdfPageSize>('A4');
   const [orientation, setOrientation] = useState<PdfOrientation>('portrait');
 
@@ -50,8 +51,8 @@ export function PdfPreview({ isOpen, onClose, stageRef }: PdfPreviewProps) {
   }, [clearError, onClose]);
 
   const handleDownload = useCallback(async () => {
-    await handleExportPdf(stageRef, { pageSize, orientation, includeHeader: true });
-  }, [handleExportPdf, stageRef, pageSize, orientation]);
+    await handleExportPdf(stageRef, { pageSize, orientation, includeHeader: true }, labelBarRef);
+  }, [handleExportPdf, stageRef, pageSize, orientation, labelBarRef]);
 
   const handleSelectA4 = useCallback(() => {
     setPageSize('A4');
