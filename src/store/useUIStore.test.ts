@@ -360,6 +360,18 @@ describe('useUIStore', () => {
 			expect(useUIStore.getState().annotationPopover).toBeNull();
 		});
 
+		it('setSelectedSymbol(symbol) 호출 시 selectedColor가 null이 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().selectedColor).toBeNull();
+		});
+
+		it('setSelectedSymbol(symbol) 호출 시 isColorMode가 false가 된다', () => {
+			useUIStore.getState().setSelectedColor('#FF0000');
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().isColorMode).toBe(false);
+		});
+
 		it('setSelectedSymbol(null) 호출 시 모드 상태에 영향을 주지 않는다', () => {
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().setSelectedSymbol(null);
