@@ -347,6 +347,19 @@ describe('useUIStore', () => {
 			expect(useUIStore.getState().cellSelection).toBeNull();
 		});
 
+		it('setSelectedSymbol(symbol) 호출 시 isAnnotationMode가 false가 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().isAnnotationMode).toBe(false);
+		});
+
+		it('setSelectedSymbol(symbol) 호출 시 annotationPopover가 null이 된다', () => {
+			useUIStore.getState().setAnnotationMode(true);
+			useUIStore.getState().openAnnotationPopover({ rowIndex: 0, anchorX: 0, anchorY: 0, side: 'right', existingId: null });
+			useUIStore.getState().setSelectedSymbol(mockSymbol);
+			expect(useUIStore.getState().annotationPopover).toBeNull();
+		});
+
 		it('setSelectedSymbol(null) 호출 시 모드 상태에 영향을 주지 않는다', () => {
 			useUIStore.getState().setShapeGuideDrawMode(true);
 			useUIStore.getState().setSelectedSymbol(null);

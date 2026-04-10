@@ -105,7 +105,7 @@ export const useUIStore = create<UIState>((set) => ({
 	setSelectedSymbol: (symbol) =>
 		set(
 			symbol !== null
-				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null }
+				? { selectedSymbol: symbol, isShapeGuideDrawMode: false, isShapeGuideEraseMode: false, isSelectionMode: false, cellSelection: null, isAnnotationMode: false, annotationPopover: null }
 				: { selectedSymbol: null },
 		),
 	setSelectedColor: (color) =>
