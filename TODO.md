@@ -90,13 +90,11 @@
   - 캔버스가 화면 밖으로 벗어났을 때 화면으로 이동시키기
   - 화면에 맞게 스케일 적용해서 중앙에 배치
   - F키 단축키 적용
-- [ ] 주석 시스템
+- [x] 주석 시스템
   - [x] Phase1 단 번호 마커: 특정 행 우측/좌측에 "10단", "38단" 표시 + 연결선
   - [x] Phase2 범위 브라켓 주석: 여러 행에 걸친 브라켓 + 멀티라인 텍스트 ("2-1-2 / 2-2-1 / 2코 코막음")
   - [x] Phase3 편집/삭제/Undo 통합: 기존 주석 클릭 → 편집, Undo/Redo 통합
-  - [ ] Phase4 PDF 통합: 주석 포함 PDF 출력
-    - `AnnotationLayer` (Konva) → `Stage.toDataURL()` 자동 포함
-    - `ColumnSectionLabelBar` (HTML) → html2canvas 별도 캡처 후 합성
+  - [x] Phase4 PDF 통합: 주석 포함 PDF 출력
 
 ### 1-6. 저장 및 불러오기
 
