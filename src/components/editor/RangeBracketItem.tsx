@@ -31,10 +31,15 @@ export const RangeBracketItem = memo(function RangeBracketItemInner({
 	endY,
 	totalWidth,
 	isAnnotationMode,
+	totalRows,
 	onMarkerClick,
 }: RangeBracketItemProps) {
 	const bracketX = totalWidth + BRACKET_RIGHT_OFFSET;
 	const midY = (startY + endY) / 2;
+	const endRowNum = totalRows - annotation.endRow;
+	const startRowNum = totalRows - annotation.startRow;
+	const rangeLabel = `${endRowNum}~${startRowNum}단`;
+	const displayText = annotation.text ? `${rangeLabel} ${annotation.text}` : rangeLabel;
 	const anchorX = bracketX + 60;
 	const anchorY = midY;
 
@@ -81,7 +86,7 @@ export const RangeBracketItem = memo(function RangeBracketItemInner({
 			<Text
 				x={bracketX + TEXT_OFFSET_X}
 				y={midY - FONT_SIZE / 2}
-				text={annotation.text}
+				text={displayText}
 				fontSize={FONT_SIZE}
 				fill={BRACKET_COLOR}
 				listening={false}

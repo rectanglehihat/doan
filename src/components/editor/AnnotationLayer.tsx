@@ -61,7 +61,7 @@ const AnnotationItem = memo(function AnnotationItemInner({
 }: AnnotationItemProps) {
 	const rowCenter = visualY + cellSize / 2;
 	const rowNumber = totalRows - annotation.rowIndex;
-	const labelText = `${rowNumber}단`;
+	const labelText = annotation.label ? `${rowNumber}단 ${annotation.label}` : `${rowNumber}단`;
 
 	const handleMarkerClick = useCallback(
 		(e: Konva.KonvaEventObject<MouseEvent>) => {
