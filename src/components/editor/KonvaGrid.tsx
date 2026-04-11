@@ -279,14 +279,21 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[onAnnotationAreaClick],
 	);
 
-	// Stage Y 좌표를 논리 rowIndex로 변환 (0 ~ rows-1 클램핑)
+	// Stage Y 좌표를 논리 rowIndex로 변환 (중략 반영, 0 ~ rows-1 클램핑)
+	// visualToDataRowMap은 중략 마커 행을 포함하지 않아 인덱스가 밀리므로,
+	// rowVisualYMap을 직접 스캔해 stageY 이하인 마지막 data row를 반환한다.
 	const getRowIndexFromStageY = useCallback(
 		(stageY: number): number => {
-			const paddingTop = 0;
-			const rawIndex = Math.floor((stageY - paddingTop) / cellSize);
-			return Math.max(0, Math.min(gridSize.rows - 1, rawIndex));
+			let result = 0;
+			for (let dataRow = 0; dataRow < gridSize.rows; dataRow++) {
+				const y = rowVisualYMap[dataRow];
+				if (y !== null && y <= stageY) {
+					result = dataRow;
+				}
+			}
+			return result;
 		},
-		[cellSize, gridSize.rows],
+		[gridSize.rows, rowVisualYMap],
 	);
 
 	const handleMouseDown = useCallback(
