@@ -41,7 +41,7 @@ describe('AnnotationLayer', () => {
 		expect(screen.queryByText(/단/)).not.toBeInTheDocument();
 	});
 
-	it('rowAnnotations에 항목이 있을 때 단 번호 텍스트를 렌더링한다', () => {
+	it('rowAnnotations에 항목이 있을 때 단 번호와 label 텍스트를 함께 렌더링한다', () => {
 		const annotations: RowAnnotation[] = [
 			{ id: 'ann-1', rowIndex: 0, label: '코 줄이기', side: 'right' },
 		];
@@ -53,7 +53,22 @@ describe('AnnotationLayer', () => {
 				totalRows={5}
 			/>,
 		);
+		expect(screen.getByText('5단 코 줄이기')).toBeInTheDocument();
+	});
+
+	it('annotation.label이 빈 문자열이면 단 번호만 렌더링한다', () => {
+		const annotations: RowAnnotation[] = [
+			{ id: 'ann-no-label', rowIndex: 0, label: '', side: 'right' },
+		];
+		render(
+			<AnnotationLayer
+				{...defaultProps}
+				rowAnnotations={annotations}
+				totalRows={5}
+			/>,
+		);
 		expect(screen.getByText('5단')).toBeInTheDocument();
+		expect(screen.queryByText('5단 ')).not.toBeInTheDocument();
 	});
 
 	it('단 번호는 totalRows - rowIndex 공식으로 계산된다', () => {
@@ -69,7 +84,7 @@ describe('AnnotationLayer', () => {
 				rowVisualYMap={[0, 20, 40, 60, 80, 100, 120, 140, 160, 180]}
 			/>,
 		);
-		expect(screen.getByText('7단')).toBeInTheDocument();
+		expect(screen.getByText('7단 무늬 시작')).toBeInTheDocument();
 	});
 
 	it('rowVisualYMap[rowIndex]가 null이면 해당 항목을 렌더링하지 않는다', () => {
@@ -104,7 +119,7 @@ describe('AnnotationLayer', () => {
 			/>,
 		);
 		// rowIndex=1 → 5-1=4단 렌더링
-		expect(screen.getByText('4단')).toBeInTheDocument();
+		expect(screen.getByText('4단 정상')).toBeInTheDocument();
 		// rowIndex=2 → null이므로 3단 렌더링 안 됨
 		expect(screen.queryByText('3단')).not.toBeInTheDocument();
 	});
@@ -210,4 +225,6 @@ describe('AnnotationLayer', () => {
 			expect(existingId).toBe('check-id-string');
 		});
 	});
+
+
 });

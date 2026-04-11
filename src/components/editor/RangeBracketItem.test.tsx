@@ -48,9 +48,38 @@ describe('RangeBracketItem', () => {
 		expect(() => render(<RangeBracketItem {...defaultProps} />)).not.toThrow();
 	});
 
-	it('annotation의 text를 렌더링한다', () => {
+	it('annotation.text가 있으면 단 범위와 text를 함께 렌더링한다', () => {
 		render(<RangeBracketItem {...defaultProps} />);
-		expect(screen.getByText('오른쪽 경사 감코')).toBeInTheDocument();
+		expect(screen.getByText('4~8단 오른쪽 경사 감코')).toBeInTheDocument();
+	});
+
+	it('annotation.text가 빈 문자열이면 단 범위만 렌더링한다', () => {
+		const emptyTextAnnotation: RangeAnnotation = {
+			id: 'range-empty',
+			startRow: 2,
+			endRow: 6,
+			text: '',
+		};
+		render(<RangeBracketItem {...defaultProps} annotation={emptyTextAnnotation} />);
+		expect(screen.getByText('4~8단')).toBeInTheDocument();
+		expect(screen.queryByText('4~8단 ')).not.toBeInTheDocument();
+	});
+
+	it('단 범위는 totalRows - endRow ~ totalRows - startRow 공식으로 계산된다', () => {
+		const differentAnnotation: RangeAnnotation = {
+			id: 'range-2',
+			startRow: 5,
+			endRow: 10,
+			text: '무늬 패턴',
+		};
+		render(
+			<RangeBracketItem
+				{...defaultProps}
+				annotation={differentAnnotation}
+				totalRows={20}
+			/>,
+		);
+		expect(screen.getByText('10~15단 무늬 패턴')).toBeInTheDocument();
 	});
 
 	it('isAnnotationMode=false일 때 마커 클릭 이벤트가 발생하지 않는다', async () => {

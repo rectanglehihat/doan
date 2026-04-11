@@ -158,6 +158,31 @@ describe('useRangeAnnotationDrag', () => {
 			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
 		});
 
+		it('draft가 null이어도 dragStartRow가 null로 초기화된다', () => {
+			const { result } = renderHook(() => useRangeAnnotationDrag());
+			act(() => {
+				result.current.handleRangeDragStart(3);
+			});
+			act(() => {
+				result.current.handleRangeDragEnd(0, 0);
+			});
+			expect(result.current.dragStartRow).toBeNull();
+		});
+
+		it('draft가 null일 때 DragEnd 후 DragMove를 호출해도 draft가 설정되지 않는다', () => {
+			const { result } = renderHook(() => useRangeAnnotationDrag());
+			act(() => {
+				result.current.handleRangeDragStart(3);
+			});
+			act(() => {
+				result.current.handleRangeDragEnd(0, 0);
+			});
+			act(() => {
+				result.current.handleRangeDragMove(5);
+			});
+			expect(useUIStore.getState().rangeAnnotationDraft).toBeNull();
+		});
+
 		it('openRangeAnnotationPopover 호출 시 anchorX, anchorY가 전달된다', () => {
 			const { result } = renderHook(() => useRangeAnnotationDrag());
 			act(() => {

@@ -43,6 +43,9 @@ export function useRangeAnnotationDrag(
 
 	const handleRangeDragEnd = useCallback(
 		(anchorX: number, anchorY: number) => {
+			dragStartRowRef.current = null;
+			setDragStartRow(null);
+
 			const draft = useUIStore.getState().rangeAnnotationDraft;
 			if (draft === null) {
 				return;
@@ -62,8 +65,6 @@ export function useRangeAnnotationDrag(
 				});
 			}
 
-			dragStartRowRef.current = null;
-			setDragStartRow(null);
 			setRangeAnnotationDraft(null);
 		},
 		[onSingleRow, openRangeAnnotationPopover, setRangeAnnotationDraft],
