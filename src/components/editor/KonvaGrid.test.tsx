@@ -54,6 +54,7 @@ vi.mock('@/hooks/useVisualCoordinates', () => ({
 		colVisualXMap: [0, 20, 40],
 		collapsedBlockYMap: [],
 		collapsedColumnBlockXMap: [],
+		visualToDataRowMap: [0, 1, 2],
 		getGridPointer: () => null,
 		getCellFromPointer: () => null,
 	}),
