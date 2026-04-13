@@ -650,6 +650,7 @@ describe('useUIStore', () => {
 				anchorX: 150,
 				anchorY: 80,
 				existingId: null,
+				side: 'right' as const,
 			};
 			useUIStore.getState().openRangeAnnotationPopover(state);
 			expect(useUIStore.getState().rangeAnnotationPopover).toEqual(state);
@@ -662,6 +663,7 @@ describe('useUIStore', () => {
 				anchorX: 100,
 				anchorY: 60,
 				existingId: 'range-abc',
+				side: 'right' as const,
 			};
 			useUIStore.getState().openRangeAnnotationPopover(state);
 			expect(useUIStore.getState().rangeAnnotationPopover?.existingId).toBe('range-abc');
@@ -674,6 +676,7 @@ describe('useUIStore', () => {
 				anchorX: 0,
 				anchorY: 0,
 				existingId: null,
+				side: 'right',
 			});
 			useUIStore.getState().closeRangeAnnotationPopover();
 			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();
@@ -693,6 +696,7 @@ describe('useUIStore', () => {
 				anchorX: 100,
 				anchorY: 60,
 				existingId: null,
+				side: 'right',
 			});
 			expect(useUIStore.getState().annotationPopover).toBeNull();
 			expect(useUIStore.getState().rangeAnnotationPopover).not.toBeNull();
@@ -705,6 +709,7 @@ describe('useUIStore', () => {
 				anchorX: 100,
 				anchorY: 60,
 				existingId: null,
+				side: 'right',
 			});
 			useUIStore.getState().openAnnotationPopover({
 				rowIndex: 0,
@@ -724,6 +729,7 @@ describe('useUIStore', () => {
 				anchorX: 10,
 				anchorY: 20,
 				existingId: null,
+				side: 'right',
 			});
 			useUIStore.getState().reset();
 			expect(useUIStore.getState().rangeAnnotationPopover).toBeNull();

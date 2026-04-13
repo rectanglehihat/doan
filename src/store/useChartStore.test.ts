@@ -430,9 +430,13 @@ describe('useChartStore', () => {
 			useChartStore.getState().addRangeAnnotation(2, 5, '오른쪽 경사 감코');
 			const { rangeAnnotations } = useChartStore.getState();
 			expect(rangeAnnotations).toHaveLength(1);
-			expect(rangeAnnotations[0].startRow).toBe(2);
-			expect(rangeAnnotations[0].endRow).toBe(5);
 			expect(rangeAnnotations[0].text).toBe('오른쪽 경사 감코');
+			expect(rangeAnnotations[0].side).toBe('right');
+			const annotation = rangeAnnotations[0];
+			if (annotation.side === 'left' || annotation.side === 'right') {
+				expect(annotation.startRow).toBe(2);
+				expect(annotation.endRow).toBe(5);
+			}
 		});
 
 		it('addRangeAnnotation 호출 시 id가 자동으로 생성된다', () => {
@@ -462,8 +466,10 @@ describe('useChartStore', () => {
 			const { id } = useChartStore.getState().rangeAnnotations[0];
 			useChartStore.getState().updateRangeAnnotation(id, '수정');
 			const annotation = useChartStore.getState().rangeAnnotations[0];
-			expect(annotation.startRow).toBe(3);
-			expect(annotation.endRow).toBe(7);
+			if (annotation.side === 'left' || annotation.side === 'right') {
+				expect(annotation.startRow).toBe(3);
+				expect(annotation.endRow).toBe(7);
+			}
 		});
 
 		it('removeRangeAnnotation 호출 시 해당 id 항목이 삭제된다', () => {
@@ -489,7 +495,7 @@ describe('useChartStore', () => {
 
 		it('restoreSnapshot 호출 시 rangeAnnotations가 복원된다', () => {
 			const rangeAnnotations = [
-				{ id: 'range-1', startRow: 2, endRow: 6, text: '복원 텍스트' },
+				{ id: 'range-1', side: 'right' as const, startRow: 2, endRow: 6, text: '복원 텍스트' },
 			];
 			const cells = [[{ symbolId: null, color: null }]];
 			useChartStore.getState().restoreSnapshot(
@@ -602,7 +608,7 @@ describe('useChartStore', () => {
 		it('rangeAnnotations 상태를 전달한 배열로 교체한다', () => {
 			useChartStore.getState().addRangeAnnotation(0, 3, '원래 범위 텍스트');
 			const newRangeAnnotations = [
-				{ id: 'restored-range-1', startRow: 5, endRow: 8, text: '복원된 범위 텍스트' },
+				{ id: 'restored-range-1', side: 'right' as const, startRow: 5, endRow: 8, text: '복원된 범위 텍스트' },
 			];
 			useChartStore.getState().restoreAnnotations([], newRangeAnnotations);
 			expect(useChartStore.getState().rangeAnnotations).toEqual(newRangeAnnotations);
@@ -615,7 +621,7 @@ describe('useChartStore', () => {
 				{ id: 'new-row-1', rowIndex: 0, label: '새 행 주석', side: 'right' as const },
 			];
 			const newRangeAnnotations = [
-				{ id: 'new-range-1', startRow: 1, endRow: 3, text: '새 범위 주석' },
+				{ id: 'new-range-1', side: 'right' as const, startRow: 1, endRow: 3, text: '새 범위 주석' },
 			];
 			useChartStore.getState().restoreAnnotations(newRowAnnotations, newRangeAnnotations);
 			expect(useChartStore.getState().rowAnnotations).toEqual(newRowAnnotations);

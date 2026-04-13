@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RangeBracketItem } from './RangeBracketItem';
-import type { RangeAnnotation } from '@/types/annotation';
+import type { RangeAnnotation, RowRangeAnnotation, ColRangeAnnotation } from '@/types/annotation';
 
 // react-konva mock — AnnotationLayer.test.tsx 패턴과 동일
 vi.mock('react-konva', () => ({
@@ -20,8 +20,9 @@ vi.mock('react-konva', () => ({
 	Arrow: () => null,
 }));
 
-const mockAnnotation: RangeAnnotation = {
+const mockAnnotation: RowRangeAnnotation = {
 	id: 'range-1',
+	side: 'right',
 	startRow: 2,
 	endRow: 6,
 	text: '오른쪽 경사 감코',
@@ -54,8 +55,9 @@ describe('RangeBracketItem', () => {
 	});
 
 	it('annotation.text가 빈 문자열이면 단 범위만 렌더링한다', () => {
-		const emptyTextAnnotation: RangeAnnotation = {
+		const emptyTextAnnotation: RowRangeAnnotation = {
 			id: 'range-empty',
+			side: 'right',
 			startRow: 2,
 			endRow: 6,
 			text: '',
@@ -66,8 +68,9 @@ describe('RangeBracketItem', () => {
 	});
 
 	it('단 범위는 totalRows - endRow ~ totalRows - startRow 공식으로 계산된다', () => {
-		const differentAnnotation: RangeAnnotation = {
+		const differentAnnotation: RowRangeAnnotation = {
 			id: 'range-2',
+			side: 'right',
 			startRow: 5,
 			endRow: 10,
 			text: '무늬 패턴',
@@ -132,5 +135,118 @@ describe('RangeBracketItem', () => {
 				expect.any(Number),
 			);
 		}
+	});
+
+	describe('side: left (RowRangeAnnotation)', () => {
+		const leftAnnotation: RowRangeAnnotation = {
+			id: 'range-left-1',
+			side: 'left',
+			startRow: 2,
+			endRow: 6,
+			text: '왼쪽 경사 감코',
+		};
+
+		const leftProps = {
+			...defaultProps,
+			annotation: leftAnnotation,
+		};
+
+		it('side=left RowRangeAnnotation으로 렌더링 시 에러가 없다 (smoke test)', () => {
+			expect(() => render(<RangeBracketItem {...leftProps} />)).not.toThrow();
+		});
+
+		it('side=left일 때도 단 범위 텍스트가 렌더링된다', () => {
+			render(<RangeBracketItem {...leftProps} />);
+			expect(screen.getByText('4~8단 왼쪽 경사 감코')).toBeInTheDocument();
+		});
+	});
+
+	describe('side: top (ColRangeAnnotation)', () => {
+		const topAnnotation: ColRangeAnnotation = {
+			id: 'col-range-1',
+			side: 'top',
+			startCol: 2,
+			endCol: 6,
+			text: '무늬 패턴',
+		};
+
+		const topProps = {
+			annotation: topAnnotation,
+			startX: 40,
+			endX: 120,
+			totalHeight: 200,
+			totalCols: 10,
+			annotationSideHeight: 30,
+			cellSize: 20,
+			isAnnotationMode: false,
+			onMarkerClick: vi.fn(),
+		};
+
+		it('side=top ColRangeAnnotation으로 렌더링 시 에러가 없다 (smoke test)', () => {
+			expect(() => render(<RangeBracketItem {...topProps} />)).not.toThrow();
+		});
+
+		it('side=top일 때 열 범위 텍스트가 렌더링된다 (startCol+1 ~ endCol+1열 형식)', () => {
+			render(<RangeBracketItem {...topProps} />);
+			expect(screen.getByText('3~7열 무늬 패턴')).toBeInTheDocument();
+		});
+
+		it('side=top이고 isAnnotationMode=true일 때 마커 클릭 시 onMarkerClick이 호출된다', async () => {
+			const handleMarkerClick = vi.fn();
+			render(
+				<RangeBracketItem
+					{...topProps}
+					isAnnotationMode={true}
+					onMarkerClick={handleMarkerClick}
+				/>,
+			);
+			const markers = screen.queryAllByLabelText('range-bracket-marker');
+			if (markers.length > 0) {
+				await userEvent.click(markers[0]);
+				expect(handleMarkerClick).toHaveBeenCalledTimes(1);
+			}
+		});
+	});
+
+	describe('side: bottom (ColRangeAnnotation)', () => {
+		const bottomAnnotation: ColRangeAnnotation = {
+			id: 'col-range-bottom-1',
+			side: 'bottom',
+			startCol: 1,
+			endCol: 5,
+			text: '밑단 패턴',
+		};
+
+		const bottomProps = {
+			annotation: bottomAnnotation,
+			startX: 20,
+			endX: 100,
+			totalHeight: 200,
+			totalCols: 10,
+			annotationSideHeight: 30,
+			cellSize: 20,
+			isAnnotationMode: false,
+			onMarkerClick: vi.fn(),
+		};
+
+		it('side=bottom ColRangeAnnotation으로 렌더링 시 에러가 없다 (smoke test)', () => {
+			expect(() => render(<RangeBracketItem {...bottomProps} />)).not.toThrow();
+		});
+
+		it('side=bottom이고 isAnnotationMode=true일 때 마커 클릭 시 onMarkerClick이 호출된다', async () => {
+			const handleMarkerClick = vi.fn();
+			render(
+				<RangeBracketItem
+					{...bottomProps}
+					isAnnotationMode={true}
+					onMarkerClick={handleMarkerClick}
+				/>,
+			);
+			const markers = screen.queryAllByLabelText('range-bracket-marker');
+			if (markers.length > 0) {
+				await userEvent.click(markers[0]);
+				expect(handleMarkerClick).toHaveBeenCalledTimes(1);
+			}
+		});
 	});
 });

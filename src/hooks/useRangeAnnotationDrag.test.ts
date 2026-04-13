@@ -46,7 +46,9 @@ describe('useRangeAnnotationDrag', () => {
 			act(() => {
 				result.current.handleRangeDragMove(7);
 			});
-			expect(useUIStore.getState().rangeAnnotationDraft).toEqual({ startRow: 3, endRow: 7 });
+			const draft = useUIStore.getState().rangeAnnotationDraft;
+			expect(draft?.startRow).toBe(3);
+			expect(draft?.endRow).toBe(7);
 		});
 
 		it('위로 드래그 시 startRow < endRow 보장 (min/max 정규화)', () => {
@@ -79,7 +81,9 @@ describe('useRangeAnnotationDrag', () => {
 			act(() => {
 				result.current.handleRangeDragMove(4);
 			});
-			expect(useUIStore.getState().rangeAnnotationDraft).toEqual({ startRow: 4, endRow: 4 });
+			const draft = useUIStore.getState().rangeAnnotationDraft;
+			expect(draft?.startRow).toBe(4);
+			expect(draft?.endRow).toBe(4);
 		});
 	});
 
@@ -98,7 +102,7 @@ describe('useRangeAnnotationDrag', () => {
 			act(() => {
 				result.current.handleRangeDragEnd(100, 60);
 			});
-			expect(singleRowCallback).toHaveBeenCalledWith(3);
+			expect(singleRowCallback).toHaveBeenCalledWith(3, 'right');
 		});
 
 		it('draft가 다중 행이면 openRangeAnnotationPopover가 호출된다', () => {

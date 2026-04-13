@@ -68,11 +68,15 @@ export interface AnnotationProps {
 		existingAnnotationId: string | null,
 	) => void;
 	rangeAnnotations?: RangeAnnotation[];
-	rangeAnnotationDraft?: { startRow: number; endRow: number } | null;
+	rangeAnnotationDraft?: { startRow: number; endRow: number; side?: 'left' | 'right' } | null;
+	colRangeAnnotationDraft?: { startCol: number; endCol: number; side: 'top' | 'bottom' } | null;
 	onRangeBracketClick?: (id: string, anchorX: number, anchorY: number) => void;
-	onRangeDragStart?: (rowIndex: number) => void;
+	onRangeDragStart?: (rowIndex: number, side?: 'left' | 'right') => void;
 	onRangeDragMove?: (rowIndex: number) => void;
 	onRangeDragEnd?: (anchorX: number, anchorY: number) => void;
+	onColRangeDragStart?: (colIndex: number, side: 'top' | 'bottom') => void;
+	onColRangeDragMove?: (colIndex: number) => void;
+	onColRangeDragEnd?: (anchorX: number, anchorY: number) => void;
 	columnAnnotations?: ColumnAnnotation[];
 	annotationSideHeight?: number;
 	onColumnAnnotationAreaClick?: (

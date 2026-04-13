@@ -63,10 +63,14 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onAnnotationAreaClick,
 	rangeAnnotations = [],
 	rangeAnnotationDraft = null,
+	colRangeAnnotationDraft = null,
 	onRangeBracketClick,
 	onRangeDragStart,
 	onRangeDragMove,
 	onRangeDragEnd,
+	onColRangeDragStart,
+	onColRangeDragMove,
+	onColRangeDragEnd,
 	columnAnnotations = [],
 	annotationSideHeight = 80,
 	onColumnAnnotationAreaClick,
@@ -316,6 +320,20 @@ export const KonvaGrid = memo(function KonvaGrid({
 		[gridSize.rows, rowVisualYMap],
 	);
 
+	const getColIndexFromStageX = useCallback(
+		(stageX: number): number => {
+			let result = 0;
+			for (let dataCol = 0; dataCol < gridSize.cols; dataCol++) {
+				const x = colVisualXMap[dataCol];
+				if (x !== null && x <= stageX) {
+					result = dataCol;
+				}
+			}
+			return result;
+		},
+		[gridSize.cols, colVisualXMap],
+	);
+
 	const handleMouseDown = useCallback(
 		(e: KonvaEventObject<MouseEvent>) => {
 			if (e.evt.button === 1 || (e.evt.button === 0 && isInSpacePanMode())) {
@@ -408,6 +426,17 @@ export const KonvaGrid = memo(function KonvaGrid({
 					}
 				}
 			}
+			if (isAnnotationMode && onColRangeDragMove) {
+				const stage = stageRef.current;
+				if (stage) {
+					const pointer = stage.getPointerPosition();
+					if (pointer) {
+						const layerX = (pointer.x - transform.x) / transform.scale;
+						const colIndex = getColIndexFromStageX(layerX);
+						onColRangeDragMove(colIndex);
+					}
+				}
+			}
 			if (isSelectionMode) {
 				const cell = getCellFromPointer();
 				setHoverCell(cell);
@@ -470,8 +499,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 			onSelectionChange,
 			isAnnotationMode,
 			onRangeDragMove,
+			onColRangeDragMove,
 			transform,
 			getRowIndexFromStageY,
+			getColIndexFromStageX,
 		],
 	);
 
@@ -480,6 +511,10 @@ export const KonvaGrid = memo(function KonvaGrid({
 			if (isAnnotationMode && onRangeDragEnd) {
 				const nativeEvt: MouseEvent | undefined = e.evt;
 				onRangeDragEnd(nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
+			}
+			if (isAnnotationMode && onColRangeDragEnd) {
+				const nativeEvt: MouseEvent | undefined = e.evt;
+				onColRangeDragEnd(nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
 			}
 			if (isSelectionMode) {
 				isSelectingRef.current = false;
@@ -511,6 +546,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 			isSelectionMode,
 			isAnnotationMode,
 			onRangeDragEnd,
+			onColRangeDragEnd,
 		],
 	);
 
@@ -797,6 +833,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				onSideAreaClick={handleAnnotationSideAreaClick}
 				rangeAnnotations={rangeAnnotations}
 				rangeAnnotationDraft={rangeAnnotationDraft}
+				colRangeAnnotationDraft={colRangeAnnotationDraft}
 				onRangeBracketClick={onRangeBracketClick}
 				onRangeDragStart={onRangeDragStart}
 				columnAnnotations={columnAnnotations}
@@ -805,6 +842,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				annotationSideHeight={annotationSideHeight}
 				onColumnMarkerClick={handleColumnAnnotationMarkerClick}
 				onColumnAreaClick={handleColumnAreaClick}
+				onColRangeDragStart={onColRangeDragStart}
 			/>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (
