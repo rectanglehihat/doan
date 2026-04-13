@@ -155,11 +155,12 @@ describe('KonvaGrid', () => {
 
 			const onSideAreaClick = capturedAnnotationLayerProps.onSideAreaClick as (
 				rowIndex: number,
+				side: 'left' | 'right',
 				anchorX: number,
 				anchorY: number,
 			) => void;
 
-			onSideAreaClick(1, 50, 100);
+			onSideAreaClick(1, 'right', 50, 100);
 			expect(onAnnotationAreaClick).toHaveBeenCalledWith(1, 'right', 50, 100, null);
 		});
 	});

@@ -1,6 +1,6 @@
 import type Konva from 'konva';
 import type { ChartCell, CellSelection, CollapsedBlock, CollapsedColumnBlock, GridSize, RotationalMode, RowAnnotation, ShapeGuide } from './knitting';
-import type { RangeAnnotation } from './annotation';
+import type { ColumnAnnotation, RangeAnnotation } from './annotation';
 
 export interface GridCoreProps {
 	cells: ChartCell[][];
@@ -73,6 +73,15 @@ export interface AnnotationProps {
 	onRangeDragStart?: (rowIndex: number) => void;
 	onRangeDragMove?: (rowIndex: number) => void;
 	onRangeDragEnd?: (anchorX: number, anchorY: number) => void;
+	columnAnnotations?: ColumnAnnotation[];
+	annotationSideHeight?: number;
+	onColumnAnnotationAreaClick?: (
+		colIndex: number,
+		side: 'top' | 'bottom',
+		anchorX: number,
+		anchorY: number,
+		existingAnnotationId: string | null,
+	) => void;
 }
 
 export type KonvaGridProps = GridCoreProps &

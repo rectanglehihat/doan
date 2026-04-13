@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AnnotationSide, RangeAnnotation, RowAnnotation } from '@/types/annotation';
+import { AnnotationSide, ColumnAnnotation, ColumnAnnotationSide, RangeAnnotation, RowAnnotation } from '@/types/annotation';
 import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
@@ -75,6 +75,10 @@ export interface ChartState {
 	addRangeAnnotation: (startRow: number, endRow: number, text: string) => void;
 	updateRangeAnnotation: (id: string, text: string) => void;
 	removeRangeAnnotation: (id: string) => void;
+	columnAnnotations: ColumnAnnotation[];
+	addColumnAnnotation: (colIndex: number, label: string, side: ColumnAnnotationSide) => void;
+	updateColumnAnnotation: (id: string, label: string) => void;
+	removeColumnAnnotation: (id: string) => void;
 	restoreSnapshot: (
 		cells: ChartCell[][],
 		gridSize: GridSize,
@@ -86,8 +90,9 @@ export interface ChartState {
 		collapsedColumnBlocks?: CollapsedColumnBlock[],
 		rowAnnotations?: RowAnnotation[],
 		rangeAnnotations?: RangeAnnotation[],
+		columnAnnotations?: ColumnAnnotation[],
 	) => void;
-	restoreAnnotations: (rowAnnotations: RowAnnotation[], rangeAnnotations: RangeAnnotation[]) => void;
+	restoreAnnotations: (rowAnnotations: RowAnnotation[], rangeAnnotations: RangeAnnotation[], columnAnnotations?: ColumnAnnotation[]) => void;
 	reset: () => void;
 }
 
@@ -103,6 +108,7 @@ const initialState = {
 	materials: '',
 	rowAnnotations: [],
 	rangeAnnotations: [],
+	columnAnnotations: [],
 } satisfies {
 	cells: ChartCell[][];
 	gridSize: GridSize;
@@ -115,6 +121,7 @@ const initialState = {
 	materials: string;
 	rowAnnotations: RowAnnotation[];
 	rangeAnnotations: RangeAnnotation[];
+	columnAnnotations: ColumnAnnotation[];
 };
 
 export const useChartStore = create<ChartState>((set, get) => ({
@@ -269,13 +276,35 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			rangeAnnotations: state.rangeAnnotations.filter((annotation) => annotation.id !== id),
 		})),
 
-	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations, rangeAnnotations) =>
-		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [], rangeAnnotations: rangeAnnotations ?? [] }),
+	addColumnAnnotation: (colIndex, label, side) => {
+		const newAnnotation: ColumnAnnotation = {
+			id: crypto.randomUUID(),
+			colIndex,
+			label,
+			side,
+		};
+		set((state) => ({ columnAnnotations: [...state.columnAnnotations, newAnnotation] }));
+	},
+
+	updateColumnAnnotation: (id, label) =>
+		set((state) => ({
+			columnAnnotations: state.columnAnnotations.map((annotation) =>
+				annotation.id === id ? { ...annotation, label } : annotation,
+			),
+		})),
+
+	removeColumnAnnotation: (id) =>
+		set((state) => ({
+			columnAnnotations: state.columnAnnotations.filter((annotation) => annotation.id !== id),
+		})),
+
+	restoreSnapshot: (cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks, rowAnnotations, rangeAnnotations, columnAnnotations) =>
+		set({ cells, gridSize, patternType, patternTitle, collapsedBlocks, difficulty, materials, collapsedColumnBlocks: collapsedColumnBlocks ?? [], rowAnnotations: rowAnnotations ?? [], rangeAnnotations: rangeAnnotations ?? [], columnAnnotations: columnAnnotations ?? [] }),
 
 	// useHistory는 useChartStore.setState로 단일 원자적 복원을 수행하므로 직접 호출하지 않음.
 	// 외부(테스트, 향후 독립 주석 Undo 등)에서 주석만 교체할 때 사용한다.
-	restoreAnnotations: (rowAnnotations, rangeAnnotations) =>
-		set({ rowAnnotations, rangeAnnotations }),
+	restoreAnnotations: (rowAnnotations, rangeAnnotations, columnAnnotations) =>
+		set({ rowAnnotations, rangeAnnotations, columnAnnotations: columnAnnotations ?? [] }),
 
 	reset: () =>
 		set({
@@ -290,5 +319,6 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			materials: '',
 			rowAnnotations: [],
 			rangeAnnotations: [],
+			columnAnnotations: [],
 		}),
 }));

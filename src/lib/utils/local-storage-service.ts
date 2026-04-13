@@ -90,6 +90,8 @@ function migrateSnapshot(snapshot: SavedPatternSnapshot): SavedPatternSnapshot {
 		...snapshot,
 		cells: migrateCells(snapshot.cells),
 		rowAnnotations: snapshot.rowAnnotations ?? [],
+		rangeAnnotations: snapshot.rangeAnnotations ?? [],
+		columnAnnotations: snapshot.columnAnnotations ?? [],
 	};
 }
 

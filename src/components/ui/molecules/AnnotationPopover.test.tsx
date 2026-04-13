@@ -172,4 +172,123 @@ describe('AnnotationPopover', () => {
 			expect(handleClose).toHaveBeenCalledTimes(1);
 		});
 	});
+
+	describe('4방향 지원 — side top/bottom', () => {
+		it('side=top일 때 transform: translateY(-100%) 스타일이 적용된다', () => {
+			render(
+				<AnnotationPopover
+					{...defaultProps}
+					side="top"
+					anchorX={150}
+					anchorY={50}
+				/>,
+			);
+			const popover = screen.getByRole('dialog');
+			expect(popover).toHaveStyle({ transform: 'translateY(-100%)' });
+		});
+
+		it('side=bottom일 때 transform 스타일이 적용되지 않는다', () => {
+			render(
+				<AnnotationPopover
+					{...defaultProps}
+					side="bottom"
+					anchorX={150}
+					anchorY={200}
+				/>,
+			);
+			const popover = screen.getByRole('dialog');
+			// bottom은 transform 없음 — translateX/translateY 모두 없어야 함
+			expect(popover).not.toHaveStyle({ transform: 'translateX(-100%)' });
+			expect(popover).not.toHaveStyle({ transform: 'translateY(-100%)' });
+		});
+
+		it('side=top일 때 anchorX/anchorY 기반 절대 위치가 설정된다', () => {
+			render(
+				<AnnotationPopover
+					{...defaultProps}
+					side="top"
+					anchorX={120}
+					anchorY={80}
+				/>,
+			);
+			const popover = screen.getByRole('dialog');
+			expect(popover).toHaveStyle({ left: '120px', top: '80px' });
+		});
+
+		it('side=bottom일 때 anchorX/anchorY 기반 절대 위치가 설정된다', () => {
+			render(
+				<AnnotationPopover
+					{...defaultProps}
+					side="bottom"
+					anchorX={60}
+					anchorY={300}
+				/>,
+			);
+			const popover = screen.getByRole('dialog');
+			expect(popover).toHaveStyle({ left: '60px', top: '300px' });
+		});
+	});
+
+	describe('4방향 지원 — mode=column', () => {
+		const columnProps = {
+			anchorX: 200,
+			anchorY: 50,
+			side: 'top' as const,
+			colNumber: 3,
+			initialLabel: '',
+			onConfirm: vi.fn(),
+			onDelete: null,
+			onClose: vi.fn(),
+			mode: 'column' as const,
+		};
+
+		beforeEach(() => {
+			vi.clearAllMocks();
+		});
+
+		it('mode=column일 때 colNumber를 표시한다 (예: "3열")', () => {
+			render(<AnnotationPopover {...columnProps} colNumber={3} />);
+			expect(screen.getByText(/3열/)).toBeInTheDocument();
+		});
+
+		it('mode=column일 때 Input이 렌더링된다 (label 입력)', () => {
+			render(<AnnotationPopover {...columnProps} />);
+			expect(screen.getByRole('textbox')).toBeInTheDocument();
+		});
+
+		it('mode=column일 때 initialLabel이 Input 초기값으로 설정된다', () => {
+			render(<AnnotationPopover {...columnProps} initialLabel="기존 열 주석" />);
+			expect(screen.getByRole('textbox')).toHaveValue('기존 열 주석');
+		});
+
+		it('mode=column일 때 Input 값 변경 후 확인 클릭 시 변경된 값이 onConfirm에 전달된다', async () => {
+			const handleConfirm = vi.fn();
+			render(<AnnotationPopover {...columnProps} initialLabel="" onConfirm={handleConfirm} />);
+			await userEvent.type(screen.getByRole('textbox'), '열 라벨');
+			await userEvent.click(screen.getByRole('button', { name: /확인/ }));
+			expect(handleConfirm).toHaveBeenCalledWith('열 라벨');
+		});
+
+		it('mode=column일 때 취소 버튼 클릭 시 onClose가 호출된다', async () => {
+			const handleClose = vi.fn();
+			render(<AnnotationPopover {...columnProps} onClose={handleClose} />);
+			await userEvent.click(screen.getByRole('button', { name: /취소/ }));
+			expect(handleClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('mode=column일 때 onDelete가 있으면 삭제 버튼이 렌더링된다', () => {
+			render(<AnnotationPopover {...columnProps} onDelete={vi.fn()} />);
+			expect(screen.getByRole('button', { name: /삭제/ })).toBeInTheDocument();
+		});
+
+		it('mode=column일 때 onDelete=null이면 삭제 버튼이 렌더링되지 않는다', () => {
+			render(<AnnotationPopover {...columnProps} onDelete={null} />);
+			expect(screen.queryByRole('button', { name: /삭제/ })).not.toBeInTheDocument();
+		});
+
+		it('mode=column일 때 colNumber=1이면 "1열"이 표시된다', () => {
+			render(<AnnotationPopover {...columnProps} colNumber={1} />);
+			expect(screen.getByText(/1열/)).toBeInTheDocument();
+		});
+	});
 });
