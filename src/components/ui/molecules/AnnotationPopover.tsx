@@ -14,9 +14,11 @@ interface AnnotationPopoverProps {
   onConfirm: (label: string) => void;
   onDelete: (() => void) | null;
   onClose: () => void;
-  mode?: 'row' | 'range' | 'column';
+  mode?: 'row' | 'range' | 'column' | 'col-range';
   startRowNumber?: number;
   endRowNumber?: number;
+  startColNumber?: number;
+  endColNumber?: number;
   initialText?: string;
 }
 
@@ -33,6 +35,8 @@ export function AnnotationPopover({
   mode = 'row',
   startRowNumber,
   endRowNumber,
+  startColNumber,
+  endColNumber,
   initialText = '',
 }: AnnotationPopoverProps) {
   const [label, setLabel] = useState(initialLabel);
@@ -47,7 +51,7 @@ export function AnnotationPopover({
   }, []);
 
   const handleConfirm = useCallback(() => {
-    onConfirm(mode === 'range' ? text : label);
+    onConfirm(mode === 'range' || mode === 'col-range' ? text : label);
   }, [onConfirm, mode, text, label]);
 
   const handleClose = useCallback(() => {
@@ -86,6 +90,7 @@ export function AnnotationPopover({
 
   const title = (() => {
     if (mode === 'range') return `${startRowNumber}~${endRowNumber}단`;
+    if (mode === 'col-range') return `${startColNumber}~${endColNumber}열`;
     if (mode === 'column') return `${colNumber}열`;
     return `${rowNumber}단`;
   })();
@@ -93,7 +98,7 @@ export function AnnotationPopover({
   return (
     <div role="dialog" style={style} className="z-50 flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 shadow-md">
       <span className="text-sm font-medium text-slate-700">{title}</span>
-      {mode === 'range' ? (
+      {(mode === 'range' || mode === 'col-range') ? (
         <textarea
           value={text}
           onChange={handleTextareaChange}

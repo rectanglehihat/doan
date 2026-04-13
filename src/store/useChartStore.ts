@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AnnotationSide, ColumnAnnotation, ColumnAnnotationSide, RangeAnnotation, RowAnnotation } from '@/types/annotation';
+import { AnnotationSide, ColRangeAnnotation, ColumnAnnotation, ColumnAnnotationSide, RangeAnnotation, RowAnnotation, RowRangeAnnotation } from '@/types/annotation';
 import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, PatternType, RotationalMode } from '@/types/knitting';
 
 const DEFAULT_GRID_SIZE: GridSize = { rows: 20, cols: 20 };
@@ -72,7 +72,8 @@ export interface ChartState {
 	updateRowAnnotation: (id: string, label: string) => void;
 	removeRowAnnotation: (id: string) => void;
 	rangeAnnotations: RangeAnnotation[];
-	addRangeAnnotation: (startRow: number, endRow: number, text: string) => void;
+	addRangeAnnotation: (startRow: number, endRow: number, text: string, side?: 'left' | 'right') => void;
+	addColRangeAnnotation: (startCol: number, endCol: number, text: string, side: 'top' | 'bottom') => void;
 	updateRangeAnnotation: (id: string, text: string) => void;
 	removeRangeAnnotation: (id: string) => void;
 	columnAnnotations: ColumnAnnotation[];
@@ -254,11 +255,23 @@ export const useChartStore = create<ChartState>((set, get) => ({
 			rowAnnotations: state.rowAnnotations.filter((annotation) => annotation.id !== id),
 		})),
 
-	addRangeAnnotation: (startRow, endRow, text) => {
-		const newAnnotation: RangeAnnotation = {
+	addRangeAnnotation: (startRow, endRow, text, side = 'right') => {
+		const newAnnotation: RowRangeAnnotation = {
 			id: crypto.randomUUID(),
+			side,
 			startRow,
 			endRow,
+			text,
+		};
+		set((state) => ({ rangeAnnotations: [...state.rangeAnnotations, newAnnotation] }));
+	},
+
+	addColRangeAnnotation: (startCol, endCol, text, side) => {
+		const newAnnotation: ColRangeAnnotation = {
+			id: crypto.randomUUID(),
+			side,
+			startCol,
+			endCol,
 			text,
 		};
 		set((state) => ({ rangeAnnotations: [...state.rangeAnnotations, newAnnotation] }));

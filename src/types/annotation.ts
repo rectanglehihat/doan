@@ -7,12 +7,26 @@ export interface RowAnnotation {
 	side: AnnotationSide;
 }
 
-export interface RangeAnnotation {
+export type RangeAnnotationSide = 'left' | 'right' | 'top' | 'bottom';
+
+interface RangeAnnotationBase {
 	id: string;
-	startRow: number; // 0-based (startRow <= endRow 보장)
-	endRow: number; // 0-based (inclusive)
 	text: string; // 멀티라인 지원 (\n 포함)
 }
+
+export interface RowRangeAnnotation extends RangeAnnotationBase {
+	side: 'left' | 'right';
+	startRow: number; // 0-based (startRow <= endRow 보장)
+	endRow: number; // 0-based (inclusive)
+}
+
+export interface ColRangeAnnotation extends RangeAnnotationBase {
+	side: 'top' | 'bottom';
+	startCol: number; // 0-based (startCol <= endCol 보장)
+	endCol: number; // 0-based (inclusive)
+}
+
+export type RangeAnnotation = RowRangeAnnotation | ColRangeAnnotation;
 
 export type ColumnAnnotationSide = 'top' | 'bottom';
 

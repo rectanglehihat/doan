@@ -24,9 +24,10 @@ export interface AnnotationLayerProps {
 	onMarkerClick: (rowIndex: number, anchorX: number, anchorY: number, existingId: string | null) => void;
 	onSideAreaClick: (rowIndex: number, side: 'left' | 'right', anchorX: number, anchorY: number) => void;
 	rangeAnnotations?: RangeAnnotation[];
-	rangeAnnotationDraft?: { startRow: number; endRow: number } | null;
+	rangeAnnotationDraft?: { startRow: number; endRow: number; side?: 'left' | 'right' } | null;
+	colRangeAnnotationDraft?: { startCol: number; endCol: number; side: 'top' | 'bottom' } | null;
 	onRangeBracketClick?: (id: string, anchorX: number, anchorY: number) => void;
-	onRangeDragStart?: (rowIndex: number) => void;
+	onRangeDragStart?: (rowIndex: number, side?: 'left' | 'right') => void;
 	onRangeDragMove?: (rowIndex: number) => void;
 	onRangeDragEnd?: (anchorX: number, anchorY: number) => void;
 	// 열 주석 (상/하)
@@ -36,6 +37,7 @@ export interface AnnotationLayerProps {
 	annotationSideHeight?: number;
 	onColumnMarkerClick?: (colIndex: number, anchorX: number, anchorY: number, existingId: string | null) => void;
 	onColumnAreaClick?: (colIndex: number, side: 'top' | 'bottom', anchorX: number, anchorY: number) => void;
+	onColRangeDragStart?: (colIndex: number, side: 'top' | 'bottom') => void;
 }
 
 const FONT_SIZE = 11;
@@ -157,7 +159,7 @@ interface SideHitAreaProps {
 	annotationSideWidth: number;
 	side: 'left' | 'right';
 	onSideAreaClick: (rowIndex: number, side: 'left' | 'right', anchorX: number, anchorY: number) => void;
-	onRangeDragStart?: (rowIndex: number) => void;
+	onRangeDragStart?: (rowIndex: number, side?: 'left' | 'right') => void;
 }
 
 const SideHitArea = memo(function SideHitAreaInner({
@@ -180,9 +182,9 @@ const SideHitArea = memo(function SideHitAreaInner({
 
 	const handleMouseDown = useCallback(
 		() => {
-			onRangeDragStart?.(rowIndex);
+			onRangeDragStart?.(rowIndex, side);
 		},
-		[rowIndex, onRangeDragStart],
+		[rowIndex, side, onRangeDragStart],
 	);
 
 	const x = side === 'left' ? -annotationSideWidth : totalWidth;
@@ -306,6 +308,7 @@ interface ColHitAreaProps {
 	annotationSideHeight: number;
 	side: 'top' | 'bottom';
 	onColumnAreaClick: (colIndex: number, side: 'top' | 'bottom', anchorX: number, anchorY: number) => void;
+	onColRangeDragStart?: (colIndex: number, side: 'top' | 'bottom') => void;
 }
 
 const ColHitArea = memo(function ColHitAreaInner({
@@ -316,6 +319,7 @@ const ColHitArea = memo(function ColHitAreaInner({
 	annotationSideHeight,
 	side,
 	onColumnAreaClick,
+	onColRangeDragStart,
 }: ColHitAreaProps) {
 	const handleClick = useCallback(
 		(e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -323,6 +327,13 @@ const ColHitArea = memo(function ColHitAreaInner({
 			onColumnAreaClick(colIndex, side, nativeEvt?.clientX ?? 0, nativeEvt?.clientY ?? 0);
 		},
 		[colIndex, side, onColumnAreaClick],
+	);
+
+	const handleMouseDown = useCallback(
+		() => {
+			onColRangeDragStart?.(colIndex, side);
+		},
+		[colIndex, side, onColRangeDragStart],
 	);
 
 	const y = side === 'top' ? -annotationSideHeight : totalHeight;
@@ -336,6 +347,7 @@ const ColHitArea = memo(function ColHitAreaInner({
 			fill="transparent"
 			listening={true}
 			onClick={handleClick}
+			onMouseDown={handleMouseDown}
 		/>
 	);
 });
@@ -358,6 +370,7 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 	onSideAreaClick,
 	rangeAnnotations = [],
 	rangeAnnotationDraft = null,
+	colRangeAnnotationDraft = null,
 	onRangeBracketClick,
 	onRangeDragStart,
 	columnAnnotations = [],
@@ -366,6 +379,7 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 	annotationSideHeight = 80,
 	onColumnMarkerClick,
 	onColumnAreaClick,
+	onColRangeDragStart,
 }: AnnotationLayerProps) {
 	// annotation이 있는 rowIndex Set
 	const annotatedRowIndices = useMemo(
@@ -496,35 +510,60 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 
 			{/* 범위 주석 브라켓 목록 */}
 			{rangeAnnotations.map((annotation) => {
-				const startY = rowVisualYMap[annotation.startRow];
-				const endRowY = rowVisualYMap[annotation.endRow];
-				if (startY === null || startY === undefined) return null;
-				if (endRowY === null || endRowY === undefined) return null;
-				const endY = endRowY + cellSize;
+				if (annotation.side === 'left' || annotation.side === 'right') {
+					const startY = rowVisualYMap[annotation.startRow];
+					const endRowY = rowVisualYMap[annotation.endRow];
+					if (startY === null || startY === undefined) return null;
+					if (endRowY === null || endRowY === undefined) return null;
+					const endY = endRowY + cellSize;
+					return (
+						<RangeBracketItem
+							key={annotation.id}
+							annotation={annotation}
+							startY={startY}
+							endY={endY}
+							totalWidth={totalWidth}
+							cellSize={cellSize}
+							annotationSideWidth={annotationSideWidth}
+							isAnnotationMode={isAnnotationMode}
+							totalRows={totalRows}
+							onMarkerClick={onRangeBracketClick ?? noopMarkerClick}
+						/>
+					);
+				}
+				// top / bottom (ColRangeAnnotation)
+				if (annotation.side !== 'top' && annotation.side !== 'bottom') return null;
+				const startX = colVisualXMap[annotation.startCol];
+				const endColX = colVisualXMap[annotation.endCol];
+				if (startX === null || startX === undefined) return null;
+				if (endColX === null || endColX === undefined) return null;
+				const endX = endColX + cellSize;
 				return (
 					<RangeBracketItem
 						key={annotation.id}
 						annotation={annotation}
-						startY={startY}
-						endY={endY}
-						totalWidth={totalWidth}
+						startX={startX}
+						endX={endX}
+						totalHeight={totalHeight}
+						totalCols={colVisualXMap.length}
 						cellSize={cellSize}
-						annotationSideWidth={annotationSideWidth}
+						annotationSideHeight={annotationSideHeight}
 						isAnnotationMode={isAnnotationMode}
-						totalRows={totalRows}
 						onMarkerClick={onRangeBracketClick ?? noopMarkerClick}
 					/>
 				);
 			})}
 
-			{/* 드래그 중 draft 브라켓 (점선, listening=false) */}
+			{/* 드래그 중 row range draft 브라켓 (점선, listening=false) */}
 			{rangeAnnotationDraft !== null && (() => {
 				const draftStartY = rowVisualYMap[rangeAnnotationDraft.startRow];
 				const draftEndRowY = rowVisualYMap[rangeAnnotationDraft.endRow];
 				if (draftStartY === null || draftStartY === undefined) return null;
 				if (draftEndRowY === null || draftEndRowY === undefined) return null;
 				const draftEndY = draftEndRowY + cellSize;
-				const bracketX = totalWidth + DRAFT_BRACKET_OFFSET;
+				const isLeft = rangeAnnotationDraft.side === 'left';
+				const bracketX = isLeft ? -DRAFT_BRACKET_OFFSET : totalWidth + DRAFT_BRACKET_OFFSET;
+				const leftCapX = isLeft ? bracketX + DRAFT_CAP_LENGTH : bracketX - DRAFT_CAP_LENGTH;
 				return (
 					<Group listening={false}>
 						<Line
@@ -535,14 +574,51 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 							opacity={0.5}
 						/>
 						<Line
-							points={[bracketX, draftStartY, bracketX - DRAFT_CAP_LENGTH, draftStartY]}
+							points={[bracketX, draftStartY, leftCapX, draftStartY]}
 							stroke={DRAFT_BRACKET_COLOR}
 							strokeWidth={DRAFT_STROKE_WIDTH}
 							dash={[4, 3]}
 							opacity={0.5}
 						/>
 						<Line
-							points={[bracketX, draftEndY, bracketX - DRAFT_CAP_LENGTH, draftEndY]}
+							points={[bracketX, draftEndY, leftCapX, draftEndY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+					</Group>
+				);
+			})()}
+
+			{/* 드래그 중 col range draft 브라켓 (점선, listening=false) */}
+			{colRangeAnnotationDraft !== null && (() => {
+				const draftStartX = colVisualXMap[colRangeAnnotationDraft.startCol];
+				const draftEndColX = colVisualXMap[colRangeAnnotationDraft.endCol];
+				if (draftStartX === null || draftStartX === undefined) return null;
+				if (draftEndColX === null || draftEndColX === undefined) return null;
+				const draftEndX = draftEndColX + cellSize;
+				const isTop = colRangeAnnotationDraft.side === 'top';
+				const bracketY = isTop ? -DRAFT_BRACKET_OFFSET : totalHeight + DRAFT_BRACKET_OFFSET;
+				const capY = isTop ? bracketY + DRAFT_CAP_LENGTH : bracketY - DRAFT_CAP_LENGTH;
+				return (
+					<Group listening={false}>
+						<Line
+							points={[draftStartX, bracketY, draftEndX, bracketY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+						<Line
+							points={[draftStartX, bracketY, draftStartX, capY]}
+							stroke={DRAFT_BRACKET_COLOR}
+							strokeWidth={DRAFT_STROKE_WIDTH}
+							dash={[4, 3]}
+							opacity={0.5}
+						/>
+						<Line
+							points={[draftEndX, bracketY, draftEndX, capY]}
 							stroke={DRAFT_BRACKET_COLOR}
 							strokeWidth={DRAFT_STROKE_WIDTH}
 							dash={[4, 3]}
@@ -580,6 +656,7 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 					annotationSideHeight={annotationSideHeight}
 					side="top"
 					onColumnAreaClick={onColumnAreaClick}
+					onColRangeDragStart={onColRangeDragStart}
 				/>
 			))}
 
@@ -594,6 +671,7 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 					annotationSideHeight={annotationSideHeight}
 					side="bottom"
 					onColumnAreaClick={onColumnAreaClick}
+					onColRangeDragStart={onColRangeDragStart}
 				/>
 			))}
 		</Layer>

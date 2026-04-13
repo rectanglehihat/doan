@@ -107,12 +107,15 @@ export function ChartCanvas({
 
 	const rangeAnnotations = useChartStore((state) => state.rangeAnnotations);
 	const addRangeAnnotation = useChartStore((state) => state.addRangeAnnotation);
+	const addColRangeAnnotation = useChartStore((state) => state.addColRangeAnnotation);
 	const updateRangeAnnotation = useChartStore((state) => state.updateRangeAnnotation);
 	const removeRangeAnnotation = useChartStore((state) => state.removeRangeAnnotation);
 
 	const rangeAnnotationPopover = useUIStore((state) => state.rangeAnnotationPopover);
 	const rangeAnnotationDraft = useUIStore((state) => state.rangeAnnotationDraft);
+	const colRangeAnnotationDraft = useUIStore((state) => state.colRangeAnnotationDraft);
 	const closeRangeAnnotationPopover = useUIStore((state) => state.closeRangeAnnotationPopover);
+	const setColRangeAnnotationDraft = useUIStore((state) => state.setColRangeAnnotationDraft);
 
 	const columnAnnotations = useChartStore((state) => state.columnAnnotations);
 	const addColumnAnnotation = useChartStore((state) => state.addColumnAnnotation);
@@ -129,6 +132,7 @@ export function ChartCanvas({
 
 	const [selectedCollapsedBlockId, setSelectedCollapsedBlockId] = useState<string | null>(null);
 	const [selectedCollapsedColumnBlockId, setSelectedCollapsedColumnBlockId] = useState<string | null>(null);
+	const colDragStartRef = useRef<{ col: number; side: 'top' | 'bottom' } | null>(null);
 
 	const handleShapeGuideStrokeAdd = useCallback(
 		(stroke: number[]) => {
@@ -154,22 +158,91 @@ export function ChartCanvas({
 	);
 
 	const { handleRangeDragStart, handleRangeDragMove, handleRangeDragEnd } = useRangeAnnotationDrag({
-		onSingleRow: (rowIndex) => {
-			handleAnnotationAreaClick(rowIndex, 'right', 0, 0, null);
+		onSingleRow: (rowIndex, side) => {
+			handleAnnotationAreaClick(rowIndex, side ?? 'right', 0, 0, null);
 		},
 	});
+
+	const handleColRangeDragStart = useCallback(
+		(colIndex: number, side: 'top' | 'bottom') => {
+			colDragStartRef.current = { col: colIndex, side };
+			setColRangeAnnotationDraft(null);
+		},
+		[setColRangeAnnotationDraft],
+	);
+
+	const handleColRangeDragMove = useCallback(
+		(colIndex: number) => {
+			if (colDragStartRef.current === null) return;
+			const { col: dragStartCol, side } = colDragStartRef.current;
+			const startCol = Math.min(dragStartCol, colIndex);
+			const endCol = Math.max(dragStartCol, colIndex);
+			setColRangeAnnotationDraft({ startCol, endCol, side });
+		},
+		[setColRangeAnnotationDraft],
+	);
+
+	const handleColRangeDragEnd = useCallback(
+		(anchorX: number, anchorY: number) => {
+			if (colDragStartRef.current === null) return;
+			const dragSide = colDragStartRef.current.side;
+			colDragStartRef.current = null;
+
+			const draft = useUIStore.getState().colRangeAnnotationDraft;
+			setColRangeAnnotationDraft(null);
+
+			if (draft === null) return;
+
+			if (draft.startCol === draft.endCol) {
+				// 단일 열: 열 주석 팝오버 직접 열기 (handleColumnAnnotationAreaClick와 동일 로직)
+				useUIStore.getState().openColumnAnnotationPopover({
+					colIndex: draft.startCol,
+					anchorX,
+					anchorY,
+					side: dragSide,
+					existingId: null,
+				});
+			} else {
+				useUIStore.getState().openRangeAnnotationPopover({
+					startRowIndex: 0,
+					endRowIndex: 0,
+					startColIndex: draft.startCol,
+					endColIndex: draft.endCol,
+					anchorX,
+					anchorY,
+					existingId: null,
+					side: dragSide,
+				});
+			}
+		},
+		[setColRangeAnnotationDraft],
+	);
 
 	const handleRangeBracketClick = useCallback(
 		(id: string, anchorX: number, anchorY: number) => {
 			const annotation = rangeAnnotations.find((a) => a.id === id);
 			if (!annotation) return;
-			useUIStore.getState().openRangeAnnotationPopover({
-				startRowIndex: annotation.startRow,
-				endRowIndex: annotation.endRow,
-				anchorX,
-				anchorY,
-				existingId: id,
-			});
+			if (annotation.side === 'left' || annotation.side === 'right') {
+				useUIStore.getState().openRangeAnnotationPopover({
+					startRowIndex: annotation.startRow,
+					endRowIndex: annotation.endRow,
+					anchorX,
+					anchorY,
+					existingId: id,
+					side: annotation.side,
+				});
+			} else if (annotation.side === 'top' || annotation.side === 'bottom') {
+				useUIStore.getState().openRangeAnnotationPopover({
+					startRowIndex: 0,
+					endRowIndex: 0,
+					startColIndex: annotation.startCol,
+					endColIndex: annotation.endCol,
+					anchorX,
+					anchorY,
+					existingId: id,
+					side: annotation.side,
+				});
+			}
 		},
 		[rangeAnnotations],
 	);
@@ -177,15 +250,17 @@ export function ChartCanvas({
 	const handleRangeAnnotationConfirm = useCallback(
 		(text: string) => {
 			if (rangeAnnotationPopover === null) return;
-			const { startRowIndex, endRowIndex, existingId } = rangeAnnotationPopover;
+			const { existingId, side, startColIndex, endColIndex } = rangeAnnotationPopover;
 			if (existingId !== null) {
 				updateRangeAnnotation(existingId, text);
+			} else if (side === 'top' || side === 'bottom') {
+				addColRangeAnnotation(startColIndex ?? 0, endColIndex ?? 0, text, side);
 			} else {
-				addRangeAnnotation(startRowIndex, endRowIndex, text);
+				addRangeAnnotation(rangeAnnotationPopover.startRowIndex, rangeAnnotationPopover.endRowIndex, text, side);
 			}
 			closeRangeAnnotationPopover();
 		},
-		[rangeAnnotationPopover, updateRangeAnnotation, addRangeAnnotation, closeRangeAnnotationPopover],
+		[rangeAnnotationPopover, updateRangeAnnotation, addColRangeAnnotation, addRangeAnnotation, closeRangeAnnotationPopover],
 	);
 
 	const handleRangeAnnotationDelete = useCallback(() => {
@@ -416,10 +491,14 @@ export function ChartCanvas({
 						onAnnotationAreaClick={handleAnnotationAreaClick}
 						rangeAnnotations={rangeAnnotations}
 						rangeAnnotationDraft={rangeAnnotationDraft}
+						colRangeAnnotationDraft={colRangeAnnotationDraft}
 						onRangeBracketClick={handleRangeBracketClick}
 						onRangeDragStart={handleRangeDragStart}
 						onRangeDragMove={handleRangeDragMove}
 						onRangeDragEnd={handleRangeDragEnd}
+						onColRangeDragStart={handleColRangeDragStart}
+						onColRangeDragMove={handleColRangeDragMove}
+						onColRangeDragEnd={handleColRangeDragEnd}
 						columnAnnotations={columnAnnotations}
 						onColumnAnnotationAreaClick={handleColumnAnnotationAreaClick}
 					/>
@@ -497,24 +576,47 @@ export function ChartCanvas({
 					)}
 
 					{/* 범위 주석 팝오버 */}
-					{rangeAnnotationPopover !== null && (
-						<AnnotationPopover
-							anchorX={rangeAnnotationPopover.anchorX}
-							anchorY={rangeAnnotationPopover.anchorY}
-							side="right"
-							mode="range"
-							startRowNumber={gridSize.rows - rangeAnnotationPopover.startRowIndex}
-							endRowNumber={gridSize.rows - rangeAnnotationPopover.endRowIndex}
-							initialText={
-								rangeAnnotationPopover.existingId !== null
-									? (rangeAnnotations.find((a) => a.id === rangeAnnotationPopover.existingId)?.text ?? '')
-									: ''
-							}
-							onConfirm={handleRangeAnnotationConfirm}
-							onDelete={rangeAnnotationPopover.existingId !== null ? handleRangeAnnotationDelete : null}
-							onClose={handleRangeAnnotationClose}
-						/>
-					)}
+					{rangeAnnotationPopover !== null && (() => {
+						const popoverSide = rangeAnnotationPopover.side;
+						if (popoverSide === 'top' || popoverSide === 'bottom') {
+							return (
+								<AnnotationPopover
+									anchorX={rangeAnnotationPopover.anchorX}
+									anchorY={rangeAnnotationPopover.anchorY}
+									side={popoverSide}
+									mode="col-range"
+									startColNumber={(rangeAnnotationPopover.startColIndex ?? 0) + 1}
+									endColNumber={(rangeAnnotationPopover.endColIndex ?? 0) + 1}
+									initialText={
+										rangeAnnotationPopover.existingId !== null
+											? (rangeAnnotations.find((a) => a.id === rangeAnnotationPopover.existingId)?.text ?? '')
+											: ''
+									}
+									onConfirm={handleRangeAnnotationConfirm}
+									onDelete={rangeAnnotationPopover.existingId !== null ? handleRangeAnnotationDelete : null}
+									onClose={handleRangeAnnotationClose}
+								/>
+							);
+						}
+						return (
+							<AnnotationPopover
+								anchorX={rangeAnnotationPopover.anchorX}
+								anchorY={rangeAnnotationPopover.anchorY}
+								side={popoverSide}
+								mode="range"
+								startRowNumber={gridSize.rows - rangeAnnotationPopover.startRowIndex}
+								endRowNumber={gridSize.rows - rangeAnnotationPopover.endRowIndex}
+								initialText={
+									rangeAnnotationPopover.existingId !== null
+										? (rangeAnnotations.find((a) => a.id === rangeAnnotationPopover.existingId)?.text ?? '')
+										: ''
+								}
+								onConfirm={handleRangeAnnotationConfirm}
+								onDelete={rangeAnnotationPopover.existingId !== null ? handleRangeAnnotationDelete : null}
+								onClose={handleRangeAnnotationClose}
+							/>
+						);
+					})()}
 
 					{/* 열 주석 팝오버 */}
 					{columnAnnotationPopover !== null && (

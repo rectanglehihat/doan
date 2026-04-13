@@ -4,12 +4,12 @@ import { useCallback, useRef, useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
 
 interface UseRangeAnnotationDragParams {
-	onSingleRow?: (rowIndex: number) => void;
+	onSingleRow?: (rowIndex: number, side?: 'left' | 'right') => void;
 }
 
 interface UseRangeAnnotationDragResult {
 	dragStartRow: number | null;
-	handleRangeDragStart: (rowIndex: number) => void;
+	handleRangeDragStart: (rowIndex: number, side?: 'left' | 'right') => void;
 	handleRangeDragMove: (rowIndex: number) => void;
 	handleRangeDragEnd: (anchorX: number, anchorY: number) => void;
 }
@@ -20,11 +20,13 @@ export function useRangeAnnotationDrag(
 	const { onSingleRow } = params;
 	const { setRangeAnnotationDraft, openRangeAnnotationPopover } = useUIStore();
 	const dragStartRowRef = useRef<number | null>(null);
+	const dragSideRef = useRef<'left' | 'right'>('right');
 	const [dragStartRow, setDragStartRow] = useState<number | null>(null);
 
 	const handleRangeDragStart = useCallback(
-		(rowIndex: number) => {
+		(rowIndex: number, side?: 'left' | 'right') => {
 			dragStartRowRef.current = rowIndex;
+			dragSideRef.current = side ?? 'right';
 			setDragStartRow(rowIndex);
 			setRangeAnnotationDraft(null);
 		},
@@ -36,7 +38,7 @@ export function useRangeAnnotationDrag(
 			if (dragStartRowRef.current === null) return;
 			const startRow = Math.min(dragStartRowRef.current, rowIndex);
 			const endRow = Math.max(dragStartRowRef.current, rowIndex);
-			setRangeAnnotationDraft({ startRow, endRow });
+			setRangeAnnotationDraft({ startRow, endRow, side: dragSideRef.current });
 		},
 		[setRangeAnnotationDraft],
 	);
@@ -53,7 +55,7 @@ export function useRangeAnnotationDrag(
 
 			if (draft.startRow === draft.endRow) {
 				if (onSingleRow !== undefined) {
-					onSingleRow(draft.startRow);
+					onSingleRow(draft.startRow, dragSideRef.current);
 				}
 			} else {
 				openRangeAnnotationPopover({
@@ -62,6 +64,7 @@ export function useRangeAnnotationDrag(
 					anchorX,
 					anchorY,
 					existingId: null,
+					side: dragSideRef.current,
 				});
 			}
 
