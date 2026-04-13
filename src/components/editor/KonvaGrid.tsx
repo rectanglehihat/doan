@@ -67,6 +67,9 @@ export const KonvaGrid = memo(function KonvaGrid({
 	onRangeDragStart,
 	onRangeDragMove,
 	onRangeDragEnd,
+	columnAnnotations = [],
+	annotationSideHeight = 80,
+	onColumnAnnotationAreaClick,
 }: KonvaGridProps) {
 	const stageRef = useRef<Konva.Stage>(null);
 	const layerRef = useRef<Konva.Layer>(null);
@@ -266,17 +269,34 @@ export const KonvaGrid = memo(function KonvaGrid({
 
 	const handleAnnotationMarkerClick = useCallback(
 		(rowIndex: number, anchorX: number, anchorY: number, existingId: string | null) => {
-			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, existingId);
+			// 기존 마커의 side를 rowAnnotations에서 조회
+			const annotation = rowAnnotations.find((a) => a.id === existingId);
+			const side = annotation?.side ?? 'right';
+			onAnnotationAreaClick?.(rowIndex, side, anchorX, anchorY, existingId);
+		},
+		[onAnnotationAreaClick, rowAnnotations],
+	);
+
+	const handleAnnotationSideAreaClick = useCallback(
+		(rowIndex: number, side: 'left' | 'right', anchorX: number, anchorY: number) => {
+			// SideHitArea는 주석 없는 행에만 렌더링되므로 항상 신규 생성(existingId = null)
+			onAnnotationAreaClick?.(rowIndex, side, anchorX, anchorY, null);
 		},
 		[onAnnotationAreaClick],
 	);
 
-	const handleAnnotationSideAreaClick = useCallback(
-		(rowIndex: number, anchorX: number, anchorY: number) => {
-			// SideHitArea는 주석 없는 행에만 렌더링되므로 항상 신규 생성(existingId = null)
-			onAnnotationAreaClick?.(rowIndex, 'right', anchorX, anchorY, null);
+	const handleColumnAnnotationMarkerClick = useCallback(
+		(colIndex: number, anchorX: number, anchorY: number, existingId: string | null) => {
+			onColumnAnnotationAreaClick?.(colIndex, 'top', anchorX, anchorY, existingId);
 		},
-		[onAnnotationAreaClick],
+		[onColumnAnnotationAreaClick],
+	);
+
+	const handleColumnAreaClick = useCallback(
+		(colIndex: number, side: 'top' | 'bottom', anchorX: number, anchorY: number) => {
+			onColumnAnnotationAreaClick?.(colIndex, side, anchorX, anchorY, null);
+		},
+		[onColumnAnnotationAreaClick],
 	);
 
 	// Stage Y 좌표를 논리 rowIndex로 변환 (중략 반영, 0 ~ rows-1 클램핑)
@@ -763,7 +783,7 @@ export const KonvaGrid = memo(function KonvaGrid({
 				))}
 			</Layer>
 
-			{/* Layer 4: 주석 레이어 — 행 주석 마커, 클릭 히트 영역, 범위 브라켓 */}
+			{/* Layer 4: 주석 레이어 — 행 주석 마커, 클릭 히트 영역, 범위 브라켓, 열 주석 */}
 			<AnnotationLayer
 				rowAnnotations={rowAnnotations}
 				rowVisualYMap={rowVisualYMap}
@@ -779,6 +799,12 @@ export const KonvaGrid = memo(function KonvaGrid({
 				rangeAnnotationDraft={rangeAnnotationDraft}
 				onRangeBracketClick={onRangeBracketClick}
 				onRangeDragStart={onRangeDragStart}
+				columnAnnotations={columnAnnotations}
+				colVisualXMap={colVisualXMap}
+				totalHeight={totalHeight}
+				annotationSideHeight={annotationSideHeight}
+				onColumnMarkerClick={handleColumnAnnotationMarkerClick}
+				onColumnAreaClick={handleColumnAreaClick}
 			/>
 
 			{(hasShapeGuide || currentStroke.length >= 4 || currentEraseStroke.length >= 4) && (

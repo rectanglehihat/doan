@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, ShapeGuide, RowAnnotation, RangeAnnotation } from '@/types/knitting';
+import { ChartCell, CollapsedBlock, CollapsedColumnBlock, GridSize, ShapeGuide, RowAnnotation, RangeAnnotation, ColumnAnnotation } from '@/types/knitting';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { calcCellDiffs, applyDiffs, reverseDiffs } from '@/lib/utils/history-utils';
@@ -20,6 +20,7 @@ interface HistoryEntry {
 	collapsedColumnBlocks: CollapsedColumnBlock[];
 	rowAnnotations: RowAnnotation[];
 	rangeAnnotations: RangeAnnotation[];
+	columnAnnotations: ColumnAnnotation[];
 }
 
 export function useHistory() {
@@ -34,6 +35,7 @@ export function useHistory() {
 	);
 	const prevRowAnnotationsRef = useRef<RowAnnotation[]>(useChartStore.getState().rowAnnotations);
 	const prevRangeAnnotationsRef = useRef<RangeAnnotation[]>(useChartStore.getState().rangeAnnotations);
+	const prevColumnAnnotationsRef = useRef<ColumnAnnotation[]>(useChartStore.getState().columnAnnotations);
 	const prevShapeGuideRef = useRef<ShapeGuide | null>(useUIStore.getState().shapeGuide);
 	const prevHistoryResetTokenRef = useRef<number>(useUIStore.getState().historyResetToken);
 	const prevGridSizeRef = useRef<GridSize>(useChartStore.getState().gridSize);
@@ -48,7 +50,7 @@ export function useHistory() {
 	// cells + collapsedBlocks + collapsedColumnBlocks + annotations 변경 감지 (단일 subscriber로 통합)
 	useEffect(() => {
 		const unsubscribe = useChartStore.subscribe((state) => {
-			const { cells, collapsedBlocks, collapsedColumnBlocks, gridSize, rowAnnotations, rangeAnnotations } = state;
+			const { cells, collapsedBlocks, collapsedColumnBlocks, gridSize, rowAnnotations, rangeAnnotations, columnAnnotations } = state;
 
 			if (isApplyingChartStoreRef.current) {
 				isApplyingChartStoreRef.current = false;
@@ -58,6 +60,7 @@ export function useHistory() {
 				prevGridSizeRef.current = gridSize;
 				prevRowAnnotationsRef.current = rowAnnotations;
 				prevRangeAnnotationsRef.current = rangeAnnotations;
+				prevColumnAnnotationsRef.current = columnAnnotations;
 				return;
 			}
 
@@ -66,7 +69,8 @@ export function useHistory() {
 			const columnBlocksChanged = collapsedColumnBlocks !== prevCollapsedColumnBlocksRef.current;
 			const rowAnnotationsChanged = rowAnnotations !== prevRowAnnotationsRef.current;
 			const rangeAnnotationsChanged = rangeAnnotations !== prevRangeAnnotationsRef.current;
-			if (!cellsChanged && !blocksChanged && !columnBlocksChanged && !rowAnnotationsChanged && !rangeAnnotationsChanged) return;
+			const columnAnnotationsChanged = columnAnnotations !== prevColumnAnnotationsRef.current;
+			if (!cellsChanged && !blocksChanged && !columnBlocksChanged && !rowAnnotationsChanged && !rangeAnnotationsChanged && !columnAnnotationsChanged) return;
 
 			if (isBatchingRef.current) {
 				prevCellsRef.current = cells;
@@ -75,6 +79,7 @@ export function useHistory() {
 				prevGridSizeRef.current = gridSize;
 				prevRowAnnotationsRef.current = rowAnnotations;
 				prevRangeAnnotationsRef.current = rangeAnnotations;
+				prevColumnAnnotationsRef.current = columnAnnotations;
 				return;
 			}
 
@@ -94,6 +99,7 @@ export function useHistory() {
 				collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 				rowAnnotations: prevRowAnnotationsRef.current,
 				rangeAnnotations: prevRangeAnnotationsRef.current,
+				columnAnnotations: prevColumnAnnotationsRef.current,
 			};
 
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
@@ -104,6 +110,7 @@ export function useHistory() {
 			prevGridSizeRef.current = gridSize;
 			prevRowAnnotationsRef.current = rowAnnotations;
 			prevRangeAnnotationsRef.current = rangeAnnotations;
+			prevColumnAnnotationsRef.current = columnAnnotations;
 			setCanUndo(true);
 			setCanRedo(false);
 		});
@@ -124,6 +131,7 @@ export function useHistory() {
 			prevShapeGuideRef.current = state.shapeGuide;
 			prevRowAnnotationsRef.current = useChartStore.getState().rowAnnotations;
 			prevRangeAnnotationsRef.current = useChartStore.getState().rangeAnnotations;
+			prevColumnAnnotationsRef.current = useChartStore.getState().columnAnnotations;
 			setCanUndo(false);
 			setCanRedo(false);
 		});
@@ -156,6 +164,7 @@ export function useHistory() {
 				collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 				rowAnnotations: prevRowAnnotationsRef.current,
 				rangeAnnotations: prevRangeAnnotationsRef.current,
+				columnAnnotations: prevColumnAnnotationsRef.current,
 			};
 			pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), entry];
 			futureRef.current = [];
@@ -178,6 +187,7 @@ export function useHistory() {
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 			rowAnnotations: prevRowAnnotationsRef.current,
 			rangeAnnotations: prevRangeAnnotationsRef.current,
+			columnAnnotations: prevColumnAnnotationsRef.current,
 		};
 		futureRef.current = [currentEntry, ...futureRef.current];
 		pastRef.current = pastRef.current.slice(0, -1);
@@ -195,6 +205,7 @@ export function useHistory() {
 		prevGridSizeRef.current = previous.gridSize;
 		prevRowAnnotationsRef.current = previous.rowAnnotations;
 		prevRangeAnnotationsRef.current = previous.rangeAnnotations;
+		prevColumnAnnotationsRef.current = previous.columnAnnotations;
 		// subscriber가 한 번만 트리거되도록 모든 chartStore 변경을 단일 set으로 처리
 		isApplyingChartStoreRef.current = true;
 		useChartStore.setState({
@@ -204,6 +215,7 @@ export function useHistory() {
 			gridSize: previous.gridSize,
 			rowAnnotations: previous.rowAnnotations,
 			rangeAnnotations: previous.rangeAnnotations,
+			columnAnnotations: previous.columnAnnotations,
 		});
 		setShapeGuide(previous.shapeGuide);
 		setCanUndo(pastRef.current.length > 0);
@@ -222,6 +234,7 @@ export function useHistory() {
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 			rowAnnotations: prevRowAnnotationsRef.current,
 			rangeAnnotations: prevRangeAnnotationsRef.current,
+			columnAnnotations: prevColumnAnnotationsRef.current,
 		};
 		pastRef.current = [...pastRef.current, currentEntry];
 		futureRef.current = futureRef.current.slice(1);
@@ -239,6 +252,7 @@ export function useHistory() {
 		prevGridSizeRef.current = next.gridSize;
 		prevRowAnnotationsRef.current = next.rowAnnotations;
 		prevRangeAnnotationsRef.current = next.rangeAnnotations;
+		prevColumnAnnotationsRef.current = next.columnAnnotations;
 		// subscriber가 한 번만 트리거되도록 모든 chartStore 변경을 단일 set으로 처리
 		isApplyingChartStoreRef.current = true;
 		useChartStore.setState({
@@ -248,6 +262,7 @@ export function useHistory() {
 			gridSize: next.gridSize,
 			rowAnnotations: next.rowAnnotations,
 			rangeAnnotations: next.rangeAnnotations,
+			columnAnnotations: next.columnAnnotations,
 		});
 		setShapeGuide(next.shapeGuide);
 		setCanUndo(true);
@@ -264,6 +279,7 @@ export function useHistory() {
 			collapsedColumnBlocks: prevCollapsedColumnBlocksRef.current,
 			rowAnnotations: prevRowAnnotationsRef.current,
 			rangeAnnotations: prevRangeAnnotationsRef.current,
+			columnAnnotations: prevColumnAnnotationsRef.current,
 		};
 	}, []);
 
@@ -282,6 +298,7 @@ export function useHistory() {
 		const currentCollapsedColumnBlocks = prevCollapsedColumnBlocksRef.current;
 		const currentRowAnnotations = prevRowAnnotationsRef.current;
 		const currentRangeAnnotations = prevRangeAnnotationsRef.current;
+		const currentColumnAnnotations = prevColumnAnnotationsRef.current;
 
 		const batchStartCells =
 			batchStart.cellsEntry.kind === 'snapshot'
@@ -294,7 +311,8 @@ export function useHistory() {
 			batchStart.collapsedBlocks === currentCollapsedBlocks &&
 			batchStart.collapsedColumnBlocks === currentCollapsedColumnBlocks &&
 			batchStart.rowAnnotations === currentRowAnnotations &&
-			batchStart.rangeAnnotations === currentRangeAnnotations;
+			batchStart.rangeAnnotations === currentRangeAnnotations &&
+			batchStart.columnAnnotations === currentColumnAnnotations;
 
 		if (unchanged) return;
 

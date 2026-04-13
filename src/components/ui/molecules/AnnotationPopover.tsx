@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/atoms/Input';
 interface AnnotationPopoverProps {
   anchorX: number;
   anchorY: number;
-  side: 'right' | 'left';
+  side: 'right' | 'left' | 'top' | 'bottom';
   rowNumber?: number;
+  colNumber?: number;
   initialLabel?: string;
   onConfirm: (label: string) => void;
   onDelete: (() => void) | null;
   onClose: () => void;
-  mode?: 'row' | 'range';
+  mode?: 'row' | 'range' | 'column';
   startRowNumber?: number;
   endRowNumber?: number;
   initialText?: string;
@@ -24,6 +25,7 @@ export function AnnotationPopover({
   anchorY,
   side,
   rowNumber,
+  colNumber,
   initialLabel = '',
   onConfirm,
   onDelete,
@@ -68,16 +70,25 @@ export function AnnotationPopover({
     };
   }, [onClose]);
 
+  const transformMap: Record<typeof side, string | undefined> = {
+    left: 'translateX(-100%)',
+    top: 'translateY(-100%)',
+    right: undefined,
+    bottom: undefined,
+  };
+
   const style: React.CSSProperties = {
     position: 'absolute',
     left: anchorX,
     top: anchorY,
-    ...(side === 'left' ? { transform: 'translateX(-100%)' } : {}),
+    ...(transformMap[side] ? { transform: transformMap[side] } : {}),
   };
 
-  const title = mode === 'range'
-    ? `${startRowNumber}~${endRowNumber}단`
-    : `${rowNumber}단`;
+  const title = (() => {
+    if (mode === 'range') return `${startRowNumber}~${endRowNumber}단`;
+    if (mode === 'column') return `${colNumber}열`;
+    return `${rowNumber}단`;
+  })();
 
   return (
     <div role="dialog" style={style} className="z-50 flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 shadow-md">

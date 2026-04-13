@@ -13,3 +13,12 @@ export interface RangeAnnotation {
 	endRow: number; // 0-based (inclusive)
 	text: string; // 멀티라인 지원 (\n 포함)
 }
+
+export type ColumnAnnotationSide = 'top' | 'bottom';
+
+export interface ColumnAnnotation {
+	id: string;
+	colIndex: number; // 0-based data column index
+	label: string;
+	side: ColumnAnnotationSide;
+}

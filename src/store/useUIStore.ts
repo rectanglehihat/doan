@@ -53,6 +53,13 @@ interface UIState {
 		existingId: string | null;
 	} | null;
 	rangeAnnotationDraft: { startRow: number; endRow: number } | null;
+	columnAnnotationPopover: {
+		colIndex: number;
+		anchorX: number;
+		anchorY: number;
+		side: 'top' | 'bottom';
+		existingId: string | null;
+	} | null;
 	setCellSelection: (sel: CellSelection | null) => void;
 	setClipboard: (cells: ChartCell[][] | null) => void;
 	setSelectionMode: (active: boolean) => void;
@@ -75,6 +82,14 @@ interface UIState {
 	}) => void;
 	closeRangeAnnotationPopover: () => void;
 	setRangeAnnotationDraft: (draft: { startRow: number; endRow: number } | null) => void;
+	openColumnAnnotationPopover: (state: {
+		colIndex: number;
+		anchorX: number;
+		anchorY: number;
+		side: 'top' | 'bottom';
+		existingId: string | null;
+	}) => void;
+	closeColumnAnnotationPopover: () => void;
 	reset: () => void;
 }
 
@@ -101,6 +116,7 @@ export const useUIStore = create<UIState>((set) => ({
 	annotationPopover: null,
 	rangeAnnotationPopover: null,
 	rangeAnnotationDraft: null,
+	columnAnnotationPopover: null,
 
 	setSelectedSymbol: (symbol) =>
 		set(
@@ -177,18 +193,22 @@ export const useUIStore = create<UIState>((set) => ({
 						isColorMode: false,
 						selectedColor: null,
 					}
-				: { isAnnotationMode: false, annotationPopover: null },
+				: { isAnnotationMode: false, annotationPopover: null, columnAnnotationPopover: null },
 		),
 
-	openAnnotationPopover: (popoverState) => set({ annotationPopover: popoverState, rangeAnnotationPopover: null }),
+	openAnnotationPopover: (popoverState) => set({ annotationPopover: popoverState, rangeAnnotationPopover: null, columnAnnotationPopover: null }),
 
 	closeAnnotationPopover: () => set({ annotationPopover: null }),
 
-	openRangeAnnotationPopover: (popoverState) => set({ rangeAnnotationPopover: popoverState, annotationPopover: null }),
+	openRangeAnnotationPopover: (popoverState) => set({ rangeAnnotationPopover: popoverState, annotationPopover: null, columnAnnotationPopover: null }),
 
 	closeRangeAnnotationPopover: () => set({ rangeAnnotationPopover: null }),
 
 	setRangeAnnotationDraft: (draft) => set({ rangeAnnotationDraft: draft }),
+
+	openColumnAnnotationPopover: (popoverState) => set({ columnAnnotationPopover: popoverState, annotationPopover: null, rangeAnnotationPopover: null }),
+
+	closeColumnAnnotationPopover: () => set({ columnAnnotationPopover: null }),
 
 	reset: () =>
 		set({
@@ -212,5 +232,6 @@ export const useUIStore = create<UIState>((set) => ({
 			annotationPopover: null,
 			rangeAnnotationPopover: null,
 			rangeAnnotationDraft: null,
+			columnAnnotationPopover: null,
 		}),
 }));

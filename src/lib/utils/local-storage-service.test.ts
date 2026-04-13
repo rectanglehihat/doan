@@ -24,6 +24,8 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 		difficulty: 0,
 		materials: '',
 		rowAnnotations: [],
+		rangeAnnotations: [],
+		columnAnnotations: [],
 		...overrides,
 	};
 }

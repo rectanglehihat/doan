@@ -114,6 +114,14 @@ export function ChartCanvas({
 	const rangeAnnotationDraft = useUIStore((state) => state.rangeAnnotationDraft);
 	const closeRangeAnnotationPopover = useUIStore((state) => state.closeRangeAnnotationPopover);
 
+	const columnAnnotations = useChartStore((state) => state.columnAnnotations);
+	const addColumnAnnotation = useChartStore((state) => state.addColumnAnnotation);
+	const updateColumnAnnotation = useChartStore((state) => state.updateColumnAnnotation);
+	const removeColumnAnnotation = useChartStore((state) => state.removeColumnAnnotation);
+	const columnAnnotationPopover = useUIStore((state) => state.columnAnnotationPopover);
+	const openColumnAnnotationPopover = useUIStore((state) => state.openColumnAnnotationPopover);
+	const closeColumnAnnotationPopover = useUIStore((state) => state.closeColumnAnnotationPopover);
+
 	const collapsedBlocks = useChartStore((state) => state.collapsedBlocks);
 	const addCollapsedBlock = useChartStore((state) => state.addCollapsedBlock);
 	const collapsedColumnBlocks = useChartStore((state) => state.collapsedColumnBlocks);
@@ -213,6 +221,53 @@ export function ChartCanvas({
 	const handleAnnotationClose = useCallback(() => {
 		closeAnnotationPopover();
 	}, [closeAnnotationPopover]);
+
+	const handleColumnAnnotationAreaClick = useCallback(
+		(
+			colIndex: number,
+			side: 'top' | 'bottom',
+			anchorX: number,
+			anchorY: number,
+			existingAnnotationId: string | null,
+		) => {
+			// 기존 마커 클릭 시 annotation.side를 columnAnnotations에서 조회
+			const existing = existingAnnotationId !== null
+				? columnAnnotations.find((a) => a.id === existingAnnotationId)
+				: null;
+			openColumnAnnotationPopover({
+				colIndex,
+				anchorX,
+				anchorY,
+				side: existing?.side ?? side,
+				existingId: existingAnnotationId,
+			});
+		},
+		[openColumnAnnotationPopover, columnAnnotations],
+	);
+
+	const handleColumnAnnotationConfirm = useCallback(
+		(label: string) => {
+			if (columnAnnotationPopover === null) return;
+			const { colIndex, existingId, side } = columnAnnotationPopover;
+			if (existingId !== null) {
+				updateColumnAnnotation(existingId, label);
+			} else {
+				addColumnAnnotation(colIndex, label, side);
+			}
+			closeColumnAnnotationPopover();
+		},
+		[columnAnnotationPopover, updateColumnAnnotation, addColumnAnnotation, closeColumnAnnotationPopover],
+	);
+
+	const handleColumnAnnotationDelete = useCallback(() => {
+		if (columnAnnotationPopover === null || columnAnnotationPopover.existingId === null) return;
+		removeColumnAnnotation(columnAnnotationPopover.existingId);
+		closeColumnAnnotationPopover();
+	}, [columnAnnotationPopover, removeColumnAnnotation, closeColumnAnnotationPopover]);
+
+	const handleColumnAnnotationClose = useCallback(() => {
+		closeColumnAnnotationPopover();
+	}, [closeColumnAnnotationPopover]);
 
 	const handleCollapsedBlockClick = useCallback((blockId: string) => {
 		setSelectedCollapsedBlockId(blockId);
@@ -365,6 +420,8 @@ export function ChartCanvas({
 						onRangeDragStart={handleRangeDragStart}
 						onRangeDragMove={handleRangeDragMove}
 						onRangeDragEnd={handleRangeDragEnd}
+						columnAnnotations={columnAnnotations}
+						onColumnAnnotationAreaClick={handleColumnAnnotationAreaClick}
 					/>
 
 					{/* 플로팅 액션바: 선택 모드에서 행 중략 버튼 */}
@@ -456,6 +513,25 @@ export function ChartCanvas({
 							onConfirm={handleRangeAnnotationConfirm}
 							onDelete={rangeAnnotationPopover.existingId !== null ? handleRangeAnnotationDelete : null}
 							onClose={handleRangeAnnotationClose}
+						/>
+					)}
+
+					{/* 열 주석 팝오버 */}
+					{columnAnnotationPopover !== null && (
+						<AnnotationPopover
+							anchorX={columnAnnotationPopover.anchorX}
+							anchorY={columnAnnotationPopover.anchorY}
+							side={columnAnnotationPopover.side}
+							mode="column"
+							colNumber={columnAnnotationPopover.colIndex + 1}
+							initialLabel={
+								columnAnnotationPopover.existingId !== null
+									? (columnAnnotations.find((a) => a.id === columnAnnotationPopover.existingId)?.label ?? '')
+									: ''
+							}
+							onConfirm={handleColumnAnnotationConfirm}
+							onDelete={columnAnnotationPopover.existingId !== null ? handleColumnAnnotationDelete : null}
+							onClose={handleColumnAnnotationClose}
 						/>
 					)}
 
