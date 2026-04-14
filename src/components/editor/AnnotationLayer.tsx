@@ -505,6 +505,7 @@ export const AnnotationLayer = memo(function AnnotationLayerInner({
 					annotationSideWidth={annotationSideWidth}
 					side="left"
 					onSideAreaClick={onSideAreaClick}
+					onRangeDragStart={onRangeDragStart}
 				/>
 			))}
 
