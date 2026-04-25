@@ -38,15 +38,21 @@ describe('updateSession', () => {
 
   it('NEXT_PUBLIC_SUPABASE_URL이 없으면 에러를 던진다', async () => {
     vi.unstubAllEnvs()
+    const savedUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key')
     const request = new NextRequest('http://localhost:3000/')
     await expect(updateSession(request)).rejects.toThrow('NEXT_PUBLIC_SUPABASE_URL')
+    process.env.NEXT_PUBLIC_SUPABASE_URL = savedUrl
   })
 
   it('NEXT_PUBLIC_SUPABASE_ANON_KEY가 없으면 에러를 던진다', async () => {
     vi.unstubAllEnvs()
+    const savedKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://test.supabase.co')
     const request = new NextRequest('http://localhost:3000/')
     await expect(updateSession(request)).rejects.toThrow('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = savedKey
   })
 })

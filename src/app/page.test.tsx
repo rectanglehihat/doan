@@ -2,6 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import { EditorClient } from '@/components/editor/EditorClient';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useUserStore } from '@/store/useUserStore';
 
 vi.mock('next/dynamic', () => ({
 	default: () => {
@@ -11,9 +12,24 @@ vi.mock('next/dynamic', () => ({
 	},
 }));
 
+vi.mock('next/navigation', () => ({
+	useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn(), forward: vi.fn(), refresh: vi.fn() })),
+}));
+
+vi.mock('@supabase/ssr', () => ({
+	createBrowserClient: vi.fn(() => ({
+		auth: {
+			signInWithOAuth: vi.fn(),
+			signOut: vi.fn(),
+			onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+		},
+	})),
+}));
+
 beforeEach(() => {
 	useChartStore.getState().reset();
 	useUIStore.getState().reset();
+	useUserStore.getState().reset();
 });
 
 describe('EditorPage', () => {
