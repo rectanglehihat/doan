@@ -123,107 +123,86 @@
 
 ## Phase 2: 클라우드 / 인증 (미시작)
 
-- [ ] Supabase 프로젝트 설정 및 `.env.local` 환경변수 구성
-- [ ] Supabase Auth — 이메일/비밀번호 로그인, 회원가입, 로그아웃
-- [ ] Supabase DB 스키마 마이그레이션 (`patterns` 테이블, RLS 설정)
-- [ ] 로컬 스토리지 → Supabase 마이그레이션 유틸리티
-- [ ] 도안 API 연동 (`src/lib/api/patterns-api.ts`)
-- [ ] 코바늘 기호 세트 분리 및 팔레트 동적 변경
-- [ ] 텍스트 지시문 자동 생성 (Row 1: K2, P1, ...)
-- [ ] 패턴 템플릿 라이브러리
-- [ ] 도안 공유 링크 생성
+### 2-1. Supabase 프로젝트 설정
 
----
+- [x] Supabase 프로젝트 생성 및 URL / anon key 수집
+- [x] `.env.local` 환경변수 구성
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [x] 브라우저용 Supabase 클라이언트 (`src/lib/supabase/client.ts`)
+- [x] SSR용 Supabase 서버 클라이언트 (`src/lib/supabase/server.ts`) — `@supabase/ssr` 사용
+- [x] 미들웨어 세션 갱신 유틸 (`src/lib/supabase/middleware.ts`)
 
-## 컴포넌트 현황
+### 2-2. OAuth 공급자 설정 (외부 콘솔)
 
-### Atoms (`src/components/ui/atoms/`)
+- [ ] **Google OAuth**
+  - Google Cloud Console에서 OAuth 2.0 Client ID / Secret 발급
+  - Supabase Dashboard → Authentication → Providers → Google 활성화
+  - Authorized redirect URI: `{SUPABASE_URL}/auth/v1/callback` 등록
+- [ ] **Kakao OAuth**
+  - Kakao Developers에서 앱 생성, REST API 키 / Client Secret 발급
+  - 카카오 로그인 활성화 + Redirect URI 등록
+  - Supabase Dashboard → Authentication → Providers → Kakao 활성화
 
-| 컴포넌트 | 상태   | 테스트 |
-| -------- | ------ | ------ |
-| `Button` | 완료   | 21개   |
-| `Input`  | 완료   | 15개   |
-| `Option` | 완료   | 10개   |
-| `Icon`   | 미구현 | -      |
-| `Badge`  | 미구현 | -      |
+### 2-3. 인증 라우트 & 미들웨어
 
-### Molecules (`src/components/ui/molecules/`)
+- [ ] 인증 콜백 라우트 (`src/app/auth/callback/route.ts`)
+  - OAuth 인가 코드를 세션으로 교환 (`exchangeCodeForSession`)
+  - 성공 시 `/` 리다이렉트, 실패 시 `/login?error=...` 리다이렉트
+- [ ] 로그아웃 라우트 (`src/app/auth/signout/route.ts`)
+  - `supabase.auth.signOut()` 후 `/login` 리다이렉트
+- [ ] Next.js 라우팅 프록시 (`src/proxy.ts`) 업데이트 — 기존 CSP 핸들러에 Supabase 세션 갱신 통합
+  - 모든 요청에서 `updateSession` 호출
+  - 미인증 사용자의 `/` 접근 시 `/login` 리다이렉트
+  - 인증된 사용자의 `/login` 접근 시 `/` 리다이렉트
 
-| 컴포넌트               | 상태 | 테스트 |
-| ---------------------- | ---- | ------ |
-| `SymbolButton`         | 완료 | 10개   |
-| `Select`               | 완료 | 15개   |
-| `GridSizeInput`        | 완료 | 8개    |
-| `DifficultyStars`      | 완료 | 4개    |
-| `ColorPicker`          | 완료 | 16개   |
-| `ConfirmDialog`        | 완료 | 8개    |
-| `AnnotationModeButton` | 완료 | 7개    |
-| `AnnotationPopover`    | 완료 | 10개   |
-| `ColumnSectionPopover` | 완료 | 11개   |
+### 2-4. 로그인 페이지 & 인증 UI
 
-### Organisms (`src/components/editor/`)
+- [ ] 로그인 페이지 (`src/app/login/page.tsx`)
+  - Google 로그인 버튼
+  - 카카오 로그인 버튼
+  - 에러 메시지 표시 (쿼리 파라미터 `?error=`)
+- [ ] `SocialLoginButton` Atom (`src/components/ui/atoms/SocialLoginButton.tsx`)
+  - `provider: 'google' | 'kakao'` prop
+  - 각 브랜드 아이콘 + 레이블 ("Google로 계속하기", "카카오로 계속하기")
+  - 테스트: `SocialLoginButton.test.tsx`
+- [ ] `UserMenu` Molecule (`src/components/ui/molecules/UserMenu.tsx`)
+  - 사용자 아바타(이니셜 또는 프로필 이미지), 이름/이메일 표시
+  - 로그아웃 버튼
+  - 테스트: `UserMenu.test.tsx`
+- [ ] `Toolbar` 업데이트 — 우측에 `UserMenu` 추가
 
-| 컴포넌트                | 상태 | 테스트 |
-| ----------------------- | ---- | ------ |
-| `ChartCanvas`           | 완료 | 6개    |
-| `KonvaGrid`             | 완료 | 4개    |
-| `EditorClient`          | 완료 | 6개    |
-| `EditorSidebar`         | 완료 | 14개   |
-| `ShapeGuideLayer`       | 완료 | 15개   |
-| `Toolbar`               | 완료 | 35개   |
-| `LoadDialog`            | 완료 | 20개   |
-| `CollapsedBlockPopover` | 완료 | 5개    |
-| `CollapsedRow`          | 완료 | 4개    |
-| `CollapsedColumn`       | 완료 | 4개    |
-| `AnnotationLayer`       | 완료 | 8개    |
-| `ColumnSectionLabelBar` | 완료 | 8개    |
+### 2-5. 사용자 상태 관리
 
-### Organisms (`src/components/pdf/`)
+- [ ] `useUserStore` Zustand 스토어 (`src/store/useUserStore.ts`)
+  - 상태: `user: User | null`, `isLoading: boolean`
+  - 액션: `setUser`, `clearUser`, `reset`
+  - 테스트: `useUserStore.test.ts`
+- [ ] `useAuth` 훅 (`src/hooks/useAuth.ts`)
+  - `signInWithGoogle()`, `signInWithKakao()`, `signOut()` 액션
+  - `getSession()` — 현재 세션 조회 후 `useUserStore` 동기화
+  - `onAuthStateChange` 리스너 등록 (컴포넌트 마운트 시)
+  - 테스트: `useAuth.test.ts` (MSW로 Supabase Auth 모킹)
 
-| 컴포넌트     | 상태 | 테스트 |
-| ------------ | ---- | ------ |
-| `PdfPreview` | 완료 | 10개   |
+### 2-6. DB 스키마 & RLS
 
----
+- [ ] `patterns` 테이블 SQL 스키마 (`supabase/migrations/001_create_patterns.sql`)
+  - `id uuid primary key default gen_random_uuid()`
+  - `user_id uuid references auth.users not null`
+  - `title text not null`
+  - `data jsonb not null` — ChartPattern 직렬화
+  - `created_at / updated_at timestamptz`
+- [ ] RLS 정책 설정 — SELECT / INSERT / UPDATE / DELETE 모두 `auth.uid() = user_id`
+- [ ] Supabase 타입 자동 생성 — `supabase gen types typescript --local > src/types/supabase.ts`
 
-## 테스트 현황
+### 2-7. 도안 API & 훅 업데이트
 
-| 레이어                             | 파일                             | 목표 커버리지 | 현재      |
-| ---------------------------------- | -------------------------------- | ------------- | --------- |
-| Atom — `Button`                    | `Button.test.tsx`                | 90%           | 21개 작성 |
-| Atom — `Input`                     | `Input.test.tsx`                 | 90%           | 15개 작성 |
-| Atom — `Option`                    | `Option.test.tsx`                | 90%           | 10개 작성 |
-| Molecule — `Select`                | `Select.test.tsx`                | 80%           | 15개 작성 |
-| Molecule — `GridSizeInput`         | `GridSizeInput.test.tsx`         | 80%           | 8개 작성  |
-| Molecule — `DifficultyStars`       | `DifficultyStars.test.tsx`       | 80%           | 4개 작성  |
-| Molecule — `ColorPicker`           | `ColorPicker.test.tsx`           | 80%           | 16개 작성 |
-| Molecule — `ConfirmDialog`         | `ConfirmDialog.test.tsx`         | 80%           | 8개 작성  |
-| Molecule — `SymbolButton`          | `SymbolButton.test.tsx`          | 80%           | 23개 작성 |
-| Organism — `EditorClient`          | `EditorClient.test.tsx`          | 60%           | 6개 작성  |
-| Organism — `EditorSidebar`         | `EditorSidebar.test.tsx`         | 60%           | 14개 작성 |
-| Organism — `ShapeGuideLayer`       | `ShapeGuideLayer.test.tsx`       | 60%           | 15개 작성 |
-| Organism — `Toolbar`               | `Toolbar.test.tsx`               | 60%           | 35개 작성 |
-| Organism — `ChartCanvas`           | `ChartCanvas.test.tsx`           | 60%           | 6개 작성  |
-| Organism — `LoadDialog`            | `LoadDialog.test.tsx`            | 60%           | 20개 작성 |
-| Organism — `CollapsedBlockPopover` | `CollapsedBlockPopover.test.tsx` | 60%           | 5개 작성  |
-| Hook — `useEditorActions`          | `useEditorActions.test.ts`       | 85%           | 78개 작성 |
-| Hook — `useChartEditor`            | `useChartEditor.test.ts`         | 85%           | 19개 작성 |
-| Hook — `useHistory`                | `useHistory.test.ts`             | 85%           | 32개 작성 |
-| Hook — `usePatterns`               | `usePatterns.test.ts`            | 85%           | 27개 작성 |
-| Hook — `usePdfExport`              | `usePdfExport.test.ts`           | 85%           | 8개 작성  |
-| Hook — `useCanvasNavigation`       | `useCanvasNavigation.test.ts`    | 85%           | 5개 작성  |
-| Store — `useChartStore`            | `useChartStore.test.ts`          | 80%           | 48개 작성 |
-| Store — `useUIStore`               | `useUIStore.test.ts`             | 80%           | 70개 작성 |
-| Util — `local-storage-service`     | `local-storage-service.test.ts`  | 95%           | 22개 작성 |
-| Util — `export-pdf`                | `export-pdf.test.ts`             | 70%           | 12개 작성 |
-| Util — `collapsed-rows`            | `collapsed-rows.test.ts`         | 95%           | 20개 작성 |
-| Util — `collapsed-cols`            | `collapsed-cols.test.ts`         | 95%           | 20개 작성 |
-| Util — `color-utils`               | `color-utils.test.ts`            | 95%           | 16개 작성 |
-| Util — `geometry`                  | `geometry.test.ts`               | 95%           | 17개 작성 |
-| Util — `eraser`                    | `eraser.test.ts`                 | 95%           | 7개 작성  |
-| Hook — `useVisualCoordinates`      | `useVisualCoordinates.test.ts`   | 85%           | 10개 작성 |
-| Hook — `useEditorShortcuts`        | `useEditorShortcuts.test.ts`     | 85%           | 7개 작성  |
-| Organism — `CollapsedRow`          | `CollapsedRow.test.tsx`          | 60%           | 4개 작성  |
-| Organism — `CollapsedColumn`       | `CollapsedColumn.test.tsx`       | 60%           | 4개 작성  |
-| Organism — `KonvaGrid`             | `KonvaGrid.test.tsx`             | 60%           | 4개 작성  |
-| Page — `app/page`                  | `page.test.tsx`                  | 60%           | 3개 작성  |
+- [ ] `patterns-api.ts` 구현 (`src/lib/api/patterns-api.ts`)
+  - `fetchPatterns(userId)` — 목록 조회
+  - `savePattern(pattern)` — upsert
+  - `deletePattern(id)` — 삭제
+  - 테스트: `patterns-api.test.ts` (MSW 모킹)
+- [ ] `usePatterns` 훅 업데이트 (`src/hooks/usePatterns.ts`) — localStorage → Supabase API 교체
+- [ ] 로컬 → 클라우드 마이그레이션 유틸 (`src/lib/utils/migrate-to-cloud.ts`)
+  - 로컬스토리지 도안을 Supabase에 일괄 업로드
+  - 로그인 직후 자동 실행 (중복 방지 플래그 포함)
