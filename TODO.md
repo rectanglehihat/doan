@@ -158,27 +158,27 @@
 
 ### 2-4. 로그인 페이지 & 인증 UI
 
-- [ ] 로그인 페이지 (`src/app/login/page.tsx`)
+- [x] 로그인 페이지 (`src/app/login/page.tsx`)
   - Google 로그인 버튼
   - 카카오 로그인 버튼
   - 에러 메시지 표시 (쿼리 파라미터 `?error=`)
-- [ ] `SocialLoginButton` Atom (`src/components/ui/atoms/SocialLoginButton.tsx`)
+- [x] `SocialLoginButton` Atom (`src/components/ui/atoms/SocialLoginButton.tsx`)
   - `provider: 'google' | 'kakao'` prop
   - 각 브랜드 아이콘 + 레이블 ("Google로 계속하기", "카카오로 계속하기")
   - 테스트: `SocialLoginButton.test.tsx`
-- [ ] `UserMenu` Molecule (`src/components/ui/molecules/UserMenu.tsx`)
+- [x] `UserMenu` Molecule (`src/components/ui/molecules/UserMenu.tsx`)
   - 사용자 아바타(이니셜 또는 프로필 이미지), 이름/이메일 표시
   - 로그아웃 버튼
   - 테스트: `UserMenu.test.tsx`
-- [ ] `Toolbar` 업데이트 — 우측에 `UserMenu` 추가
+- [x] `Toolbar` 업데이트 — 우측에 `UserMenu` 추가
 
 ### 2-5. 사용자 상태 관리
 
-- [ ] `useUserStore` Zustand 스토어 (`src/store/useUserStore.ts`)
+- [x] `useUserStore` Zustand 스토어 (`src/store/useUserStore.ts`)
   - 상태: `user: User | null`, `isLoading: boolean`
   - 액션: `setUser`, `clearUser`, `reset`
   - 테스트: `useUserStore.test.ts`
-- [ ] `useAuth` 훅 (`src/hooks/useAuth.ts`)
+- [x] `useAuth` 훅 (`src/hooks/useAuth.ts`)
   - `signInWithGoogle()`, `signInWithKakao()`, `signOut()` 액션
   - `getSession()` — 현재 세션 조회 후 `useUserStore` 동기화
   - `onAuthStateChange` 리스너 등록 (컴포넌트 마운트 시)

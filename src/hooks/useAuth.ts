@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useUserStore } from '@/store/useUserStore';
 
@@ -9,7 +10,17 @@ interface UseAuthReturn {
   signInWithGoogle: () => Promise<void>;
   signInWithKakao: () => Promise<void>;
   signOut: () => Promise<void>;
+  getSession: () => Promise<void>;
   isLoading: boolean;
+}
+
+function syncSessionToStore(session: Session | null) {
+  if (session) {
+    useUserStore.getState().setUser(session.user);
+  } else {
+    useUserStore.getState().clearUser();
+  }
+  useUserStore.getState().setLoading(false);
 }
 
 export function useAuth(): UseAuthReturn {
@@ -21,12 +32,7 @@ export function useAuth(): UseAuthReturn {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        useUserStore.getState().setUser(session.user);
-      } else {
-        useUserStore.getState().clearUser();
-      }
-      useUserStore.getState().setLoading(false);
+      syncSessionToStore(session);
     });
 
     return () => subscription.unsubscribe();
@@ -57,10 +63,20 @@ export function useAuth(): UseAuthReturn {
     router.push('/login');
   }, [router]);
 
+  const getSession = useCallback(async () => {
+    useUserStore.getState().setLoading(true);
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    syncSessionToStore(session);
+  }, []);
+
   return {
     signInWithGoogle,
     signInWithKakao,
     signOut,
+    getSession,
     isLoading,
   };
 }
