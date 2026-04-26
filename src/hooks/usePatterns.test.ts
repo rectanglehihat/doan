@@ -19,13 +19,25 @@ vi.mock('@/lib/utils/migrate-to-cloud', () => ({
 	migrateLocalPatternsToCloud: vi.fn().mockResolvedValue({ migrated: 0, failed: 0 }),
 }));
 
+// local-storage-service 모킹
+vi.mock('@/lib/utils/local-storage-service', () => ({
+	savePattern: vi.fn(),
+	loadAllPatterns: vi.fn(),
+	deletePattern: vi.fn(),
+}));
+
 import * as patternsApi from '@/lib/api/patterns-api';
 import { migrateLocalPatternsToCloud } from '@/lib/utils/migrate-to-cloud';
+import * as localStorageService from '@/lib/utils/local-storage-service';
 
 const mockFetchPatterns = vi.mocked(patternsApi.fetchPatterns);
 const mockSavePattern = vi.mocked(patternsApi.savePattern);
 const mockDeletePattern = vi.mocked(patternsApi.deletePattern);
 const mockMigrateLocalPatternsToCloud = vi.mocked(migrateLocalPatternsToCloud);
+
+const mockLocalSavePattern = vi.mocked(localStorageService.savePattern);
+const mockLocalLoadAllPatterns = vi.mocked(localStorageService.loadAllPatterns);
+const mockLocalDeletePattern = vi.mocked(localStorageService.deletePattern);
 
 function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatternSnapshot {
 	return {
@@ -60,6 +72,10 @@ beforeEach(async () => {
 	// 로그인 상태 시뮬레이션
 	useUserStore.getState().setUser(fakeUser);
 	mockFetchPatterns.mockResolvedValue({ ok: true, data: [] });
+	// localStorage mock 기본값
+	mockLocalLoadAllPatterns.mockReturnValue({ ok: true, data: [] });
+	mockLocalSavePattern.mockReturnValue({ ok: true, data: undefined });
+	mockLocalDeletePattern.mockReturnValue({ ok: true, data: undefined });
 });
 
 describe('usePatterns', () => {
@@ -577,6 +593,133 @@ describe('usePatterns', () => {
 			expect(result.current.isAutoSaving).toBe(false);
 
 			vi.useRealTimers();
+		});
+	});
+});
+
+describe('비로그인 상태 (localStorage 분기)', () => {
+	beforeEach(() => {
+		useChartStore.getState().reset();
+		useUIStore.getState().reset();
+		// user를 null로 초기화 (비로그인 상태)
+		useUserStore.getState().reset();
+	});
+
+	it('user=null 상태로 마운트 시 localLoadAllPatterns가 호출되고 반환된 패턴이 patterns에 세팅된다', async () => {
+		const localSnapshots = [makeSnapshot({ id: 'local-1', title: '로컬 도안' })];
+		mockLocalLoadAllPatterns.mockReturnValue({ ok: true, data: localSnapshots });
+
+		const { result } = renderHook(() => usePatterns());
+
+		await waitFor(() => {
+			expect(mockLocalLoadAllPatterns).toHaveBeenCalled();
+			expect(result.current.patterns).toEqual(localSnapshots);
+		});
+
+		// Supabase fetchPatterns는 호출되지 않아야 한다
+		expect(mockFetchPatterns).not.toHaveBeenCalled();
+	});
+
+	it('user=null 상태에서 saveCurrentPattern 호출 시 localSavePattern이 호출되고 { ok: true } 계열을 반환한다', async () => {
+		mockLocalSavePattern.mockReturnValue({ ok: true, data: undefined });
+
+		const { result } = renderHook(() => usePatterns());
+		await act(async () => {});
+
+		let saveResult:
+			| Awaited<ReturnType<typeof result.current.saveCurrentPattern>>
+			| undefined;
+		await act(async () => {
+			saveResult = await result.current.saveCurrentPattern('로컬 저장 도안');
+		});
+
+		expect(mockLocalSavePattern).toHaveBeenCalledTimes(1);
+		const calledWith = mockLocalSavePattern.mock.calls[0][0];
+		expect(calledWith.title).toBe('로컬 저장 도안');
+		expect(saveResult).toMatchObject({ ok: true });
+
+		// Supabase savePattern은 호출되지 않아야 한다
+		expect(mockSavePattern).not.toHaveBeenCalled();
+	});
+
+	it('user=null 상태에서 deletePattern 호출 시 localDeletePattern이 호출된다', async () => {
+		const localSnapshot = makeSnapshot({ id: 'local-del-id' });
+		mockLocalLoadAllPatterns.mockReturnValue({ ok: true, data: [localSnapshot] });
+		mockLocalDeletePattern.mockReturnValue({ ok: true, data: undefined });
+
+		const { result } = renderHook(() => usePatterns());
+		await act(async () => {});
+
+		let deleteResult:
+			| Awaited<ReturnType<typeof result.current.deletePattern>>
+			| undefined;
+		await act(async () => {
+			deleteResult = await result.current.deletePattern('local-del-id');
+		});
+
+		expect(mockLocalDeletePattern).toHaveBeenCalledWith('local-del-id');
+		expect(deleteResult).toMatchObject({ ok: true });
+
+		// Supabase deletePattern은 호출되지 않아야 한다
+		expect(mockDeletePattern).not.toHaveBeenCalled();
+	});
+
+	it('user=null, currentPatternId가 설정된 상태에서 스토어 변경 시 debounce 후 localSavePattern이 호출된다', async () => {
+		vi.useFakeTimers();
+		const localSnapshot = makeSnapshot({ id: 'local-auto-id' });
+		mockLocalLoadAllPatterns.mockReturnValue({ ok: true, data: [localSnapshot] });
+		mockLocalSavePattern.mockReturnValue({ ok: true, data: undefined });
+
+		const { result } = renderHook(() => usePatterns());
+		await act(async () => {});
+
+		// 패턴 불러와 currentPatternId 설정
+		act(() => {
+			result.current.loadPattern('local-auto-id');
+		});
+
+		// 스토어 변경 → debounce 트리거
+		act(() => {
+			useChartStore.getState().setCellSymbol(0, 0, 'k');
+		});
+
+		// debounce 완료 전에는 저장 안됨
+		act(() => {
+			vi.advanceTimersByTime(200);
+		});
+		expect(mockLocalSavePattern).toHaveBeenCalledTimes(0);
+
+		// debounce 완료 후 localSavePattern 호출
+		await act(async () => {
+			vi.advanceTimersByTime(200);
+		});
+		expect(mockLocalSavePattern).toHaveBeenCalledTimes(1);
+
+		// Supabase savePattern은 호출되지 않아야 한다
+		expect(mockSavePattern).not.toHaveBeenCalled();
+
+		vi.useRealTimers();
+	});
+
+	it('로그인 상태에서 로그아웃(setUser(null)) 하면 localLoadAllPatterns가 호출되어 localStorage 패턴이 로드된다', async () => {
+		// 먼저 로그인 상태로 시작
+		useUserStore.getState().setUser(fakeUser);
+		mockFetchPatterns.mockResolvedValue({ ok: true, data: [] });
+
+		const localSnapshots = [makeSnapshot({ id: 'local-after-logout', title: '로컬 도안' })];
+		mockLocalLoadAllPatterns.mockReturnValue({ ok: true, data: localSnapshots });
+
+		const { result } = renderHook(() => usePatterns());
+		await act(async () => {});
+
+		// 로그아웃 시뮬레이션
+		await act(async () => {
+			useUserStore.getState().setUser(null);
+		});
+
+		await waitFor(() => {
+			expect(mockLocalLoadAllPatterns).toHaveBeenCalled();
+			expect(result.current.patterns).toEqual(localSnapshots);
 		});
 	});
 });

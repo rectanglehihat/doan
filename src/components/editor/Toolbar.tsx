@@ -3,8 +3,6 @@
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/atoms/Button';
 import { ColorPicker } from '@/components/ui/molecules/ColorPicker';
-import { UserMenu } from '@/components/ui/molecules/UserMenu';
-import { useUserStore } from '@/store/useUserStore';
 import { RotationalMode } from '@/types/knitting';
 
 interface ToolbarProps {
@@ -29,7 +27,6 @@ interface ToolbarProps {
 	onFitToScreen?: () => void;
 	isAnnotationMode: boolean;
 	onAnnotationModeChange: (active: boolean) => void;
-	onSignOut?: () => Promise<void>;
 }
 
 export function Toolbar({
@@ -54,7 +51,6 @@ export function Toolbar({
 	onFitToScreen,
 	isAnnotationMode,
 	onAnnotationModeChange,
-	onSignOut,
 }: ToolbarProps) {
 	const handleUndo = useCallback(() => {
 		onUndo();
@@ -107,12 +103,6 @@ export function Toolbar({
 	const handleFitToScreen = useCallback(() => {
 		onFitToScreen?.();
 	}, [onFitToScreen]);
-
-	const user = useUserStore((state) => state.user);
-	const isAuthLoading = useUserStore((state) => state.isLoading);
-	const handleSignOut = useCallback(async () => {
-		await onSignOut?.();
-	}, [onSignOut]);
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-zinc-200 bg-white px-3 py-2">
@@ -270,8 +260,8 @@ export function Toolbar({
 				</div>
 			)}
 
-			{/* 새 도안 + 사용자 메뉴 */}
-			<div className="ml-auto flex items-center gap-2">
+			{/* 새 도안 */}
+			<div className="ml-auto">
 				<Button
 					variant="ghost"
 					size="sm"
@@ -280,9 +270,6 @@ export function Toolbar({
 				>
 					새 도안
 				</Button>
-				{!isAuthLoading && user && (
-					<UserMenu user={user} onSignOut={handleSignOut} />
-				)}
 			</div>
 		</div>
 	);

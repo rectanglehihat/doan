@@ -12,6 +12,11 @@ import {
 } from '@/lib/api/patterns-api';
 import type { ApiResult } from '@/lib/api/patterns-api';
 import { migrateLocalPatternsToCloud } from '@/lib/utils/migrate-to-cloud';
+import {
+	savePattern as localSavePattern,
+	loadAllPatterns as localLoadAllPatterns,
+	deletePattern as localDeletePattern,
+} from '@/lib/utils/local-storage-service';
 import type { SavedPatternSnapshot } from '@/types/knitting';
 
 const DEBOUNCE_MS = 300;
@@ -51,7 +56,11 @@ export function usePatterns() {
 
 	const refreshPatterns = useCallback(async (): Promise<void> => {
 		const currentUser = userRef.current;
-		if (currentUser === null) return;
+		if (currentUser === null) {
+			const result = localLoadAllPatterns();
+			if (result.ok) setPatterns(result.data);
+			return;
+		}
 		const result = await fetchPatterns(currentUser.id);
 		if (result.ok) setPatterns(result.data);
 	}, []);
@@ -59,7 +68,11 @@ export function usePatterns() {
 	// 사용자 변경 감지: 처음 로그인 시 마이그레이션 후 패턴 로드
 	const prevUserIdRef = useRef<string | null>(null);
 	useEffect(() => {
-		if (user === null) return;
+		if (user === null) {
+			prevUserIdRef.current = null;
+			refreshPatterns();
+			return;
+		}
 		if (prevUserIdRef.current === user.id) return;
 		prevUserIdRef.current = user.id;
 
@@ -69,8 +82,6 @@ export function usePatterns() {
 	const saveCurrentPattern = useCallback(
 		async (title: string): Promise<ApiResult<void>> => {
 			const currentUser = userRef.current;
-			if (currentUser === null) return { ok: false, error: 'unauthenticated' };
-
 			const id = currentPatternIdRef.current ?? crypto.randomUUID();
 			const snapshot: SavedPatternSnapshot = {
 				id,
@@ -89,6 +100,15 @@ export function usePatterns() {
 				difficulty,
 				materials,
 			};
+
+			if (currentUser === null) {
+				const result = localSavePattern(snapshot);
+				if (result.ok) {
+					setCurrentPatternId(id);
+					await refreshPatterns();
+				}
+				return result;
+			}
 
 			const result = await savePatternApi(snapshot, currentUser.id);
 			if (result.ok) {
@@ -151,6 +171,15 @@ export function usePatterns() {
 
 	const deletePattern = useCallback(
 		async (id: string): Promise<ApiResult<void>> => {
+			const currentUser = userRef.current;
+			if (currentUser === null) {
+				const result = localDeletePattern(id);
+				if (result.ok) {
+					if (currentPatternIdRef.current === id) setCurrentPatternId(null);
+					await refreshPatterns();
+				}
+				return result;
+			}
 			const result = await deletePatternApi(id);
 			if (result.ok) {
 				if (currentPatternIdRef.current === id) setCurrentPatternId(null);
@@ -175,7 +204,7 @@ export function usePatterns() {
 		debounceTimerRef.current = setTimeout(async () => {
 			const id = currentPatternIdRef.current;
 			const currentUser = userRef.current;
-			if (id === null || currentUser === null) {
+			if (id === null) {
 				setIsAutoSaving(false);
 				return;
 			}
@@ -198,7 +227,11 @@ export function usePatterns() {
 				materials,
 			};
 
-			await savePatternApi(snapshot, currentUser.id);
+			if (currentUser === null) {
+				localSavePattern(snapshot);
+			} else {
+				await savePatternApi(snapshot, currentUser.id);
+			}
 			setIsAutoSaving(false);
 		}, DEBOUNCE_MS);
 

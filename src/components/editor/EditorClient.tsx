@@ -5,11 +5,11 @@ import type Konva from 'konva';
 import { ChartCanvas } from '@/components/editor/ChartCanvas';
 import { ColumnSectionLabelBar } from '@/components/editor/ColumnSectionLabelBar';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
+import { Navbar } from '@/components/editor/Navbar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useEditorActions } from '@/hooks/useEditorActions';
-import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/store/useUIStore';
 import { useChartStore } from '@/store/useChartStore';
 
@@ -31,55 +31,56 @@ export function EditorClient() {
 	} = useEditorActions();
 	const isAnnotationMode = useUIStore((state) => state.isAnnotationMode);
 	const setAnnotationMode = useUIStore((state) => state.setAnnotationMode);
-	const { signOut } = useAuth();
 
 	return (
-		<div className="flex h-screen overflow-hidden bg-zinc-100">
-			<main className="flex flex-col flex-1 overflow-hidden">
-				<Toolbar
-					canUndo={canUndo}
-					canRedo={canRedo}
-					onUndo={onUndo}
-					onRedo={onRedo}
-					onReset={onReset}
-					isShapeGuideDrawMode={isShapeGuideDrawMode}
-					onShapeGuideDrawModeChange={onShapeGuideDrawModeChange}
-					isShapeGuideEraseMode={isShapeGuideEraseMode}
-					onShapeGuideEraseModeChange={onShapeGuideEraseModeChange}
-					onShapeGuideClear={onShapeGuideClear}
-					isSelectionMode={isSelectionMode}
-					onSelectionModeChange={onSelectionModeChange}
-					rotationalMode={rotationalMode}
-					onRotationalModeChange={onRotationalModeChange}
-					selectedColor={selectedColor}
-					onColorChange={onColorChange}
-					onColorClear={onColorClear}
-					recentColors={recentColors}
-					onFitToScreen={onFitToScreen}
-					isAnnotationMode={isAnnotationMode}
-					onAnnotationModeChange={setAnnotationMode}
-					onSignOut={signOut}
-				/>
-				<div className="flex-1 overflow-auto flex flex-col">
-					<ChartCanvas
-						onPaintStart={beginBatch}
-						onPaintEnd={endBatch}
-						onShapeGuideDrawStart={beginBatch}
-						onShapeGuideDrawEnd={endBatch}
-						onShapeGuideEraseStart={beginBatch}
-						onShapeGuideEraseEnd={endBatch}
-						stageRef={stageRef}
+		<div className="flex flex-col h-screen overflow-hidden">
+			<Navbar />
+			<div className="flex flex-1 overflow-hidden bg-zinc-100">
+				<main className="flex flex-col flex-1 overflow-hidden">
+					<Toolbar
+						canUndo={canUndo}
+						canRedo={canRedo}
+						onUndo={onUndo}
+						onRedo={onRedo}
+						onReset={onReset}
+						isShapeGuideDrawMode={isShapeGuideDrawMode}
+						onShapeGuideDrawModeChange={onShapeGuideDrawModeChange}
+						isShapeGuideEraseMode={isShapeGuideEraseMode}
+						onShapeGuideEraseModeChange={onShapeGuideEraseModeChange}
+						onShapeGuideClear={onShapeGuideClear}
+						isSelectionMode={isSelectionMode}
+						onSelectionModeChange={onSelectionModeChange}
+						rotationalMode={rotationalMode}
+						onRotationalModeChange={onRotationalModeChange}
+						selectedColor={selectedColor}
+						onColorChange={onColorChange}
+						onColorClear={onColorClear}
+						recentColors={recentColors}
+						onFitToScreen={onFitToScreen}
+						isAnnotationMode={isAnnotationMode}
+						onAnnotationModeChange={setAnnotationMode}
 					/>
-					<ColumnSectionLabelBar
-						collapsedColumnBlocks={collapsedColumnBlocks}
-						totalCols={gridSize.cols}
-						containerRef={labelBarRef}
-					/>
-				</div>
-			</main>
-			<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">
-				<EditorSidebar stageRef={stageRef} labelBarRef={labelBarRef} />
-			</aside>
+					<div className="flex-1 overflow-auto flex flex-col">
+						<ChartCanvas
+							onPaintStart={beginBatch}
+							onPaintEnd={endBatch}
+							onShapeGuideDrawStart={beginBatch}
+							onShapeGuideDrawEnd={endBatch}
+							onShapeGuideEraseStart={beginBatch}
+							onShapeGuideEraseEnd={endBatch}
+							stageRef={stageRef}
+						/>
+						<ColumnSectionLabelBar
+							collapsedColumnBlocks={collapsedColumnBlocks}
+							totalCols={gridSize.cols}
+							containerRef={labelBarRef}
+						/>
+					</div>
+				</main>
+				<aside className="w-72 shrink-0 border-l border-zinc-200 bg-white overflow-y-auto">
+					<EditorSidebar stageRef={stageRef} labelBarRef={labelBarRef} />
+				</aside>
+			</div>
 			<ConfirmDialog
 				open={isResetDialogOpen}
 				title="도안 초기화"
