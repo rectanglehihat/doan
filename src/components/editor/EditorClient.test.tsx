@@ -2,7 +2,22 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useUserStore } from '@/store/useUserStore';
 import { EditorClient } from './EditorClient';
+
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn(), forward: vi.fn(), refresh: vi.fn() })),
+}));
+
+vi.mock('@supabase/ssr', () => ({
+  createBrowserClient: vi.fn(() => ({
+    auth: {
+      signInWithOAuth: vi.fn(),
+      signOut: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+    },
+  })),
+}));
 
 // Konva 기반 컴포넌트는 jsdom에서 렌더링 불가 → mock으로 대체
 vi.mock('@/components/editor/ChartCanvas', () => ({
@@ -20,6 +35,7 @@ vi.mock('@/components/editor/LoadDialog', () => ({
 beforeEach(() => {
   useChartStore.getState().reset();
   useUIStore.getState().reset();
+  useUserStore.getState().reset();
 });
 
 describe('EditorClient', () => {

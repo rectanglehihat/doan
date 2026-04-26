@@ -9,6 +9,7 @@ import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
 import { useEditorActions } from '@/hooks/useEditorActions';
+import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/store/useUIStore';
 import { useChartStore } from '@/store/useChartStore';
 
@@ -30,6 +31,7 @@ export function EditorClient() {
 	} = useEditorActions();
 	const isAnnotationMode = useUIStore((state) => state.isAnnotationMode);
 	const setAnnotationMode = useUIStore((state) => state.setAnnotationMode);
+	const { signOut } = useAuth();
 
 	return (
 		<div className="flex h-screen overflow-hidden bg-zinc-100">
@@ -56,6 +58,7 @@ export function EditorClient() {
 					onFitToScreen={onFitToScreen}
 					isAnnotationMode={isAnnotationMode}
 					onAnnotationModeChange={setAnnotationMode}
+					onSignOut={signOut}
 				/>
 				<div className="flex-1 overflow-auto flex flex-col">
 					<ChartCanvas

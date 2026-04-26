@@ -33,7 +33,20 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   })
 
   // getSession()은 캐시된 값을 반환하므로, 세션 갱신에는 반드시 getUser() 사용
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { pathname } = request.nextUrl
+
+  const redirectTo = (dest: string) => {
+    const url = request.nextUrl.clone()
+    url.pathname = dest
+    return NextResponse.redirect(url)
+  }
+
+  if (!user && pathname === '/') return redirectTo('/login')
+  if (user && pathname === '/login') return redirectTo('/')
 
   return supabaseResponse
 }
