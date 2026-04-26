@@ -229,12 +229,12 @@ export function EditorSidebar({ stageRef, labelBarRef }: EditorSidebarProps) {
 		[setMaterials],
 	);
 
-	const handleSaveClick = useCallback(() => {
+	const handleSaveClick = useCallback(async () => {
 		setSaveError(null);
 		if (savedTimerRef.current !== null) {
 			clearTimeout(savedTimerRef.current);
 		}
-		const result = saveCurrentPattern(patternTitle);
+		const result = await saveCurrentPattern(patternTitle);
 		if (result.ok) {
 			setIsSaved(true);
 			savedTimerRef.current = setTimeout(() => {

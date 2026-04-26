@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { useChartStore } from '@/store/useChartStore';
 import { useUIStore } from '@/store/useUIStore';
+import { useUserStore } from '@/store/useUserStore';
 import {
-	loadAllPatterns,
-	savePattern,
-	deletePattern as deletePatternFromStorage,
-	loadPattern as loadPatternFromStorage,
-} from '@/lib/utils/local-storage-service';
-import type { StorageResult } from '@/lib/utils/local-storage-service';
+	fetchPatterns,
+	savePattern as savePatternApi,
+	deletePattern as deletePatternApi,
+} from '@/lib/api/patterns-api';
+import type { ApiResult } from '@/lib/api/patterns-api';
+import { migrateLocalPatternsToCloud } from '@/lib/utils/migrate-to-cloud';
 import type { SavedPatternSnapshot } from '@/types/knitting';
 
 const DEBOUNCE_MS = 300;
@@ -17,6 +19,10 @@ const DEBOUNCE_MS = 300;
 export function usePatterns() {
 	const [patterns, setPatterns] = useState<SavedPatternSnapshot[]>([]);
 	const [isAutoSaving, setIsAutoSaving] = useState(false);
+
+	const user = useUserStore((s) => s.user);
+	const userRef = useRef<User | null>(null);
+	userRef.current = user;
 
 	const cells = useChartStore((s) => s.cells);
 	const gridSize = useChartStore((s) => s.gridSize);
@@ -43,19 +49,28 @@ export function usePatterns() {
 	const currentPatternIdRef = useRef<string | null>(null);
 	currentPatternIdRef.current = currentPatternId;
 
-	const refreshPatterns = useCallback(() => {
-		const result = loadAllPatterns();
-		if (result.ok) {
-			setPatterns(result.data);
-		}
+	const refreshPatterns = useCallback(async (): Promise<void> => {
+		const currentUser = userRef.current;
+		if (currentUser === null) return;
+		const result = await fetchPatterns(currentUser.id);
+		if (result.ok) setPatterns(result.data);
 	}, []);
 
+	// 사용자 변경 감지: 처음 로그인 시 마이그레이션 후 패턴 로드
+	const prevUserIdRef = useRef<string | null>(null);
 	useEffect(() => {
-		refreshPatterns();
-	}, [refreshPatterns]);
+		if (user === null) return;
+		if (prevUserIdRef.current === user.id) return;
+		prevUserIdRef.current = user.id;
+
+		migrateLocalPatternsToCloud(user.id).then(() => refreshPatterns());
+	}, [user, refreshPatterns]);
 
 	const saveCurrentPattern = useCallback(
-		(title: string): StorageResult<void> => {
+		async (title: string): Promise<ApiResult<void>> => {
+			const currentUser = userRef.current;
+			if (currentUser === null) return { ok: false, error: 'unauthenticated' };
+
 			const id = currentPatternIdRef.current ?? crypto.randomUUID();
 			const snapshot: SavedPatternSnapshot = {
 				id,
@@ -75,22 +90,36 @@ export function usePatterns() {
 				materials,
 			};
 
-			const result = savePattern(snapshot);
+			const result = await savePatternApi(snapshot, currentUser.id);
 			if (result.ok) {
 				setCurrentPatternId(id);
-				refreshPatterns();
+				await refreshPatterns();
 			}
 			return result;
 		},
-		[cells, gridSize, patternType, collapsedBlocks, collapsedColumnBlocks, rowAnnotations, rangeAnnotations, columnAnnotations, shapeGuide, rotationalMode, difficulty, materials, refreshPatterns, setCurrentPatternId],
+		[
+			cells,
+			gridSize,
+			patternType,
+			collapsedBlocks,
+			collapsedColumnBlocks,
+			rowAnnotations,
+			rangeAnnotations,
+			columnAnnotations,
+			shapeGuide,
+			rotationalMode,
+			difficulty,
+			materials,
+			refreshPatterns,
+			setCurrentPatternId,
+		],
 	);
 
 	const loadPattern = useCallback(
 		(id: string): void => {
-			const result = loadPatternFromStorage(id);
-			if (!result.ok) return;
+			const snapshot = patterns.find((p) => p.id === id);
+			if (!snapshot) return;
 
-			const snapshot = result.data;
 			restoreSnapshot(
 				snapshot.cells,
 				snapshot.gridSize,
@@ -109,7 +138,7 @@ export function usePatterns() {
 			setCurrentPatternId(snapshot.id);
 			triggerHistoryClear();
 		},
-		[restoreSnapshot, setShapeGuide, setRotationalMode, setCurrentPatternId, triggerHistoryClear],
+		[patterns, restoreSnapshot, setShapeGuide, setRotationalMode, setCurrentPatternId, triggerHistoryClear],
 	);
 
 	const newPattern = useCallback(() => {
@@ -121,13 +150,11 @@ export function usePatterns() {
 	}, [resetChart, setShapeGuide, setRotationalMode, setCurrentPatternId, triggerHistoryClear]);
 
 	const deletePattern = useCallback(
-		(id: string): StorageResult<void> => {
-			const result = deletePatternFromStorage(id);
+		async (id: string): Promise<ApiResult<void>> => {
+			const result = await deletePatternApi(id);
 			if (result.ok) {
-				if (currentPatternIdRef.current === id) {
-					setCurrentPatternId(null);
-				}
-				refreshPatterns();
+				if (currentPatternIdRef.current === id) setCurrentPatternId(null);
+				await refreshPatterns();
 			}
 			return result;
 		},
@@ -145,9 +172,10 @@ export function usePatterns() {
 
 		setIsAutoSaving(true);
 
-		debounceTimerRef.current = setTimeout(() => {
+		debounceTimerRef.current = setTimeout(async () => {
 			const id = currentPatternIdRef.current;
-			if (id === null) {
+			const currentUser = userRef.current;
+			if (id === null || currentUser === null) {
 				setIsAutoSaving(false);
 				return;
 			}
@@ -170,8 +198,7 @@ export function usePatterns() {
 				materials,
 			};
 
-			savePattern(snapshot);
-			refreshPatterns();
+			await savePatternApi(snapshot, currentUser.id);
 			setIsAutoSaving(false);
 		}, DEBOUNCE_MS);
 

@@ -14,9 +14,9 @@ const mockUsePatterns = vi.mocked(usePatterns);
 function setupMockUsePatterns(overrides: Partial<ReturnType<typeof usePatterns>> = {}) {
 	mockUsePatterns.mockReturnValue({
 		patterns: [],
-		saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+		saveCurrentPattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 		loadPattern: vi.fn(),
-		deletePattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+		deletePattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 		newPattern: vi.fn(),
 		refreshPatterns: vi.fn(),
 		isAutoSaving: false,
@@ -65,7 +65,7 @@ describe('EditorSidebar', () => {
 	});
 
 	it('저장 버튼 클릭 시 saveCurrentPattern을 호출한다', async () => {
-		const mockSave = vi.fn().mockReturnValue({ ok: true, data: undefined });
+		const mockSave = vi.fn().mockResolvedValue({ ok: true, data: undefined });
 		setupMockUsePatterns({ saveCurrentPattern: mockSave });
 
 		render(<EditorSidebar />);
@@ -78,7 +78,7 @@ describe('EditorSidebar', () => {
 	it('저장 성공 시 newPattern을 호출하지 않는다', async () => {
 		const mockNew = vi.fn();
 		setupMockUsePatterns({
-			saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+			saveCurrentPattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 			newPattern: mockNew,
 		});
 
@@ -91,7 +91,7 @@ describe('EditorSidebar', () => {
 
 	it('limit_reached 에러 시 에러 메시지를 표시한다', async () => {
 		setupMockUsePatterns({
-			saveCurrentPattern: vi.fn().mockReturnValue({ ok: false, error: 'limit_reached' }),
+			saveCurrentPattern: vi.fn().mockResolvedValue({ ok: false, error: 'limit_reached' }),
 		});
 
 		render(<EditorSidebar />);
@@ -103,7 +103,7 @@ describe('EditorSidebar', () => {
 
 	it('limit_reached 에러 표시 중 패턴이 로드되면 에러 메시지가 사라진다', async () => {
 		setupMockUsePatterns({
-			saveCurrentPattern: vi.fn().mockReturnValue({ ok: false, error: 'limit_reached' }),
+			saveCurrentPattern: vi.fn().mockResolvedValue({ ok: false, error: 'limit_reached' }),
 			currentPatternId: null,
 		});
 
@@ -125,7 +125,7 @@ describe('EditorSidebar', () => {
 
 		it('저장 버튼 클릭 성공 시 "저장됨" 텍스트가 표시된다', async () => {
 			setupMockUsePatterns({
-				saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+				saveCurrentPattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 			});
 
 			render(<EditorSidebar />);
@@ -145,7 +145,7 @@ describe('EditorSidebar', () => {
 
 		it('저장됨 텍스트는 2초 후에 사라진다', async () => {
 			setupMockUsePatterns({
-				saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+				saveCurrentPattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 			});
 
 			render(<EditorSidebar />);
@@ -153,7 +153,7 @@ describe('EditorSidebar', () => {
 
 			vi.useFakeTimers();
 
-			act(() => {
+			await act(async () => {
 				fireEvent.click(screen.getByRole('button', { name: /저장/ }));
 			});
 
@@ -169,8 +169,8 @@ describe('EditorSidebar', () => {
 		it('저장됨 상태에서 에러가 발생하면 에러 메시지만 표시된다', async () => {
 			// 첫 번째 저장은 성공, 두 번째 저장은 실패하는 시나리오
 			const mockSave = vi.fn()
-				.mockReturnValueOnce({ ok: true, data: undefined })
-				.mockReturnValueOnce({ ok: false, error: 'limit_reached' });
+				.mockResolvedValueOnce({ ok: true, data: undefined })
+				.mockResolvedValueOnce({ ok: false, error: 'limit_reached' });
 
 			setupMockUsePatterns({ saveCurrentPattern: mockSave });
 

@@ -37,9 +37,9 @@ function makeSnapshot(overrides: Partial<SavedPatternSnapshot> = {}): SavedPatte
 function setupMockUsePatterns(overrides: Partial<ReturnType<typeof usePatterns>> = {}) {
 	mockUsePatterns.mockReturnValue({
 		patterns: [],
-		saveCurrentPattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+		saveCurrentPattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 		loadPattern: vi.fn(),
-		deletePattern: vi.fn().mockReturnValue({ ok: true, data: undefined }),
+		deletePattern: vi.fn().mockResolvedValue({ ok: true, data: undefined }),
 		newPattern: vi.fn(),
 		refreshPatterns: vi.fn(),
 		isAutoSaving: false,
@@ -211,7 +211,7 @@ describe('LoadDialog', () => {
 
 	describe('삭제 동작', () => {
 		it('삭제 버튼 클릭 시 deletePattern을 호출한다', async () => {
-			const mockDelete = vi.fn().mockReturnValue({ ok: true, data: undefined });
+			const mockDelete = vi.fn().mockResolvedValue({ ok: true, data: undefined });
 			setupMockUsePatterns({
 				patterns: [makeSnapshot({ id: 'del-id', title: '삭제할 도안' })],
 				deletePattern: mockDelete,
@@ -226,7 +226,7 @@ describe('LoadDialog', () => {
 		});
 
 		it('삭제 후 다이얼로그가 닫히지 않는다', async () => {
-			const mockDelete = vi.fn().mockReturnValue({ ok: true, data: undefined });
+			const mockDelete = vi.fn().mockResolvedValue({ ok: true, data: undefined });
 			setupMockUsePatterns({
 				patterns: [makeSnapshot({ id: 'del-id' })],
 				deletePattern: mockDelete,
@@ -241,7 +241,7 @@ describe('LoadDialog', () => {
 		});
 
 		it('여러 패턴 중 특정 항목의 삭제 버튼 클릭 시 해당 id만 전달된다', async () => {
-			const mockDelete = vi.fn().mockReturnValue({ ok: true, data: undefined });
+			const mockDelete = vi.fn().mockResolvedValue({ ok: true, data: undefined });
 			setupMockUsePatterns({
 				patterns: [
 					makeSnapshot({ id: 'id-1', title: '도안 A' }),
