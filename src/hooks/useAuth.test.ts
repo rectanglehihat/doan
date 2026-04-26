@@ -24,6 +24,7 @@ const mockSignInWithOAuth = vi.fn();
 const mockSignOut = vi.fn();
 const mockUnsubscribe = vi.fn();
 const mockOnAuthStateChange = vi.fn();
+const mockGetSession = vi.fn();
 
 // ────────────────────────────────────────────────────────────────────────────
 // beforeEach: 스토어 초기화 + mock 재설정
@@ -40,6 +41,7 @@ beforeEach(async () => {
   mockOnAuthStateChange.mockReturnValue({
     data: { subscription: { unsubscribe: mockUnsubscribe } },
   });
+  mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
 
   const { createBrowserClient } = await import('@supabase/ssr');
   vi.mocked(createBrowserClient).mockReturnValue({
@@ -47,6 +49,7 @@ beforeEach(async () => {
       signInWithOAuth: mockSignInWithOAuth,
       signOut: mockSignOut,
       onAuthStateChange: mockOnAuthStateChange,
+      getSession: mockGetSession,
     },
   } as ReturnType<typeof createBrowserClient>);
 
@@ -217,6 +220,58 @@ describe('useAuth', () => {
     await waitFor(() => {
       expect(useUserStore.getState().user).toBeNull();
       expect(useUserStore.getState().isLoading).toBe(false);
+    });
+  });
+
+  describe('getSession', () => {
+    const sessionMockUser = {
+      id: 'user-456',
+      email: 'session@example.com',
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: '2026-01-01T00:00:00.000Z',
+    };
+
+    it('세션이 있으면 useUserStore에 user가 설정되고 isLoading이 false가 된다', async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: { user: sessionMockUser } as Session },
+        error: null,
+      });
+
+      const { useAuth } = await import('./useAuth');
+      const { result } = renderHook(() => useAuth());
+
+      await act(async () => {
+        await result.current.getSession();
+      });
+
+      await waitFor(() => {
+        expect(useUserStore.getState().user).toEqual(sessionMockUser);
+        expect(useUserStore.getState().isLoading).toBe(false);
+      });
+    });
+
+    it('세션이 없으면 user가 null이고 isLoading이 false가 된다', async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
+
+      // 사전에 user를 설정해 두어 clearUser 효과를 검증
+      useUserStore.getState().setUser(sessionMockUser);
+
+      const { useAuth } = await import('./useAuth');
+      const { result } = renderHook(() => useAuth());
+
+      await act(async () => {
+        await result.current.getSession();
+      });
+
+      await waitFor(() => {
+        expect(useUserStore.getState().user).toBeNull();
+        expect(useUserStore.getState().isLoading).toBe(false);
+      });
     });
   });
 });
