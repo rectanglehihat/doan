@@ -146,12 +146,12 @@
 
 ### 2-3. 인증 라우트 & 미들웨어
 
-- [ ] 인증 콜백 라우트 (`src/app/auth/callback/route.ts`)
+- [x] 인증 콜백 라우트 (`src/app/auth/callback/route.ts`)
   - OAuth 인가 코드를 세션으로 교환 (`exchangeCodeForSession`)
   - 성공 시 `/` 리다이렉트, 실패 시 `/login?error=...` 리다이렉트
-- [ ] 로그아웃 라우트 (`src/app/auth/signout/route.ts`)
+- [x] 로그아웃 라우트 (`src/app/auth/signout/route.ts`)
   - `supabase.auth.signOut()` 후 `/login` 리다이렉트
-- [ ] Next.js 라우팅 프록시 (`src/proxy.ts`) 업데이트 — 기존 CSP 핸들러에 Supabase 세션 갱신 통합
+- [x] Next.js 라우팅 프록시 (`src/proxy.ts`) 업데이트 — 기존 CSP 핸들러에 Supabase 세션 갱신 통합
   - 모든 요청에서 `updateSession` 호출
   - 미인증 사용자의 `/` 접근 시 `/login` 리다이렉트
   - 인증된 사용자의 `/login` 접근 시 `/` 리다이렉트

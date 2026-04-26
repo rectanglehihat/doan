@@ -19,8 +19,12 @@ function buildCspHeader(nonce: string, isDev: boolean): string {
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  // Supabase 세션 갱신 — 쿠키 포함된 응답 반환
   const sessionResponse = await updateSession(request)
+
+  // 리다이렉트 응답(3xx)에는 CSP 헤더 불필요
+  if (sessionResponse.status >= 300 && sessionResponse.status < 400) {
+    return sessionResponse
+  }
 
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
   const isDev = process.env.NODE_ENV === 'development'
