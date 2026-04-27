@@ -43,7 +43,7 @@ describe('Navbar', () => {
 	it('앱 이름을 렌더링한다', () => {
 		useUserStore.setState({ user: null, isLoading: false });
 		render(<Navbar />);
-		expect(screen.getByText('도안')).toBeInTheDocument();
+		expect(screen.getByText('DOAN')).toBeInTheDocument();
 	});
 
 	describe('비로그인 상태', () => {

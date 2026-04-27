@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'WebApplication',
-	name: '도안 - 뜨개 도안 에디터',
+	name: 'DOAN - 뜨개 도안 에디터',
 	description: DESCRIPTION,
 	url: SITE_URL,
 	applicationCategory: 'UtilitiesApplication',
@@ -29,14 +29,14 @@ const jsonLd = {
 		priceCurrency: 'KRW',
 	},
 	keywords:
-		'뜨개질 도안, 뜨개 도안, 도안 에디터, 뜨개 에디터, 뜨개 도안 만들기, 뜨개 도안 에디터, 대바늘 도안, 코바늘 도안, 뜨개 차트, 도안 만들기, 무료 도안, 무료 도안 만들기, 도안 pdf',
+		'뜨개질 도안, 뜨개 도안, 도안 에디터, 뜨개 에디터, 뜨개 도안 만들기, 뜨개 도안 에디터, 대바늘 도안, 코바늘 도안, 뜨개 차트, 도안 만들기, 무료 도안, 무료 도안 만들기, 도안 pdf, 무료 뜨개 도안, 무료 뜨개질 도안 만들기, 뜨개 도안 만들기, 대바늘 무료 도안, 코바늘 무료 도안',
 };
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_URL),
 	title: {
-		default: '도안 - 뜨개 도안 에디터',
-		template: '%s | 도안',
+		default: 'DOAN - 뜨개 도안 에디터',
+		template: '%s | DOAN',
 	},
 	description: DESCRIPTION,
 	keywords: [
@@ -59,17 +59,17 @@ export const metadata: Metadata = {
 		canonical: SITE_URL,
 	},
 	openGraph: {
-		title: '도안 - 뜨개 도안 에디터',
+		title: 'DOAN - 뜨개 도안 에디터',
 		description: DESCRIPTION,
 		url: SITE_URL,
-		siteName: '도안',
+		siteName: 'DOAN',
 		locale: 'ko_KR',
 		type: 'website',
 		images: [{ url: '/og-image.png', width: 1200, height: 630, alt: '도안 뜨개 도안 에디터' }],
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: '도안 - 뜨개 도안 에디터',
+		title: 'DOAN - 뜨개 도안 에디터',
 		description: DESCRIPTION,
 		images: ['/og-image.png'],
 	},

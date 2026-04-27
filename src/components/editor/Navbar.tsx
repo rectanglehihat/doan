@@ -17,7 +17,7 @@ export function Navbar() {
 
 	return (
 		<header className="flex items-center justify-between px-4 h-10 bg-zinc-50 border-b border-zinc-200 shrink-0">
-			<span className="text-sm font-medium text-zinc-900">도안</span>
+			<span className="text-sm font-semibold text-zinc-900">DOAN</span>
 			<div className="flex items-center gap-3">
 				{!isLoading && !user && (
 					<>
@@ -31,15 +31,29 @@ export function Navbar() {
 							className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-400"
 							aria-hidden="true"
 						>
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-								<circle cx="12" cy="8" r="4" />
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+							>
+								<circle
+									cx="12"
+									cy="8"
+									r="4"
+								/>
 								<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
 							</svg>
 						</div>
 					</>
 				)}
 				{!isLoading && user && (
-					<UserMenu user={user} onSignOut={handleSignOut} />
+					<UserMenu
+						user={user}
+						onSignOut={handleSignOut}
+					/>
 				)}
 			</div>
 		</header>
