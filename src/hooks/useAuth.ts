@@ -59,8 +59,9 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   const signOut = useCallback(async () => {
-    await fetch('/auth/signout', { method: 'POST' });
-    router.push('/login');
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
   }, [router]);
 
   const getSession = useCallback(async () => {
