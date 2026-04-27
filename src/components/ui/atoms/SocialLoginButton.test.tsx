@@ -13,14 +13,6 @@ describe('SocialLoginButton', () => {
       ).toBeInTheDocument();
     });
 
-    it('provider=kakao일 때 "카카오로 계속하기" 텍스트를 렌더링한다', () => {
-      const provider: AuthProvider = 'kakao';
-      render(<SocialLoginButton provider={provider} />);
-      expect(
-        screen.getByRole('button', { name: /카카오로 계속하기/i }),
-      ).toBeInTheDocument();
-    });
-
     it('button role을 가진다', () => {
       render(<SocialLoginButton provider="google" />);
       expect(screen.getByRole('button')).toBeInTheDocument();

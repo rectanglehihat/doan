@@ -6,14 +6,11 @@ import { cn } from '@/lib/utils/cn';
 
 const PROVIDER_LABEL: Record<AuthProvider, string> = {
   google: 'Google로 계속하기',
-  kakao: '카카오로 계속하기',
 };
 
 const providerClasses: Record<AuthProvider, string> = {
   google:
     'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100',
-  kakao:
-    'bg-yellow-300 text-gray-900 border border-yellow-400 hover:bg-yellow-400 active:bg-yellow-500',
 };
 
 const GoogleIcon = () => (
@@ -44,27 +41,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const KakaoIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 18 18"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M9 1C4.582 1 1 3.79 1 7.22c0 2.163 1.418 4.065 3.573 5.17l-.91 3.393c-.08.298.271.534.533.356l3.988-2.66A9.7 9.7 0 0 0 9 13.44c4.418 0 8-2.79 8-6.22C17 3.79 13.418 1 9 1z"
-      fill="#3C1E1E"
-    />
-  </svg>
-);
-
 const PROVIDER_ICON: Record<AuthProvider, () => React.ReactElement> = {
   google: GoogleIcon,
-  kakao: KakaoIcon,
 };
 
 const base =

@@ -93,23 +93,6 @@ describe('useAuth', () => {
     });
   });
 
-  it('signInWithKakao 호출 시 Kakao OAuth signInWithOAuth를 호출한다', async () => {
-    const { useAuth } = await import('./useAuth');
-    const { result } = renderHook(() => useAuth());
-
-    await act(async () => {
-      await result.current.signInWithKakao();
-    });
-
-    expect(mockSignInWithOAuth).toHaveBeenCalledTimes(1);
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith({
-      provider: 'kakao',
-      options: {
-        redirectTo: 'http://localhost:3000/auth/callback',
-      },
-    });
-  });
-
   it('signOut 호출 시 supabase.auth.signOut을 호출하고 /로 이동한다', async () => {
     const { useAuth } = await import('./useAuth');
     const { result } = renderHook(() => useAuth());

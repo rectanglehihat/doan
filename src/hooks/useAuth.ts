@@ -8,7 +8,6 @@ import { useUserStore } from '@/store/useUserStore';
 
 interface UseAuthReturn {
   signInWithGoogle: () => Promise<void>;
-  signInWithKakao: () => Promise<void>;
   signOut: () => Promise<void>;
   getSession: () => Promise<void>;
   isLoading: boolean;
@@ -48,16 +47,6 @@ export function useAuth(): UseAuthReturn {
     });
   }, []);
 
-  const signInWithKakao = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: 'kakao',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-  }, []);
-
   const signOut = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -75,7 +64,6 @@ export function useAuth(): UseAuthReturn {
 
   return {
     signInWithGoogle,
-    signInWithKakao,
     signOut,
     getSession,
     isLoading,
