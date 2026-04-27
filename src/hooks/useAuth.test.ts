@@ -51,7 +51,7 @@ beforeEach(async () => {
       onAuthStateChange: mockOnAuthStateChange,
       getSession: mockGetSession,
     },
-  } as ReturnType<typeof createClient>);
+  } as unknown as ReturnType<typeof createClient>);
 
   const { useRouter } = await import('next/navigation');
   vi.mocked(useRouter).mockReturnValue({

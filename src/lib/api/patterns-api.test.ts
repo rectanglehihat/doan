@@ -111,7 +111,7 @@ describe('fetchPatterns', () => {
 	it('userId로 패턴 목록을 DB Row에서 SavedPatternSnapshot으로 변환하여 반환한다', async () => {
 		const row = makeDbRow({ id: 'snap-id-1', title: '테스트 도안', user_id: 'user-123' });
 		const builder = makeQueryBuilder({ data: [row] });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const result = await fetchPatterns('user-123');
 
@@ -143,7 +143,7 @@ describe('fetchPatterns', () => {
 			column_annotations: [],
 		});
 		const builder = makeQueryBuilder({ data: [row] });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const result = await fetchPatterns('user-123');
 
@@ -162,7 +162,7 @@ describe('fetchPatterns', () => {
 
 	it('Supabase 에러 시 { ok: false, error: 메시지 }를 반환한다', async () => {
 		const builder = makeQueryBuilder({ data: null, error: { message: 'DB connection failed' } });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const result = await fetchPatterns('user-123');
 
@@ -174,7 +174,7 @@ describe('fetchPatterns', () => {
 
 	it('패턴이 없으면 빈 배열을 반환한다', async () => {
 		const builder = makeQueryBuilder({ data: [] });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const result = await fetchPatterns('user-123');
 
@@ -187,7 +187,7 @@ describe('fetchPatterns', () => {
 	it('user_id 파라미터로 eq 필터를 적용하고 saved_at 내림차순으로 정렬한다', async () => {
 		const builder = makeQueryBuilder({ data: [] });
 		const client = makeClient(builder);
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		await fetchPatterns('user-abc');
 
@@ -200,7 +200,7 @@ describe('fetchPatterns', () => {
 describe('savePattern', () => {
 	it('성공 시 { ok: true, data: undefined }를 반환한다', async () => {
 		const builder = makeQueryBuilder({ data: null, error: null });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const snapshot = makeSnapshot();
 		const result = await savePattern(snapshot, 'user-123');
@@ -210,7 +210,7 @@ describe('savePattern', () => {
 
 	it('Supabase 에러 시 { ok: false, error: 메시지 }를 반환한다', async () => {
 		const builder = makeQueryBuilder({ data: null, error: { message: 'upsert failed' } });
-		mockCreateClient.mockReturnValue(makeClient(builder) as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(makeClient(builder) as unknown as ReturnType<typeof createClient>);
 
 		const snapshot = makeSnapshot();
 		const result = await savePattern(snapshot, 'user-123');
@@ -224,7 +224,7 @@ describe('savePattern', () => {
 	it('upsert 호출 시 userId가 user_id로 포함된다', async () => {
 		const builder = makeQueryBuilder({ data: null, error: null });
 		const client = makeClient(builder);
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		const snapshot = makeSnapshot({ id: 'snap-id-1' });
 		await savePattern(snapshot, 'user-xyz');
@@ -238,7 +238,7 @@ describe('savePattern', () => {
 	it('upsert 호출 시 snapshot의 camelCase 필드가 snake_case DB Row로 변환된다', async () => {
 		const builder = makeQueryBuilder({ data: null, error: null });
 		const client = makeClient(builder);
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		const snapshot = makeSnapshot({
 			id: 'snap-id-1',
@@ -277,7 +277,7 @@ describe('deletePattern', () => {
 			delete: vi.fn().mockReturnThis(),
 		};
 		const client = { from: vi.fn().mockReturnValue(builder) };
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		const deleteResult = await deletePattern('snap-id-1');
 
@@ -292,7 +292,7 @@ describe('deletePattern', () => {
 			delete: vi.fn().mockReturnThis(),
 		};
 		const client = { from: vi.fn().mockReturnValue(builder) };
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		const deleteResult = await deletePattern('snap-id-1');
 
@@ -310,7 +310,7 @@ describe('deletePattern', () => {
 			delete: vi.fn().mockReturnThis(),
 		};
 		const client = { from: vi.fn().mockReturnValue(builder) };
-		mockCreateClient.mockReturnValue(client as ReturnType<typeof createClient>);
+		mockCreateClient.mockReturnValue(client as unknown as ReturnType<typeof createClient>);
 
 		await deletePattern('target-id');
 
