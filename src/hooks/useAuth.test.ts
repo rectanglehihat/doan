@@ -7,8 +7,8 @@ import { useUserStore } from '@/store/useUserStore';
 // 모듈 모킹
 // ────────────────────────────────────────────────────────────────────────────
 
-vi.mock('@supabase/ssr', () => ({
-  createBrowserClient: vi.fn(),
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -43,15 +43,15 @@ beforeEach(async () => {
   });
   mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
 
-  const { createBrowserClient } = await import('@supabase/ssr');
-  vi.mocked(createBrowserClient).mockReturnValue({
+  const { createClient } = await import('@/lib/supabase/client');
+  vi.mocked(createClient).mockReturnValue({
     auth: {
       signInWithOAuth: mockSignInWithOAuth,
       signOut: mockSignOut,
       onAuthStateChange: mockOnAuthStateChange,
       getSession: mockGetSession,
     },
-  } as ReturnType<typeof createBrowserClient>);
+  } as ReturnType<typeof createClient>);
 
   const { useRouter } = await import('next/navigation');
   vi.mocked(useRouter).mockReturnValue({
@@ -69,9 +69,6 @@ beforeEach(async () => {
     writable: true,
     configurable: true,
   });
-
-  // global fetch mock
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
 });
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -113,7 +110,7 @@ describe('useAuth', () => {
     });
   });
 
-  it('signOut 호출 시 POST /auth/signout을 fetch하고 /login으로 이동한다', async () => {
+  it('signOut 호출 시 supabase.auth.signOut을 호출하고 /로 이동한다', async () => {
     const { useAuth } = await import('./useAuth');
     const { result } = renderHook(() => useAuth());
 
@@ -121,10 +118,8 @@ describe('useAuth', () => {
       await result.current.signOut();
     });
 
-    expect(vi.mocked(fetch)).toHaveBeenCalledWith('/auth/signout', {
-      method: 'POST',
-    });
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith('/');
   });
 
   it('마운트 시 onAuthStateChange 리스너가 등록된다', async () => {
