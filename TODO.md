@@ -186,23 +186,24 @@
 
 ### 2-6. DB 스키마 & RLS
 
-- [ ] `patterns` 테이블 SQL 스키마 (`supabase/migrations/001_create_patterns.sql`)
+- [x] `patterns` 테이블 SQL 스키마 (`supabase/migrations/20260416000000_create_patterns.sql`)
   - `id uuid primary key default gen_random_uuid()`
   - `user_id uuid references auth.users not null`
   - `title text not null`
-  - `data jsonb not null` — ChartPattern 직렬화
-  - `created_at / updated_at timestamptz`
-- [ ] RLS 정책 설정 — SELECT / INSERT / UPDATE / DELETE 모두 `auth.uid() = user_id`
-- [ ] Supabase 타입 자동 생성 — `supabase gen types typescript --local > src/types/supabase.ts`
+  - `cells / collapsed_blocks / shape_guide / row_annotations 등 jsonb`
+  - `created_at / updated_at / saved_at timestamptz`
+  - `updated_at` 자동 갱신 트리거 (`set_updated_at`)
+- [x] RLS 정책 설정 — SELECT / INSERT / UPDATE / DELETE 모두 `auth.uid() = user_id`
+- [x] Supabase 타입 수동 작성 (`src/types/supabase.ts`) — 마이그레이션 스키마 기반, `Tables` / `TablesInsert` / `TablesUpdate` 헬퍼 타입 포함
 
 ### 2-7. 도안 API & 훅 업데이트
 
-- [ ] `patterns-api.ts` 구현 (`src/lib/api/patterns-api.ts`)
+- [x] `patterns-api.ts` 구현 (`src/lib/api/patterns-api.ts`)
   - `fetchPatterns(userId)` — 목록 조회
   - `savePattern(pattern)` — upsert
   - `deletePattern(id)` — 삭제
-  - 테스트: `patterns-api.test.ts` (MSW 모킹)
-- [ ] `usePatterns` 훅 업데이트 (`src/hooks/usePatterns.ts`) — localStorage → Supabase API 교체
-- [ ] 로컬 → 클라우드 마이그레이션 유틸 (`src/lib/utils/migrate-to-cloud.ts`)
+  - 테스트: `patterns-api.test.ts`
+- [x] `usePatterns` 훅 업데이트 (`src/hooks/usePatterns.ts`) — localStorage → Supabase API 교체
+- [x] 로컬 → 클라우드 마이그레이션 유틸 (`src/lib/utils/migrate-to-cloud.ts`)
   - 로컬스토리지 도안을 Supabase에 일괄 업로드
   - 로그인 직후 자동 실행 (중복 방지 플래그 포함)

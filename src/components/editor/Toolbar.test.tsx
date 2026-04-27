@@ -246,5 +246,5 @@ describe('Toolbar', () => {
 			render(<Toolbar {...propsWithoutFitToScreen} />);
 			expect(screen.queryByRole('button', { name: '화면에 맞추기' })).not.toBeInTheDocument();
 		});
-	});
+		});
 });

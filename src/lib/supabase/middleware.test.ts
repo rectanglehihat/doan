@@ -62,11 +62,10 @@ describe('updateSession', () => {
   })
 
   describe('라우트 보호', () => {
-    it('미인증 사용자가 / 에 접근하면 /login 으로 리다이렉트한다', async () => {
+    it('미인증 사용자가 / 에 접근하면 리다이렉트 없이 접근할 수 있다', async () => {
       const request = new NextRequest('http://localhost:3000/')
       const response = await updateSession(request)
-      expect(response.status).toBe(307)
-      expect(response.headers.get('location')).toBe('http://localhost:3000/login')
+      expect(response.status).not.toBe(307)
     })
 
     it('인증된 사용자가 /login 에 접근하면 / 으로 리다이렉트한다', async () => {

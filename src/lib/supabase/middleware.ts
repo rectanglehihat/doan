@@ -45,7 +45,6 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     return NextResponse.redirect(url)
   }
 
-  if (!user && pathname === '/') return redirectTo('/login')
   if (user && pathname === '/login') return redirectTo('/')
 
   return supabaseResponse
