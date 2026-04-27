@@ -28,7 +28,6 @@ const mockUseAuth = vi.mocked(useAuth);
 beforeEach(() => {
 	mockUseAuth.mockReturnValue({
 		signInWithGoogle: vi.fn(),
-		signInWithKakao: vi.fn(),
 		signOut: vi.fn(),
 		getSession: vi.fn(),
 		isLoading: false,
@@ -88,7 +87,6 @@ describe('Navbar', () => {
 			const mockSignOut = vi.fn();
 			mockUseAuth.mockReturnValue({
 				signInWithGoogle: vi.fn(),
-				signInWithKakao: vi.fn(),
 				signOut: mockSignOut,
 				getSession: vi.fn(),
 				isLoading: false,

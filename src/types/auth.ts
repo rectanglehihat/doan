@@ -2,7 +2,7 @@ import type { User } from '@supabase/supabase-js'
 
 export type { User }
 
-export type AuthProvider = 'google' | 'kakao'
+export type AuthProvider = 'google'
 
 export type AuthError = 'oauth_failed' | 'session_expired' | 'unknown'
 

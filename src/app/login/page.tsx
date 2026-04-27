@@ -23,20 +23,13 @@ function LoginForm() {
 	const searchParams = useSearchParams();
 	const authError = parseAuthError(searchParams.get('error'));
 	const [googleLoading, setGoogleLoading] = useState(false);
-	const [kakaoLoading, setKakaoLoading] = useState(false);
-	const { signInWithGoogle, signInWithKakao } = useAuth();
+	const { signInWithGoogle } = useAuth();
 
 	const handleGoogleSignIn = useCallback(async () => {
 		setGoogleLoading(true);
 		await signInWithGoogle();
 		setGoogleLoading(false);
 	}, [signInWithGoogle]);
-
-	const handleKakaoSignIn = useCallback(async () => {
-		setKakaoLoading(true);
-		await signInWithKakao();
-		setKakaoLoading(false);
-	}, [signInWithKakao]);
 
 	return (
 		<>
@@ -48,11 +41,6 @@ function LoginForm() {
 					provider="google"
 					isLoading={googleLoading}
 					onClick={handleGoogleSignIn}
-				/>
-				<SocialLoginButton
-					provider="kakao"
-					isLoading={kakaoLoading}
-					onClick={handleKakaoSignIn}
 				/>
 			</div>
 		</>
