@@ -18,7 +18,7 @@ export function Navbar() {
 	return (
 		<header className="flex items-center px-4 h-10 bg-zinc-50 border-b border-zinc-200 shrink-0">
 			<div className="flex-1">
-				<span className="text-sm font-semibold text-zinc-900">DOAN</span>
+				<Link href="/" className="text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors">DOAN</Link>
 			</div>
 			<div className="flex-1 flex justify-center">
 				<Link
