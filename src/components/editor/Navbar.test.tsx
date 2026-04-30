@@ -45,6 +45,18 @@ describe('Navbar', () => {
 		expect(screen.getByText('DOAN')).toBeInTheDocument();
 	});
 
+	it('"도안 만들기" 링크가 렌더링된다', () => {
+		useUserStore.setState({ user: null, isLoading: false });
+		render(<Navbar />);
+		expect(screen.getByRole('link', { name: '도안 만들기' })).toBeInTheDocument();
+	});
+
+	it('"도안 만들기" 링크가 /editor로 연결된다', () => {
+		useUserStore.setState({ user: null, isLoading: false });
+		render(<Navbar />);
+		expect(screen.getByRole('link', { name: '도안 만들기' })).toHaveAttribute('href', '/editor');
+	});
+
 	describe('비로그인 상태', () => {
 		beforeEach(() => {
 			useUserStore.setState({ user: null, isLoading: false });

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { SITE_URL, SITE_DESCRIPTION as DESCRIPTION } from '@/constants/site';
 import { stringifyJsonLd } from '@/lib/utils/json-ld';
+import { Navbar } from '@/components/editor/Navbar';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -102,6 +103,7 @@ export default function RootLayout({
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: stringifyJsonLd(jsonLd) }}
 				/>
+				<Navbar />
 				{children}
 			</body>
 		</html>

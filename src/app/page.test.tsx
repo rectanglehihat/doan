@@ -1,55 +1,16 @@
-import { render, screen, act } from '@testing-library/react';
-import { EditorClient } from '@/components/editor/EditorClient';
-import { useChartStore } from '@/store/useChartStore';
-import { useUIStore } from '@/store/useUIStore';
-import { useUserStore } from '@/store/useUserStore';
+import { render, screen } from '@testing-library/react';
+import Home from './page';
 
-vi.mock('next/dynamic', () => ({
-	default: () => {
-		return function MockKonvaGrid() {
-			return <div data-testid="konva-grid" />;
-		};
-	},
-}));
-
-vi.mock('next/navigation', () => ({
-	useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn(), forward: vi.fn(), refresh: vi.fn() })),
-}));
-
-vi.mock('@supabase/ssr', () => ({
-	createBrowserClient: vi.fn(() => ({
-		auth: {
-			signInWithOAuth: vi.fn(),
-			signOut: vi.fn(),
-			onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
-		},
-	})),
-}));
-
-beforeEach(() => {
-	useChartStore.getState().reset();
-	useUIStore.getState().reset();
-	useUserStore.getState().reset();
-});
-
-describe('EditorPage', () => {
-	it('페이지를 렌더링한다', () => {
-		render(<EditorClient />);
-		// Toolbar가 렌더링됨
-		expect(screen.getByRole('button', { name: /실행 취소/i })).toBeInTheDocument();
+describe('랜딩 페이지', () => {
+	it('히어로 제목이 렌더링된다', () => {
+		render(<Home />);
+		expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
 	});
 
-	it('collapsedBlock이 있어도 페이지가 정상 렌더링된다', () => {
-		act(() => {
-			useChartStore.getState().addCollapsedBlock(2, 5);
-		});
-		render(<EditorClient />);
-		// KonvaGrid mock 환경에서 중략 행 클릭 불가, 기본 렌더링만 확인
-		expect(screen.getByRole('button', { name: /실행 취소/i })).toBeInTheDocument();
-	});
-
-	it('초기 상태에서 collapsedBlocks가 비어있다', () => {
-		render(<EditorClient />);
-		expect(useChartStore.getState().collapsedBlocks).toHaveLength(0);
+	it('"도안 만들기" CTA가 /editor로 연결된다', () => {
+		render(<Home />);
+		const cta = screen.getByRole('link', { name: /도안 만들기/i });
+		expect(cta).toBeInTheDocument();
+		expect(cta).toHaveAttribute('href', '/editor');
 	});
 });
