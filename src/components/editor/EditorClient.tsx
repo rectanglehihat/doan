@@ -5,7 +5,6 @@ import type Konva from 'konva';
 import { ChartCanvas } from '@/components/editor/ChartCanvas';
 import { ColumnSectionLabelBar } from '@/components/editor/ColumnSectionLabelBar';
 import { EditorSidebar } from '@/components/editor/EditorSidebar';
-import { Navbar } from '@/components/editor/Navbar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { ConfirmDialog } from '@/components/ui/molecules/ConfirmDialog';
 import { LoadDialog } from '@/components/editor/LoadDialog';
@@ -33,8 +32,7 @@ export function EditorClient() {
 	const setAnnotationMode = useUIStore((state) => state.setAnnotationMode);
 
 	return (
-		<div className="flex flex-col h-screen overflow-hidden">
-			<Navbar />
+		<div className="flex flex-col flex-1 overflow-hidden">
 			<div className="flex flex-1 overflow-hidden bg-zinc-100">
 				<main className="flex flex-col flex-1 overflow-hidden">
 					<Toolbar

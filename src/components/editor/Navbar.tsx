@@ -16,9 +16,19 @@ export function Navbar() {
 	}, [signOut]);
 
 	return (
-		<header className="flex items-center justify-between px-4 h-10 bg-zinc-50 border-b border-zinc-200 shrink-0">
-			<span className="text-sm font-semibold text-zinc-900">DOAN</span>
-			<div className="flex items-center gap-3">
+		<header className="flex items-center px-4 h-10 bg-zinc-50 border-b border-zinc-200 shrink-0">
+			<div className="flex-1">
+				<span className="text-sm font-semibold text-zinc-900">DOAN</span>
+			</div>
+			<div className="flex-1 flex justify-center">
+				<Link
+					href="/editor"
+					className="text-xs font-semibold tracking-widest text-zinc-500 uppercase hover:text-zinc-900 transition-colors"
+				>
+					도안 만들기
+				</Link>
+			</div>
+			<div className="flex-1 flex justify-end items-center gap-3">
 				{!isLoading && !user && (
 					<>
 						<Link
@@ -59,3 +69,4 @@ export function Navbar() {
 		</header>
 	);
 }
+
