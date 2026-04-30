@@ -18,12 +18,17 @@ export function Navbar() {
 	return (
 		<header className="flex items-center px-4 h-10 bg-zinc-50 border-b border-zinc-200 shrink-0">
 			<div className="flex-1">
-				<Link href="/" className="text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors">DOAN</Link>
+				<Link
+					href="/"
+					className="text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors"
+				>
+					DOAN
+				</Link>
 			</div>
 			<div className="flex-1 flex justify-center">
 				<Link
 					href="/editor"
-					className="text-xs font-semibold tracking-widest text-zinc-500 uppercase hover:text-zinc-900 transition-colors"
+					className="text-sm font-semibold tracking-widest text-zinc-900 uppercase hover:text-zinc-900 transition-colors"
 				>
 					도안 만들기
 				</Link>
@@ -69,4 +74,3 @@ export function Navbar() {
 		</header>
 	);
 }
-
