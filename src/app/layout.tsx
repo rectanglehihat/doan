@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { headers } from 'next/headers';
 import './globals.css';
 import { SITE_URL, SITE_DESCRIPTION as DESCRIPTION } from '@/constants/site';
 import { stringifyJsonLd } from '@/lib/utils/json-ld';
@@ -92,6 +93,8 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const nonce = (await headers()).get('x-nonce') ?? undefined;
+
 	return (
 		<html
 			lang="ko"
@@ -102,6 +105,7 @@ export default async function RootLayout({
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: stringifyJsonLd(jsonLd) }}
+					nonce={nonce}
 					suppressHydrationWarning
 				/>
 				<Navbar />

@@ -7,7 +7,7 @@ function buildCspHeader(nonce: string, isDev: boolean): string {
   return `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''};
-    style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
+    style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https://lh3.googleusercontent.com;
     font-src 'self';
     connect-src 'self' ${supabaseUrl} ${supabaseWss};
@@ -22,16 +22,22 @@ function buildCspHeader(nonce: string, isDev: boolean): string {
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  const sessionResponse = await updateSession(request)
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const isDev = process.env.NODE_ENV === 'development'
+  const cspHeader = buildCspHeader(nonce, isDev)
+
+  // nonce를 Request 헤더로 전달해야 Server Component의 headers()에서 읽을 수 있음
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+
+  const sessionResponse = await updateSession(
+    new NextRequest(request, { headers: requestHeaders }),
+  )
 
   // 리다이렉트 응답(3xx)에는 CSP 헤더 불필요
   if (sessionResponse.status >= 300 && sessionResponse.status < 400) {
     return sessionResponse
   }
-
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-  const isDev = process.env.NODE_ENV === 'development'
-  const cspHeader = buildCspHeader(nonce, isDev)
 
   sessionResponse.headers.set('x-nonce', nonce)
   sessionResponse.headers.set('Content-Security-Policy', cspHeader)
