@@ -94,7 +94,7 @@ jobs:
           ref: main
 
       - name: Pull Vercel Settings
-        run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
