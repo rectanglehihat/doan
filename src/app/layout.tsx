@@ -60,6 +60,8 @@ export const metadata: Metadata = {
 		'코바늘 무료 도안',
 		'대바늘 무료 도안 pdf',
 		'코바늘 무료 도안 pdf',
+		'대바늘 도안 pdf',
+		'코바늘 도안 pdf',
 	],
 	authors: [{ name: 'DOAN' }],
 	creator: 'DOAN',
