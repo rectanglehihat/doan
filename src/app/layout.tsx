@@ -58,6 +58,8 @@ export const metadata: Metadata = {
 		'무료 뜨개질 도안 만들기',
 		'대바늘 무료 도안',
 		'코바늘 무료 도안',
+		'대바늘 무료 도안 pdf',
+		'코바늘 무료 도안 pdf',
 	],
 	authors: [{ name: 'DOAN' }],
 	creator: 'DOAN',
