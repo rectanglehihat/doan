@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { headers } from 'next/headers';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { SITE_URL, SITE_DESCRIPTION as DESCRIPTION } from '@/constants/site';
 import { stringifyJsonLd } from '@/lib/utils/json-ld';
@@ -119,6 +120,7 @@ export default async function RootLayout({
 				/>
 				<Navbar />
 				{children}
+				<SpeedInsights />
 			</body>
 		</html>
 	);
