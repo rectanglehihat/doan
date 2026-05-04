@@ -11,6 +11,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			priority: 1,
 		},
 		{
+			url: `${base}/editor`,
+			lastModified: new Date(),
+			changeFrequency: 'monthly',
+			priority: 0.9,
+		},
+		{
 			url: `${base}/guide`,
 			lastModified: new Date(),
 			changeFrequency: 'monthly',
