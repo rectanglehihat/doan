@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { SITE_URL } from '@/constants/site';
 import { stringifyJsonLd } from '@/lib/utils/json-ld';
@@ -12,34 +13,40 @@ export const metadata: Metadata = {
 	},
 };
 
-const STEPS = [
+type GuideImage = { src: string; alt: string; width: number; height: number };
+
+const STEPS: { step: number; title: string; description: string; image: GuideImage | null }[] = [
 	{
 		step: 1,
 		title: '그리드 크기 설정',
 		description:
 			'오른쪽 사이드바 "그리드 설정"에서 행(단)과 열(코) 수를 입력합니다. 예를 들어 20코 × 30단 도안을 만들려면 열 20, 행 30으로 입력합니다. 셀 크기 슬라이더로 각 칸의 크기를 5px~50px 사이에서 조절할 수 있습니다.',
+		image: { src: '/guide-grid-setup.svg', alt: '그리드 크기 설정 — 열(코)·행(단) 수와 셀 크기를 나타낸 그리드 다이어그램', width: 560, height: 300 },
 	},
 	{
 		step: 2,
 		title: '뜨개 기호 선택',
 		description:
 			'사이드바 기호 팔레트에서 대바늘 또는 코바늘 탭을 선택한 뒤 원하는 기호를 클릭합니다. 기초·기본뜨기·늘리기·줄이기·특수뜨기 카테고리로 정리되어 있습니다.',
+		image: null,
 	},
 	{
 		step: 3,
 		title: '셀에 기호 배치',
 		description:
 			'그리드의 셀을 클릭하거나 드래그해 선택한 기호를 배치합니다. 드래그하면 여러 셀을 한 번에 채울 수 있습니다. 색상 모드로 전환하면 기호 대신 배경 색상을 칠할 수 있습니다.',
+		image: { src: '/guide-symbol-placement.svg', alt: '기호 팔레트에서 기호를 선택해 그리드 셀에 배치하는 과정 다이어그램', width: 560, height: 300 },
 	},
 	{
 		step: 4,
 		title: 'PDF로 출력',
 		description:
 			'도안이 완성되면 사이드바 하단 "PDF 내보내기" 버튼을 클릭합니다. 페이지 크기(A4, B4, US Letter 등)와 방향(가로/세로)을 선택할 수 있으며, 도안 제목·난이도·재료 정보가 PDF에 함께 포함됩니다.',
+		image: null,
 	},
 ];
 
-const FEATURES = [
+const FEATURES: { id: string; title: string; image?: GuideImage; items: { label: string; detail: string }[] }[] = [
 	{
 		id: 'grid',
 		title: '그리드 설정',
@@ -84,6 +91,7 @@ const FEATURES = [
 	{
 		id: 'symmetry',
 		title: '대칭 모드',
+		image: { src: '/guide-symmetry-mode.svg', alt: '좌우 대칭 모드 — 왼쪽에 기호를 배치하면 오른쪽에 자동 미러링되는 그리드 다이어그램', width: 560, height: 290 },
 		items: [
 			{
 				label: '좌우 대칭',
@@ -304,7 +312,7 @@ export default function GuidePage() {
 					4단계로 완성하는 뜨개 도안
 				</h2>
 				<ol className="space-y-6">
-					{STEPS.map(({ step, title, description }) => (
+					{STEPS.map(({ step, title, description, image }) => (
 						<li key={step} className="flex gap-4">
 							<span
 								className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-bold flex items-center justify-center"
@@ -312,9 +320,20 @@ export default function GuidePage() {
 							>
 								{step}
 							</span>
-							<div>
+							<div className="flex-1">
 								<h3 className="font-semibold mb-1">{title}</h3>
 								<p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+								{image && (
+									<div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
+										<Image
+											src={image.src}
+											alt={image.alt}
+											width={image.width}
+											height={image.height}
+											className="w-full h-auto"
+										/>
+									</div>
+								)}
 							</div>
 						</li>
 					))}
@@ -327,9 +346,20 @@ export default function GuidePage() {
 					기능 상세 설명
 				</h2>
 				<div className="space-y-10">
-					{FEATURES.map(({ id, title, items }) => (
+					{FEATURES.map(({ id, title, items, image }) => (
 						<div key={id}>
 							<h3 className="font-semibold text-base mb-4 pb-2 border-b border-gray-200">{title}</h3>
+							{image && (
+								<div className="mb-5 rounded-lg overflow-hidden border border-gray-200">
+									<Image
+										src={image.src}
+										alt={image.alt}
+										width={image.width}
+										height={image.height}
+										className="w-full h-auto"
+									/>
+								</div>
+							)}
 							<dl className="space-y-4">
 								{items.map(({ label, detail }) => (
 									<div key={label}>

@@ -1,0 +1,74 @@
+<svg width="560" height="300" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="ah-r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+    <marker id="ah-l" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+      <polygon points="8 0, 0 3, 8 6" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="560" height="300" fill="#f8fafc" rx="12"/>
+
+  <!-- Grid: 6 cols × 5 rows, cell=38px, top-left at (108, 58) -->
+  <!-- Grid size: 228 × 190 px -->
+
+  <!-- Grid white background -->
+  <rect x="108" y="58" width="228" height="190" fill="white" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Highlighted cell (row 2, col 3) for "셀 크기" annotation -->
+  <rect x="184" y="96" width="38" height="38" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+
+  <!-- Vertical grid lines -->
+  <line x1="146" y1="58" x2="146" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="184" y1="58" x2="184" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="222" y1="58" x2="222" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="260" y1="58" x2="260" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="298" y1="58" x2="298" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Horizontal grid lines -->
+  <line x1="108" y1="96"  x2="336" y2="96"  stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="108" y1="134" x2="336" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="108" y1="172" x2="336" y2="172" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="108" y1="210" x2="336" y2="210" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Column header labels -->
+  <text x="127" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">1</text>
+  <text x="165" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">2</text>
+  <text x="203" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">3</text>
+  <text x="241" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">4</text>
+  <text x="279" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">5</text>
+  <text x="317" y="47" text-anchor="middle" font-size="11" fill="#94a3b8">6</text>
+  <!-- Col header label -->
+  <text x="222" y="36" text-anchor="middle" font-size="10" fill="#64748b" font-style="italic">열 (코)</text>
+
+  <!-- Row header labels -->
+  <text x="91" y="82"  text-anchor="middle" font-size="11" fill="#94a3b8">1</text>
+  <text x="91" y="120" text-anchor="middle" font-size="11" fill="#94a3b8">2</text>
+  <text x="91" y="158" text-anchor="middle" font-size="11" fill="#94a3b8">3</text>
+  <text x="91" y="196" text-anchor="middle" font-size="11" fill="#94a3b8">4</text>
+  <text x="91" y="234" text-anchor="middle" font-size="11" fill="#94a3b8">5</text>
+  <!-- Row header label -->
+  <text x="65" y="153" text-anchor="middle" font-size="10" fill="#64748b" font-style="italic" transform="rotate(-90 65 153)">행 (단)</text>
+
+  <!-- 열(코) dimension arrow -->
+  <line x1="108" y1="272" x2="336" y2="272" stroke="#64748b" stroke-width="1.5"
+        marker-start="url(#ah-l)" marker-end="url(#ah-r)"/>
+  <text x="222" y="289" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">열(코): 6</text>
+
+  <!-- 행(단) dimension arrow -->
+  <line x1="375" y1="58" x2="375" y2="248" stroke="#64748b" stroke-width="1.5"
+        marker-start="url(#ah-l)" marker-end="url(#ah-r)"/>
+  <text x="420" y="153" text-anchor="middle" font-size="12" font-weight="600" fill="#475569" dominant-baseline="middle">행(단): 5</text>
+
+  <!-- Cell size annotation -->
+  <line x1="184" y1="90" x2="222" y2="90" stroke="#3b82f6" stroke-width="1.2"
+        marker-start="url(#ah-l)" marker-end="url(#ah-r)"/>
+  <text x="203" y="85" text-anchor="middle" font-size="9" fill="#3b82f6">셀 크기</text>
+
+  <!-- Title box (top right) -->
+  <rect x="390" y="20" width="150" height="50" fill="white" stroke="#e2e8f0" stroke-width="1" rx="6"/>
+  <text x="465" y="38" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">그리드 크기 설정</text>
+  <text x="465" y="54" text-anchor="middle" font-size="10" fill="#64748b">사이드바에서 행·열·셀 크기 입력</text>
+</svg>

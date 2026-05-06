@@ -1,0 +1,110 @@
+<svg width="560" height="290" viewBox="0 0 560 290" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="mir-r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7c3aed"/>
+    </marker>
+    <marker id="mir-l" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+      <polygon points="8 0, 0 3, 8 6" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="560" height="290" fill="#f8fafc" rx="12"/>
+
+  <!-- Title -->
+  <text x="280" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">좌우 대칭 모드</text>
+
+  <!-- ON badge -->
+  <rect x="236" y="14" width="88" height="22" fill="#7c3aed" rx="11"/>
+  <text x="280" y="29" text-anchor="middle" font-size="11" font-weight="700" fill="white">대칭 ON</text>
+
+  <!-- Grid: 8 cols × 5 rows, cell=40px, top-left (80, 48) -->
+  <!-- Grid size: 320 × 200 px -->
+  <rect x="80" y="48" width="320" height="200" fill="white" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Vertical lines -->
+  <line x1="120" y1="48" x2="120" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="160" y1="48" x2="160" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="200" y1="48" x2="200" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <!-- Center line (col 4/5 divider) at x=240 -->
+  <!-- (drawn later as dashed) -->
+  <line x1="280" y1="48" x2="280" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="320" y1="48" x2="320" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="360" y1="48" x2="360" y2="248" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Horizontal lines -->
+  <line x1="80" y1="88"  x2="400" y2="88"  stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="80" y1="128" x2="400" y2="128" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="80" y1="168" x2="400" y2="168" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="80" y1="208" x2="400" y2="208" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- ── Left half: user-placed symbols (dark) ─────── -->
+  <!-- knit symbol: diagonal line / -->
+  <!-- R1C1 -->
+  <line x1="88" y1="82"  x2="112" y2="58"  stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R1C2 -->
+  <line x1="128" y1="82" x2="152" y2="58"  stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R2C2 -->
+  <line x1="128" y1="122" x2="152" y2="98" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R2C3 -->
+  <line x1="168" y1="122" x2="192" y2="98" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R3C1 -->
+  <line x1="88" y1="162"  x2="112" y2="138" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R3C4 -->
+  <line x1="208" y1="162" x2="232" y2="138" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R4C2 -->
+  <line x1="128" y1="202" x2="152" y2="178" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R4C3 -->
+  <line x1="168" y1="202" x2="192" y2="178" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R5C1 -->
+  <line x1="88" y1="242"  x2="112" y2="218" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- R5C4 -->
+  <line x1="208" y1="242" x2="232" y2="218" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- "사용자 입력" label -->
+  <text x="160" y="266" text-anchor="middle" font-size="11" fill="#475569" font-weight="600">← 사용자 입력</text>
+
+  <!-- ── Right half: mirrored symbols (lighter) ─────── -->
+  <!-- Mirror of left: cols are mirrored around center (x=240) -->
+  <!-- Left col1 (x=80-120) → Right col8 (x=360-400): center of right col = 380 -->
+  <!-- Left col2 (x=120-160) → Right col7 (x=320-360): center = 340 -->
+  <!-- Left col3 (x=160-200) → Right col6 (x=280-320): center = 300 -->
+  <!-- Left col4 (x=200-240) → Right col5 (x=240-280): center = 260 -->
+
+  <!-- Mirrored R1C1 → R1C8 -->
+  <line x1="368" y1="82"  x2="392" y2="58"  stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R1C2 → R1C7 -->
+  <line x1="328" y1="82"  x2="352" y2="58"  stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R2C2 → R2C7 -->
+  <line x1="328" y1="122" x2="352" y2="98"  stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R2C3 → R2C6 -->
+  <line x1="288" y1="122" x2="312" y2="98"  stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R3C1 → R3C8 -->
+  <line x1="368" y1="162" x2="392" y2="138" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R3C4 → R3C5 -->
+  <line x1="248" y1="162" x2="272" y2="138" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R4C2 → R4C7 -->
+  <line x1="328" y1="202" x2="352" y2="178" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R4C3 → R4C6 -->
+  <line x1="288" y1="202" x2="312" y2="178" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R5C1 → R5C8 -->
+  <line x1="368" y1="242" x2="392" y2="218" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- Mirrored R5C4 → R5C5 -->
+  <line x1="248" y1="242" x2="272" y2="218" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- "자동 미러링" label -->
+  <text x="320" y="266" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">자동 미러링 →</text>
+
+  <!-- Center dashed divider line -->
+  <line x1="240" y1="42" x2="240" y2="254" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- Mirror arrows -->
+  <line x1="195" y1="270" x2="235" y2="270" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mir-r)"/>
+  <line x1="245" y1="270" x2="285" y2="270" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mir-r)"/>
+
+  <!-- Right side label box -->
+  <rect x="420" y="110" width="120" height="60" fill="white" stroke="#ddd6fe" stroke-width="1.5" rx="6"/>
+  <text x="480" y="130" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">좌우 대칭</text>
+  <text x="480" y="147" text-anchor="middle" font-size="9" fill="#64748b">왼쪽에 기호를 놓으면</text>
+  <text x="480" y="160" text-anchor="middle" font-size="9" fill="#64748b">오른쪽에 자동 반영</text>
+</svg>
